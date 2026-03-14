@@ -1,0 +1,51 @@
+# =========================
+# Python / Notebook
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+.ipynb_checkpoints/
+
+# =========================
+# OS / Logs
+# =========================
+.DS_Store
+Thumbs.db
+*.log
+.history/
+
+# VS Code local caches
+**/.vscode/browse.vc.db
+**/.vscode/browse.vc.db-*
+**/.vscode/
+
+# =========================
+# Model weights / checkpoints
+# =========================
+*.pt
+*.pth
+*.ckpt
+*.onnx
+checkpoints/
+
+# =========================
+# Project generated outputs
+# =========================
+毕设demo/mvp-demo/data/scenes/
+毕设demo/mvp-demo/output/
+毕设demo/mvp-demo/runs/
+
+# Local cloned external repos
+毕设demo/mvp-demo/third_party/
+
+# Papers / local references
+文献/
+毕设demo/文献/
+*.pdf
+
+# Local demo media
+毕设demo/mvp-demo/demo.mp4
