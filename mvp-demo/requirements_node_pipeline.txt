@@ -1,0 +1,13 @@
+# Install a torch build for your machine first, then install this file.
+numpy>=2.0.0
+opencv-python>=4.8.0
+pillow>=10.0.0
+mujoco>=3.1.0
+torchvision>=0.25.0
+transformers>=5.0.0
+safetensors>=0.7.0
+open3d>=0.19.0
+
+# Optional extras:
+# open-clip-torch>=2.24.0   # enable --rgb_backend clip
+# -e third_party/sam2       # enable run_node_sam2_masks.py

@@ -1,0 +1,27 @@
+# Captured data / outputs
+data/scenes/
+data/nodes/
+output/
+
+# External repos cloned locally (submodules are tracked)
+third_party/mujoco-3.4.0/
+
+# Ultralytics outputs
+runs/
+
+# Large binaries / generated artifacts
+*.pt
+*.pt.*
+*.mp4
+*.npy
+*.db
+
+# Large assets / point clouds
+assets/models/
+assets/**/point_cloud/
+assets/tiyuzhongxin/input.ply
+
+# Python
+__pycache__/
+*.pyc
+.venv/

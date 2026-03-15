@@ -1,0 +1,1 @@
+Namespace(data_device='cuda', depths='', eval=False, images='images', model_path='./output/a96fd1f9-c', resolution=-1, sh_degree=3, source_path='D:\\GaussianSplatting\\gaussian-splatting\\data', train_test_exp=False, white_background=False)
