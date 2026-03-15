@@ -31,6 +31,7 @@ Thumbs.db
 # Model weights / checkpoints
 # =========================
 *.pt
+*.pt.*
 *.pth
 *.ckpt
 *.onnx
@@ -61,3 +62,4 @@ mvp-demo/assets/scene/tiyuzhongxin/input.ply
 
 # Local demo media
 mvp-demo/demo.mp4
+mvp-demo/**/*.mp4
