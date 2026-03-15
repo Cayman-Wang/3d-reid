@@ -23,6 +23,10 @@ Thumbs.db
 **/.vscode/browse.vc.db-*
 **/.vscode/
 
+# Local databases / arrays
+*.db
+*.npy
+
 # =========================
 # Model weights / checkpoints
 # =========================
@@ -35,17 +39,22 @@ checkpoints/
 # =========================
 # Project generated outputs
 # =========================
-毕设demo/mvp-demo/data/scenes/
-毕设demo/mvp-demo/output/
-毕设demo/mvp-demo/runs/
+mvp-demo/data/scenes/
+mvp-demo/data/nodes/
+mvp-demo/output/
+mvp-demo/runs/
 
 # Local cloned external repos
-毕设demo/mvp-demo/third_party/
+mvp-demo/third_party/mujoco-3.4.0/
+
+# Large local assets
+mvp-demo/assets/models/
+mvp-demo/assets/**/point_cloud/
+mvp-demo/assets/scene/tiyuzhongxin/input.ply
 
 # Papers / local references
 文献/
-毕设demo/文献/
 *.pdf
 
 # Local demo media
-毕设demo/mvp-demo/demo.mp4
+mvp-demo/demo.mp4
