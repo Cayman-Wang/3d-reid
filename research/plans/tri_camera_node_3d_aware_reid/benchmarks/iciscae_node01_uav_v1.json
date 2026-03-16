@@ -1,0 +1,200 @@
+{
+  "benchmark_id": "iciscae_node01_uav_v1",
+  "description": "MuJoCo-only node01 single-node cross-scene UAV/aircraft benchmark for the ICISCAE paper.",
+  "paper_scope": {
+    "paper": "ICISCAE",
+    "task": "single-node cross-scene track-level retrieval",
+    "domain": "uav_aircraft",
+    "node_id": "node01"
+  },
+  "defaults": {
+    "split_role": "both",
+    "mask_source": "sam2_pred",
+    "depth_source": "depth_anything_v2",
+    "mask_layout": "flat",
+    "min_valid_timestamps": 5,
+    "retrieval_flags": {
+      "exclude_same_track_id": true,
+      "exclude_same_scene": true
+    }
+  },
+  "experiments": [
+    "rgb_only",
+    "rgb_predicted_depth_geometry",
+    "rgb_fused_geometry"
+  ],
+  "entries": [
+    {
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_j10_line_nodes_a",
+      "node_id": "node01",
+      "scene_id": "mj_node01_j10_line_nodes_a",
+      "identity_id": "j10",
+      "split_role": "both",
+      "mask_source": "sam2_pred",
+      "depth_source": "depth_anything_v2",
+      "mask_layout": "flat",
+      "sam2_camera_boxes": {
+        "cam0": null,
+        "cam1": null,
+        "cam2": null
+      },
+      "min_valid_timestamps": 5,
+      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_j10_line_nodes_a.json",
+      "capture_plan": {
+        "status": "planned",
+        "mjcf": "mvp-demo/assets/scene/mujoco_humanoid_3cam_node_parallel_j10.xml",
+        "target_body": "target",
+        "identity_id": "j10",
+        "traj": "line_nodes",
+        "traj_from_body": "node01",
+        "traj_to_body": "node02",
+        "mid_y": 6.0,
+        "mid_z": 2.0,
+        "traj_period": 8.0
+      }
+    },
+    {
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_j10_circle_xz_b",
+      "node_id": "node01",
+      "scene_id": "mj_node01_j10_circle_xz_b",
+      "identity_id": "j10",
+      "split_role": "both",
+      "mask_source": "sam2_pred",
+      "depth_source": "depth_anything_v2",
+      "mask_layout": "flat",
+      "sam2_camera_boxes": {
+        "cam0": null,
+        "cam1": null,
+        "cam2": null
+      },
+      "min_valid_timestamps": 5,
+      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_j10_circle_xz_b.json",
+      "capture_plan": {
+        "status": "planned",
+        "mjcf": "mvp-demo/assets/scene/mujoco_humanoid_3cam_node_parallel_j10.xml",
+        "target_body": "target",
+        "identity_id": "j10",
+        "traj": "circle_xz",
+        "traj_center": "0 6 2",
+        "traj_radius": 1.0,
+        "traj_period": 6.0
+      }
+    },
+    {
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_uav1_line_nodes_a",
+      "node_id": "node01",
+      "scene_id": "mj_node01_uav1_line_nodes_a",
+      "identity_id": "uav1",
+      "split_role": "both",
+      "mask_source": "sam2_pred",
+      "depth_source": "depth_anything_v2",
+      "mask_layout": "flat",
+      "sam2_camera_boxes": {
+        "cam0": null,
+        "cam1": null,
+        "cam2": null
+      },
+      "min_valid_timestamps": 5,
+      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_uav1_line_nodes_a.json",
+      "capture_plan": {
+        "status": "planned",
+        "mjcf": "mvp-demo/assets/scene/mujoco_humanoid_uav1_3cam_node_parallel.xml",
+        "target_body": "target",
+        "identity_id": "uav1",
+        "traj": "line_nodes",
+        "traj_from_body": "node01",
+        "traj_to_body": "node02",
+        "mid_y": 6.0,
+        "mid_z": 2.0,
+        "traj_period": 8.0,
+        "notes": "On Windows, the current Chinese asset directory may require an ASCII alias or Linux/WSL execution."
+      }
+    },
+    {
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_uav1_circle_xz_b",
+      "node_id": "node01",
+      "scene_id": "mj_node01_uav1_circle_xz_b",
+      "identity_id": "uav1",
+      "split_role": "both",
+      "mask_source": "sam2_pred",
+      "depth_source": "depth_anything_v2",
+      "mask_layout": "flat",
+      "sam2_camera_boxes": {
+        "cam0": null,
+        "cam1": null,
+        "cam2": null
+      },
+      "min_valid_timestamps": 5,
+      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_uav1_circle_xz_b.json",
+      "capture_plan": {
+        "status": "planned",
+        "mjcf": "mvp-demo/assets/scene/mujoco_humanoid_uav1_3cam_node_parallel.xml",
+        "target_body": "target",
+        "identity_id": "uav1",
+        "traj": "circle_xz",
+        "traj_center": "0 6 2",
+        "traj_radius": 1.0,
+        "traj_period": 6.0,
+        "notes": "On Windows, the current Chinese asset directory may require an ASCII alias or Linux/WSL execution."
+      }
+    },
+    {
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_dji_mavic_line_nodes_a",
+      "node_id": "node01",
+      "scene_id": "mj_node01_dji_mavic_line_nodes_a",
+      "identity_id": "dji_mavic",
+      "split_role": "both",
+      "mask_source": "sam2_pred",
+      "depth_source": "depth_anything_v2",
+      "mask_layout": "flat",
+      "sam2_camera_boxes": {
+        "cam0": null,
+        "cam1": null,
+        "cam2": null
+      },
+      "min_valid_timestamps": 5,
+      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_dji_mavic_line_nodes_a.json",
+      "capture_plan": {
+        "status": "planned",
+        "mjcf": "mvp-demo/assets/scene/mujoco_humanoid_dji_mavic_3cam_node_parallel.xml",
+        "target_body": "target",
+        "identity_id": "dji_mavic",
+        "traj": "line_nodes",
+        "traj_from_body": "node01",
+        "traj_to_body": "node02",
+        "mid_y": 6.0,
+        "mid_z": 2.0,
+        "traj_period": 8.0,
+        "notes": "Use the plain-material DJI Mavic scene added in this plan implementation."
+      }
+    },
+    {
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_dji_mavic_circle_xz_b",
+      "node_id": "node01",
+      "scene_id": "mj_node01_dji_mavic_circle_xz_b",
+      "identity_id": "dji_mavic",
+      "split_role": "both",
+      "mask_source": "sam2_pred",
+      "depth_source": "depth_anything_v2",
+      "mask_layout": "flat",
+      "sam2_camera_boxes": {
+        "cam0": null,
+        "cam1": null,
+        "cam2": null
+      },
+      "min_valid_timestamps": 5,
+      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_dji_mavic_circle_xz_b.json",
+      "capture_plan": {
+        "status": "planned",
+        "mjcf": "mvp-demo/assets/scene/mujoco_humanoid_dji_mavic_3cam_node_parallel.xml",
+        "target_body": "target",
+        "identity_id": "dji_mavic",
+        "traj": "circle_xz",
+        "traj_center": "0 6 2",
+        "traj_radius": 1.0,
+        "traj_period": 6.0,
+        "notes": "Use the plain-material DJI Mavic scene added in this plan implementation."
+      }
+    }
+  ]
+}
