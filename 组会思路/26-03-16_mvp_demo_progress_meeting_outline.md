@@ -1,4 +1,6 @@
-# mvp-demo 当前进展组会汇报思路
+# 26-03-16 mvp-demo 当前进展组会汇报思路
+
+> 存档说明：本文档用于归档 `2026-03-16` 组会材料，只作为阶段性汇报记录与表达模板，不并入 `research/` 主线计划。
 
 ## 1. 汇报核心结论
 
@@ -379,3 +381,82 @@ MuJoCo 三相机节点
 4. 把三路视图、mask、depth 拼成一页总览图。
 
 如果只能补一个结果，优先补第 1 和第 2 项，因为这样你在组会上就能从“链路跑通”升级为“最小检索例子已跑通”。
+
+## 8. 可复用的 5 页 PPT 讲法模板
+
+这一节吸收了早期 `demo_ppt_outline.md` 里仍有价值的表达方式，保留为归档附录。
+
+适用场景：
+
+- 需要把当前三相机节点主线压缩成 `3-5` 分钟的短讲。
+- 需要补充说明“旧单路视频 demo 也跑通过一次”。
+- 需要把“节点级闭环 -> 分布式多节点扩展”讲得更顺滑。
+
+### Slide 1: Problem & Goal
+
+一句话讲清 3 件事：
+
+1. 任务不是做大而全的 ReID 系统，而是先完成实例级 `track retrieval` MVP。
+2. 纯 RGB 容易受视角、背景、遮挡影响，所以要引入 `3D-aware` 几何线索。
+3. 最小交付物是：`tracklet -> track embedding -> top-K retrieval`。
+
+推荐一句话：
+
+`我们先不追求大规模训练，而是先把从观测到轨迹表征再到检索的最小闭环跑通。`
+
+### Slide 2: End-to-End Pipeline
+
+如果要用 1 页图讲全流程，推荐压缩成下面这版：
+
+```text
+MuJoCo / Video Demo
+  -> synchronized frames / images
+  -> masks + depth
+  -> tracklets
+  -> RGB + geometry embedding
+  -> track mean pooling
+  -> top-K retrieval
+```
+
+如果需要补充旧单路视频 demo，可额外说一句：
+
+`旧版单路视频链路已经证明过 images + depth_npy + masks + tracklets + embeddings 这套接口可跑通。`
+
+### Slide 3: Key Design Choices
+
+建议只讲 4 点：
+
+1. `mask` 优先，减少背景对 depth/点云的污染。
+2. 对齐口径固定，避免 `images / depth / masks` 错位。
+3. 以 `track` 为检索单位，而不是单帧。
+4. 几何分支先用轻量描述子跑通，再逐步增强。
+
+### Slide 4: Demo Evidence
+
+优先展示：
+
+- 三相机同步视频
+- RGB + depth 总览图
+- 融合点云
+- `tracklets.json` / `tracks_meta.json` 小片段
+- 如有需要，再补旧视频链路的 `images + masks + depth_npy`
+
+讲法上要避免把它说成“性能结论”，更准确的是：
+
+`这些结果证明数据组织、几何融合和轨迹表征接口已经完整打通。`
+
+### Slide 5: Limitations & Roadmap
+
+最后一页建议只保留两类信息：
+
+- 当前边界：
+  - 现在最强证据仍是节点级闭环和中间产物，不是正式大规模指标。
+  - 当前 `hist + radial_hist` 只是轻量 baseline，不是最终方法。
+- 下一步扩展：
+  - 先补更多 `scene + identity`，形成规范 benchmark。
+  - 再从 `GT depth/mask` 逐步切换到预测 `depth/masks`。
+  - 再扩到跨节点检索与真实三相机迁移。
+
+推荐收尾句：
+
+`MVP 已经证明：三相机节点级 3D-aware 表征链路是可落地的，后续工作重点是把它从可展示原型收口成可发表 benchmark。`
