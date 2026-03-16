@@ -215,6 +215,18 @@ def main() -> None:
         type=str,
         help='For --traj line_nodes: end body name (world positions define the segment).',
     )
+    ap.add_argument(
+        "--mid_y",
+        default=None,
+        type=float,
+        help="For --traj line_nodes: optionally translate the segment midpoint to this world Y.",
+    )
+    ap.add_argument(
+        "--mid_z",
+        default=None,
+        type=float,
+        help="For --traj line_nodes: optionally translate the segment midpoint to this world Z.",
+    )
     ap.add_argument("--traj_center", default="0 6 2", type=str, help='Trajectory center "x y z" in world/node frame.')
     ap.add_argument("--traj_radius", default=1.0, type=float, help="Trajectory radius (meters).")
     ap.add_argument("--traj_period", default=12.0, type=float, help="Trajectory period (seconds) for circle_xz.")
@@ -230,11 +242,19 @@ def main() -> None:
             f"Import error: {e!r}"
         )
 
-    mjcf_path = Path(args.mjcf).resolve()
+    # Keep lexical paths on Windows so junction-based ASCII paths are not
+    # canonicalized back to a non-ASCII real path that MuJoCo fails to open.
+    mjcf_path = Path(args.mjcf)
+    if not mjcf_path.is_absolute():
+        mjcf_path = Path.cwd() / mjcf_path
+    mjcf_path = mjcf_path.absolute()
     if not mjcf_path.exists():
         raise SystemExit(f"--mjcf not found: {mjcf_path}")
 
-    out_root = Path(args.out_root).resolve()
+    out_root = Path(args.out_root)
+    if not out_root.is_absolute():
+        out_root = Path.cwd() / out_root
+    out_root = out_root.absolute()
     node_id = str(args.node_id).strip()
     node_body = str(args.node_body).strip() or node_id
     scene_id = str(args.scene_id).strip() or _now_scene_id(f"mj_{node_id}")
@@ -298,6 +318,8 @@ def main() -> None:
     # Optional: resolve node-line endpoints for the line_nodes trajectory.
     line_from_id: Optional[int] = None
     line_to_id: Optional[int] = None
+    line_a: Optional[np.ndarray] = None
+    line_b: Optional[np.ndarray] = None
     if str(args.traj) == "line_nodes":
         from_body = str(args.traj_from_body).strip()
         to_body = str(args.traj_to_body).strip()
@@ -311,6 +333,15 @@ def main() -> None:
             raise SystemExit(f'--traj_to_body "{to_body}" not found in MJCF.')
         line_from_id = int(bid0)
         line_to_id = int(bid1)
+        line_a = np.asarray(data.xpos[line_from_id], dtype=np.float32).copy()
+        line_b = np.asarray(data.xpos[line_to_id], dtype=np.float32).copy()
+        if args.mid_y is not None or args.mid_z is not None:
+            mid0 = (line_a + line_b) * 0.5
+            target_mid_y = float(args.mid_y) if args.mid_y is not None else float(mid0[1])
+            target_mid_z = float(args.mid_z) if args.mid_z is not None else float(mid0[2])
+            line_shift = np.array([0.0, target_mid_y - float(mid0[1]), target_mid_z - float(mid0[2])], dtype=np.float32)
+            line_a = (line_a + line_shift).astype(np.float32)
+            line_b = (line_b + line_shift).astype(np.float32)
 
     # Find freejoint qpos address (7 DoF) for kinematic trajectories.
     jadr = int(model.body_jntadr[target_body_id])
@@ -415,6 +446,8 @@ def main() -> None:
                 {
                     "traj_from_body": str(args.traj_from_body),
                     "traj_to_body": str(args.traj_to_body),
+                    "mid_y": float(args.mid_y) if args.mid_y is not None else None,
+                    "mid_z": float(args.mid_z) if args.mid_z is not None else None,
                 }
                 if str(args.traj) == "line_nodes"
                 else {}
@@ -461,14 +494,11 @@ def main() -> None:
                     s = math.sin(2.0 * math.pi * (t / max(1e-6, float(args.traj_period))))
                     pos = traj_center + np.array([0.0, float(args.traj_radius) * s, 0.0], dtype=np.float32)
                 elif args.traj == "line_nodes":
-                    assert line_from_id is not None and line_to_id is not None
-                    a = np.asarray(data.xpos[line_from_id], dtype=np.float32)
-                    b = np.asarray(data.xpos[line_to_id], dtype=np.float32)
-
+                    assert line_a is not None and line_b is not None
                     period = max(1e-6, float(args.traj_period))
                     u = (t / period) % 1.0
                     s = (2.0 * u) if u < 0.5 else (2.0 * (1.0 - u))  # 0->1->0 triangular wave
-                    pos = ((1.0 - s) * a + s * b).astype(np.float32)
+                    pos = ((1.0 - s) * line_a + s * line_b).astype(np.float32)
                 else:
                     pos = traj_center
 

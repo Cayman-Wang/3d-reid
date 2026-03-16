@@ -69,7 +69,12 @@ def main() -> None:
             f"Import error: {e!r}"
         )
 
-    mjcf_path = Path(args.mjcf).resolve()
+    # Keep lexical paths on Windows so junction-based ASCII paths are not
+    # canonicalized back to a non-ASCII real path that MuJoCo fails to open.
+    mjcf_path = Path(args.mjcf)
+    if not mjcf_path.is_absolute():
+        mjcf_path = Path.cwd() / mjcf_path
+    mjcf_path = mjcf_path.absolute()
     if not mjcf_path.exists():
         raise SystemExit(f"--mjcf not found: {mjcf_path}")
 
