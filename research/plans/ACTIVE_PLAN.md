@@ -5,9 +5,7 @@ current_milestone: M1 第三个飞行目标落地与 node01 正式 3x2 benchmark
 must_read:
   - research/plans/tri_camera_node_3d_aware_reid/master_plan_zh.md
   - research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v1.json
-  - 3D重建-3Dreid/sim_to_real_3cam_node_reid_research.md
-  - mvp-demo/README.md
-  - mvp-demo/todo/mujoco_3cam_node_handoff.md
+  - research/handoffs/tri_camera_node_engineering_handoff_zh.md
 locked_decisions:
   - 研究主线固定为“三相机节点级 3D-aware track retrieval”，YOLO 门控 + 3DGS 仅保留为辅助 demo。
   - ICISCAE 小论文目标域固定为 UAV/aircraft；当前不再做人形 benchmark。
@@ -21,6 +19,7 @@ locked_decisions:
   - 正式 scene 协议固定为每个 identity 两条轨迹：line_nodes 和 circle_xz；split_role 统一为 both。
   - 正式检索评测默认开启 exclude_same_track_id 和 exclude_same_scene；研究目标矩阵保持 RGB-only / RGB + predicted-depth geometry / RGB + fused geometry，但工程顺序先跑 RGB-only，再补两条几何支路。
   - 当前小论文结果不得把 MuJoCo GT 作为主链输入；现有基于 masks_gt/depth_gt 跑通的 scene 仅作为 proof-of-pipeline 和 upper-bound 证据。
+  - 权威研究文档统一收口到 research；mvp-demo 仅保留运行入口与资产说明。
 next_action: 按 manifest 验证 dji_mavic 场景可加载，并为 j10 / uav1 / dji_mavic 采集 node01 的 6 个正式 scene（显式 scene_id、显式 identity_id），随后补齐 predicted depth、predicted masks 和 RGB-only 首轮评测结果。
 out_of_scope:
   - 多目标关联与多实例同时检索
