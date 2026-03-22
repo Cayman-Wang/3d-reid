@@ -12,11 +12,26 @@ def l2norm(x: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     return (x / (n + eps)).astype(np.float32)
 
 
+def _read_image(path: Path, flags: int):
+    import cv2  # type: ignore
+
+    img = cv2.imread(str(path), flags)
+    if img is not None:
+        return img
+
+    try:
+        data = np.fromfile(str(path), dtype=np.uint8)
+        img = cv2.imdecode(data, flags)
+    except Exception:
+        img = None
+    return img
+
+
 def _load_mask(path: Path) -> np.ndarray:
     try:
         import cv2  # type: ignore
 
-        mask = cv2.imread(str(path), cv2.IMREAD_GRAYSCALE)
+        mask = _read_image(path, cv2.IMREAD_GRAYSCALE)
         if mask is None:
             raise FileNotFoundError(path)
         return np.asarray(mask) > 0
@@ -260,7 +275,7 @@ def main() -> None:
                 if not img_path.exists() or not mask_path.exists():
                     continue
 
-                img = cv2.imread(str(img_path), cv2.IMREAD_COLOR)
+                img = _read_image(img_path, cv2.IMREAD_COLOR)
                 if img is None:
                     continue
                 h, w = img.shape[:2]

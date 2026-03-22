@@ -4,7 +4,7 @@
 
   Change:
     Add a compact 3-camera "node" rig (parallel optical axes) for capture/validation.
-    Replace the imported target mesh from ikun -> uav (mvp-demo/assets/models/无人机1).
+    Replace the imported target mesh from ikun -> uav (mvp-demo/assets/models/uav1_ascii).
 
   Notes:
     - The node cameras follow the same convention as our minimal rig MJCF:
@@ -51,9 +51,10 @@
     <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2"/>
     <!-- cgaxis drone OBJ appears to be in centimeters; scale to meters for MuJoCo. -->
     <!-- The model looked too small in the humanoid scene; scale up 2x. -->
-    <mesh name="uav1_drone" file="../models/无人机1/cgaxis_models_117_01_obj_drone.obj" scale="0.02 0.02 0.02"/>
+    <!-- Use an ASCII-safe alias directory so Windows MuJoCo can resolve the UAV asset. -->
+    <mesh name="uav1_drone" file="../models/uav1_ascii/cgaxis_models_117_01_obj_drone.obj" scale="0.02 0.02 0.02"/>
     <!-- If the OBJ UVs match this atlas, MuJoCo will render the textured mesh. -->
-    <texture name="uav1_tex" type="2d" file="../models/无人机1/cgaxis_models_117_01.png"/>
+    <texture name="uav1_tex" type="2d" file="../models/uav1_ascii/cgaxis_models_117_01.png"/>
     <material name="uav1_mat" texture="uav1_tex" texuniform="false"/>
   </asset>
 
