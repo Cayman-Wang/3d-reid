@@ -36,3 +36,8 @@ Git history may not be available in this folder; use a simple convention going f
 
 - Commit messages: `docs: ...`, `notes: ...`, `papers: ...` (imperative, <72 chars).
 - PRs: explain the change, link relevant papers/issues, and include screenshots for diagram changes; keep notebooks’ outputs minimal to reduce diff noise.
+
+## Subagent Delegation
+
+- In this repository, Codex may automatically use subagents when parallel delegation can clearly speed up the task or reduce blocking on the main path.
+- Do not force subagent use for simple tasks; prefer local execution when delegation adds little value.
