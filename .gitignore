@@ -44,9 +44,11 @@ mvp-demo/data/scenes/
 mvp-demo/data/nodes/
 mvp-demo/output/
 mvp-demo/runs/
+mvp-demo/tmp/
 
 # Local cloned external repos (all third-party code lives outside this repo)
 mvp-demo/third_party/
+参考工作/repos/
 
 # Backup of nested git repository
 mvp-demo/.git_bak/
