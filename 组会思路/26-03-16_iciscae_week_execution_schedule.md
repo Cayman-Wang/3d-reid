@@ -65,6 +65,152 @@
 - 正式 scene 名与 manifest 完全一致。
 - 本周评测命令口径固定为 `CLIP + no geometry`。
 
+当日执行记录（`2026-03-16` 已完成）：
+
+- `mvp_demo` 环境已验证可用：`torch 2.10.0+cu128`、`open_clip 3.3.0`、`mujoco 3.6.0` 可正常导入。
+- `mvp-demo/scripts/extract_node_track_embeddings.py` 已核对参数口径：
+  - `--rgb_backend` 支持 `clip`
+  - `--geo_backend` 支持 `none`
+  - 本周 `RGB-only` 正式命令固定为 `CLIP + no geometry`，不再把 `hist / radial_hist` 当论文主结果。
+- manifest 中的 `6` 个正式 scene 名已逐项核对，命名冻结如下，且当前正式目录仍未落盘：
+  - `mj_node01_j10_line_nodes_a`
+  - `mj_node01_j10_circle_xz_b`
+  - `mj_node01_uav1_line_nodes_a`
+  - `mj_node01_uav1_circle_xz_b`
+  - `mj_node01_dji_mavic_line_nodes_a`
+  - `mj_node01_dji_mavic_circle_xz_b`
+- `j10 / uav1 / dji_mavic` 三个 MJCF 已在 `mvp_demo` 环境下通过 MuJoCo 加载测试，但该结论仅在 ASCII junction 路径 `D:\grad_project_ascii\mvp-demo` 下成立；直接使用中文仓库根路径 `D:\研究生\grad_project` 仍会触发 MuJoCo `ParseXML` 打开失败。
+- `uav1` 的中文资产路径问题已做本地修复：
+  - 新增 ASCII-safe 资产别名目录：`mvp-demo/assets/models/uav1_ascii/`
+  - `mvp-demo/assets/scene/mujoco_humanoid_uav1_3cam_node_parallel.xml` 已改为引用该别名目录
+  - `uav1` 最小 smoke capture 已跑通，产物位于 `mvp-demo/tmp/smoke_capture/node01/scenes/smoke_uav1_ascii/`
+- 结论：`uav1` 本周不需要切到 WSL；在 Windows 下使用 `D:\grad_project_ascii\mvp-demo + mvp_demo` 即可继续正式采集。
+
+本日冻结的正式采集命令：
+
+说明：以下命令统一在 `D:\grad_project_ascii\mvp-demo` 工作目录下执行，环境统一为 `mvp_demo`。
+
+```powershell
+conda run -n mvp_demo python scripts/mj_capture_3cam_node.py `
+  --mjcf assets/scene/mujoco_humanoid_3cam_node_parallel_j10.xml `
+  --out_root data/nodes `
+  --node_id node01 `
+  --scene_id mj_node01_j10_line_nodes_a `
+  --identity_id j10 `
+  --traj line_nodes `
+  --traj_from_body node01 `
+  --traj_to_body node02 `
+  --mid_y 6.0 `
+  --mid_z 2.0 `
+  --traj_period 8.0 `
+  --save_depth `
+  --save_masks_gt
+```
+
+```powershell
+conda run -n mvp_demo python scripts/mj_capture_3cam_node.py `
+  --mjcf assets/scene/mujoco_humanoid_3cam_node_parallel_j10.xml `
+  --out_root data/nodes `
+  --node_id node01 `
+  --scene_id mj_node01_j10_circle_xz_b `
+  --identity_id j10 `
+  --traj circle_xz `
+  --traj_center "0 6 2" `
+  --traj_radius 1.0 `
+  --traj_period 6.0 `
+  --save_depth `
+  --save_masks_gt
+```
+
+```powershell
+conda run -n mvp_demo python scripts/mj_capture_3cam_node.py `
+  --mjcf assets/scene/mujoco_humanoid_uav1_3cam_node_parallel.xml `
+  --out_root data/nodes `
+  --node_id node01 `
+  --scene_id mj_node01_uav1_line_nodes_a `
+  --identity_id uav1 `
+  --traj line_nodes `
+  --traj_from_body node01 `
+  --traj_to_body node02 `
+  --mid_y 6.0 `
+  --mid_z 2.0 `
+  --traj_period 8.0 `
+  --save_depth `
+  --save_masks_gt
+```
+
+```powershell
+conda run -n mvp_demo python scripts/mj_capture_3cam_node.py `
+  --mjcf assets/scene/mujoco_humanoid_uav1_3cam_node_parallel.xml `
+  --out_root data/nodes `
+  --node_id node01 `
+  --scene_id mj_node01_uav1_circle_xz_b `
+  --identity_id uav1 `
+  --traj circle_xz `
+  --traj_center "0 6 2" `
+  --traj_radius 1.0 `
+  --traj_period 6.0 `
+  --save_depth `
+  --save_masks_gt
+```
+
+```powershell
+conda run -n mvp_demo python scripts/mj_capture_3cam_node.py `
+  --mjcf assets/scene/mujoco_humanoid_dji_mavic_3cam_node_parallel.xml `
+  --out_root data/nodes `
+  --node_id node01 `
+  --scene_id mj_node01_dji_mavic_line_nodes_a `
+  --identity_id dji_mavic `
+  --traj line_nodes `
+  --traj_from_body node01 `
+  --traj_to_body node02 `
+  --mid_y 6.0 `
+  --mid_z 2.0 `
+  --traj_period 8.0 `
+  --save_depth `
+  --save_masks_gt
+```
+
+```powershell
+conda run -n mvp_demo python scripts/mj_capture_3cam_node.py `
+  --mjcf assets/scene/mujoco_humanoid_dji_mavic_3cam_node_parallel.xml `
+  --out_root data/nodes `
+  --node_id node01 `
+  --scene_id mj_node01_dji_mavic_circle_xz_b `
+  --identity_id dji_mavic `
+  --traj circle_xz `
+  --traj_center "0 6 2" `
+  --traj_radius 1.0 `
+  --traj_period 6.0 `
+  --save_depth `
+  --save_masks_gt
+```
+
+本周固定评测命令口径：
+
+```powershell
+conda run -n mvp_demo python scripts/extract_node_track_embeddings.py `
+  --scene_dir data/nodes/node01/scenes/<scene_id> `
+  --rgb_backend clip `
+  --geo_backend none
+```
+
+```powershell
+conda run -n mvp_demo python scripts/eval_node_track_retrieval.py `
+  --query_scene_dir data/nodes/node01/scenes/<query_scene_id> `
+  --gallery_scene_dir data/nodes/node01/scenes/<gallery_scene_id> `
+  --exclude_same_track_id `
+  --exclude_same_scene `
+  --out output/evals/iciscae_node01_uav_v1/rgb_only/<run_name>.json
+```
+
+本日风险清单与当前状态：
+
+- `uav1` 路径风险：已从“内部模型路径含中文”收敛为“执行 MuJoCo 命令时必须使用 ASCII junction 工作目录”；当前不需要 WSL。
+- `dji_mavic` 加载风险：当前加载测试已通过，但正式采集稳定性仍要在 `2026-03-19` 当天复核。
+- SAM2 / depth 覆盖率风险：今天尚未进入正式 `6-scene` 预测阶段，风险未解除。
+- CLIP 环境缺失风险：今天已解除，`mvp_demo` 环境中 `open_clip` 可正常导入。
+
 ### 2026-03-17
 
 目标：完成 `j10` 的两条正式 scene。
@@ -85,6 +231,22 @@
 
 - 每个 scene 都不是测试名或临时名。
 - 每个 scene 都能被后续 `build_node_tracklets.py` 和 `extract_node_track_embeddings.py` 正常识别。
+
+执行记录（于 `2026-03-22` 补执行并补记，`2026-03-17` 任务已完成）：
+
+- 已在 `D:\grad_project_ascii\mvp-demo` 工作目录、`mvp_demo` 环境下执行冻结的两条 `j10` 正式采集命令。
+- 已生成正式目录：
+  - `mvp-demo/data/nodes/node01/scenes/mj_node01_j10_line_nodes_a/`
+  - `mvp-demo/data/nodes/node01/scenes/mj_node01_j10_circle_xz_b/`
+- 两个 scene 均已通过采集后检查：
+  - 三路 `cams/cam*/frames/` 已生成，当前每路相机各 `90` 帧。
+  - `frame_times.csv` 已生成。
+  - `calib/rig.json` 已生成。
+  - `capture_meta.target.identity_id == j10`。
+- 本次执行仍遵守本周冻结口径：
+  - 工作目录使用 ASCII 路径，未在中文仓库路径下直接执行 MuJoCo。
+  - scene 名使用 manifest 冻结的正式命名，未复用历史临时 scene。
+- 结论：`2026-03-17` 的 `j10` 正式采集任务可以关单，下一步可推进 `2026-03-18` 的 `uav1` 两条正式 scene 采集。
 
 ### 2026-03-18
 
