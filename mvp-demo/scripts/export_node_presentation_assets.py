@@ -21,13 +21,21 @@ def _read_image(path: Path, flags: int) -> np.ndarray:
     except Exception as e:  # pragma: no cover
         raise SystemExit(f"Missing dependency: cv2 (opencv-python). Error: {e!r}")
 
-    img = cv2.imread(str(path), flags)
+    path_str = str(path)
+    if not path_str.isascii():
+        try:
+            data = np.fromfile(path_str, dtype=np.uint8)
+            img = cv2.imdecode(data, flags)
+        except Exception:
+            img = None
+        if img is not None:
+            return img
+
+    img = cv2.imread(path_str, flags)
     if img is not None:
         return img
-
-    # cv2.imread can fail on Windows unicode paths; fall back to imdecode.
     try:
-        data = np.fromfile(str(path), dtype=np.uint8)
+        data = np.fromfile(path_str, dtype=np.uint8)
         img = cv2.imdecode(data, flags)
     except Exception:
         img = None

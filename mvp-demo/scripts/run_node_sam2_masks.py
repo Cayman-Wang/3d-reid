@@ -42,6 +42,15 @@ def _sorted_frames(images_dir: Path) -> list[Path]:
     return sorted(frames, key=key)
 
 
+def _write_png_u8(path: Path, mask_u8: np.ndarray) -> None:
+    import cv2  # type: ignore
+
+    ok, buf = cv2.imencode(".png", np.asarray(mask_u8, dtype=np.uint8))
+    if not ok:
+        raise RuntimeError(f"Failed to encode mask png: {path}")
+    buf.tofile(str(path))
+
+
 def _resolve_cfg_name(cfg_arg: str) -> str:
     cfg_name = cfg_arg
     cfg_path = Path(cfg_arg).expanduser()
@@ -182,9 +191,7 @@ def main() -> None:
                     if getattr(mask_i, "ndim", None) == 3 and mask_i.shape[0] == 1:
                         mask_i = mask_i[0]
                     mask_u8 = (mask_i > 0).to(torch.uint8).cpu().numpy() * 255
-                    ok = cv2.imwrite(str(out_path), mask_u8)
-                    if not ok:
-                        raise RuntimeError(f"Failed to write mask png: {out_path}")
+                    _write_png_u8(out_path, mask_u8)
 
             print(f"[node-sam2] cam={cam_id} frames={len(frames)} out_dir={out_root}")
 

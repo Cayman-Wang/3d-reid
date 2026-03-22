@@ -15,12 +15,21 @@ def l2norm(x: np.ndarray, eps: float = 1e-12) -> np.ndarray:
 def _read_image(path: Path, flags: int):
     import cv2  # type: ignore
 
-    img = cv2.imread(str(path), flags)
+    path_str = str(path)
+    if not path_str.isascii():
+        try:
+            data = np.fromfile(path_str, dtype=np.uint8)
+            img = cv2.imdecode(data, flags)
+        except Exception:
+            img = None
+        if img is not None:
+            return img
+
+    img = cv2.imread(path_str, flags)
     if img is not None:
         return img
-
     try:
-        data = np.fromfile(str(path), dtype=np.uint8)
+        data = np.fromfile(path_str, dtype=np.uint8)
         img = cv2.imdecode(data, flags)
     except Exception:
         img = None

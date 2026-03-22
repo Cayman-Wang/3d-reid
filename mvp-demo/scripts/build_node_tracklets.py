@@ -16,11 +16,35 @@ def _load_json(path: Path) -> dict[str, Any]:
         raise SystemExit(f"Failed to read json: {path}\nError: {e!r}")
 
 
+def _read_image(path: Path, flags: int):
+    import cv2  # type: ignore
+
+    path_str = str(path)
+    if not path_str.isascii():
+        try:
+            data = np.fromfile(path_str, dtype=np.uint8)
+            img = cv2.imdecode(data, flags)
+        except Exception:
+            img = None
+        if img is not None:
+            return img
+
+    img = cv2.imread(path_str, flags)
+    if img is not None:
+        return img
+    try:
+        data = np.fromfile(path_str, dtype=np.uint8)
+        img = cv2.imdecode(data, flags)
+    except Exception:
+        img = None
+    return img
+
+
 def _load_mask(path: Path) -> np.ndarray:
     try:
         import cv2  # type: ignore
 
-        mask = cv2.imread(str(path), cv2.IMREAD_GRAYSCALE)
+        mask = _read_image(path, cv2.IMREAD_GRAYSCALE)
         if mask is None:
             raise FileNotFoundError(path)
         return np.asarray(mask) > 0
