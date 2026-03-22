@@ -41,3 +41,11 @@ Git history may not be available in this folder; use a simple convention going f
 
 - In this repository, Codex may automatically use subagents when parallel delegation can clearly speed up the task or reduce blocking on the main path.
 - Do not force subagent use for simple tasks; prefer local execution when delegation adds little value.
+
+## Hugging Face Downloads
+
+- In this repository, if Codex needs to download models, weights, or datasets from Hugging Face, configure the mirror first before downloading.
+- In PowerShell sessions, set:
+  - `$env:HF_ENDPOINT = "https://hf-mirror.com"`
+- Then run commands that rely on `huggingface_hub`, `huggingface-cli`, `open_clip`, or similar Hugging Face download flows.
+- If the required asset already exists locally or the tool supports an explicit local file path, prefer the local file over re-downloading it.
