@@ -66,6 +66,12 @@
         "mid_y": 6.0,
         "mid_z": 2.0,
         "traj_period": 8.0
+      },
+      "eval_out_jsons": {
+        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_j10_line_nodes_a.json",
+        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_predicted_depth_geometry/mj_node01_j10_line_nodes_a.json",
+        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_fused_geometry/mj_node01_j10_line_nodes_a.json",
+        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v1/gt_upper_bound/mj_node01_j10_line_nodes_a.json"
       }
     },
     {
@@ -108,6 +114,12 @@
         "traj_center": "0 6 2",
         "traj_radius": 1.0,
         "traj_period": 6.0
+      },
+      "eval_out_jsons": {
+        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_j10_circle_xz_b.json",
+        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_predicted_depth_geometry/mj_node01_j10_circle_xz_b.json",
+        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_fused_geometry/mj_node01_j10_circle_xz_b.json",
+        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v1/gt_upper_bound/mj_node01_j10_circle_xz_b.json"
       }
     },
     {
@@ -153,6 +165,12 @@
         "mid_z": 2.0,
         "traj_period": 8.0,
         "notes": "Use the ASCII-safe uav1 asset alias and run from D:\\grad_project_ascii\\mvp-demo on Windows."
+      },
+      "eval_out_jsons": {
+        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_uav1_line_nodes_a.json",
+        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_predicted_depth_geometry/mj_node01_uav1_line_nodes_a.json",
+        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_fused_geometry/mj_node01_uav1_line_nodes_a.json",
+        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v1/gt_upper_bound/mj_node01_uav1_line_nodes_a.json"
       }
     },
     {
@@ -196,6 +214,12 @@
         "traj_radius": 1.0,
         "traj_period": 6.0,
         "notes": "Use the ASCII-safe uav1 asset alias and run from D:\\grad_project_ascii\\mvp-demo on Windows."
+      },
+      "eval_out_jsons": {
+        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_uav1_circle_xz_b.json",
+        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_predicted_depth_geometry/mj_node01_uav1_circle_xz_b.json",
+        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_fused_geometry/mj_node01_uav1_circle_xz_b.json",
+        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v1/gt_upper_bound/mj_node01_uav1_circle_xz_b.json"
       }
     },
     {
@@ -241,6 +265,12 @@
         "mid_z": 2.0,
         "traj_period": 8.0,
         "notes": "Use the verified plain-material DJI Mavic scene and run from D:\\grad_project_ascii\\mvp-demo."
+      },
+      "eval_out_jsons": {
+        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_dji_mavic_line_nodes_a.json",
+        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_predicted_depth_geometry/mj_node01_dji_mavic_line_nodes_a.json",
+        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_fused_geometry/mj_node01_dji_mavic_line_nodes_a.json",
+        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v1/gt_upper_bound/mj_node01_dji_mavic_line_nodes_a.json"
       }
     },
     {
@@ -284,7 +314,81 @@
         "traj_radius": 1.0,
         "traj_period": 6.0,
         "notes": "Use the verified plain-material DJI Mavic scene and run from D:\\grad_project_ascii\\mvp-demo."
+      },
+      "eval_out_jsons": {
+        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_dji_mavic_circle_xz_b.json",
+        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_predicted_depth_geometry/mj_node01_dji_mavic_circle_xz_b.json",
+        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_fused_geometry/mj_node01_dji_mavic_circle_xz_b.json",
+        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v1/gt_upper_bound/mj_node01_dji_mavic_circle_xz_b.json"
       }
     }
-  ]
+  ],
+  "analysis_runs": [
+    "gt_upper_bound"
+  ],
+  "comparison_artifacts": {
+    "summary_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/branch_comparison_summary.json",
+    "summary_md": "mvp-demo/output/evals/iciscae_node01_uav_v1/branch_comparison_summary.md"
+  },
+  "branch_configs": {
+    "rgb_only": {
+      "official_result_line": true,
+      "mask_subdir": "masks",
+      "depth_subdir": "depth",
+      "tracklets_rel": "tracks/tracklets.json",
+      "embeddings_subdir": "embeddings",
+      "rgb_backend": "clip",
+      "geo_backend": "none",
+      "result_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/all_queries_vs_all_scenes.json"
+    },
+    "rgb_predicted_depth_geometry": {
+      "official_result_line": true,
+      "notes": "Weak geometry branch fixed to cam0 predicted depth + mask backprojection and open3d_fpfh.",
+      "cams": [
+        "cam0"
+      ],
+      "mask_subdir": "masks",
+      "depth_subdir": "depth",
+      "points_subdir": "recon/points_depth_cam0",
+      "tracklets_rel": "tracks_rgb_predicted_depth_geometry/tracklets.json",
+      "embeddings_subdir": "embeddings_rgb_predicted_depth_geometry",
+      "rgb_backend": "clip",
+      "geo_backend": "open3d_fpfh",
+      "result_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_predicted_depth_geometry/all_queries_vs_all_scenes.json"
+    },
+    "rgb_fused_geometry": {
+      "official_result_line": true,
+      "notes": "Strong geometry branch fixed to fused 3-camera predicted depth + mask point clouds and open3d_fpfh.",
+      "cams": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ],
+      "mask_subdir": "masks",
+      "depth_subdir": "depth",
+      "points_subdir": "recon/points_fused",
+      "tracklets_rel": "tracks_rgb_fused_geometry/tracklets.json",
+      "embeddings_subdir": "embeddings_rgb_fused_geometry",
+      "rgb_backend": "clip",
+      "geo_backend": "open3d_fpfh",
+      "result_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_fused_geometry/all_queries_vs_all_scenes.json"
+    },
+    "gt_upper_bound": {
+      "official_result_line": false,
+      "notes": "Upper-bound analysis only: CLIP + fused geometry with masks_gt + depth_gt.",
+      "cams": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ],
+      "mask_subdir": "masks_gt",
+      "depth_subdir": "depth_gt",
+      "points_subdir": "recon/points_fused_gt",
+      "tracklets_rel": "tracks_gt_upper_bound/tracklets.json",
+      "embeddings_subdir": "embeddings_gt_upper_bound",
+      "rgb_backend": "clip",
+      "geo_backend": "open3d_fpfh",
+      "result_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/gt_upper_bound/all_queries_vs_all_scenes.json"
+    }
+  }
 }

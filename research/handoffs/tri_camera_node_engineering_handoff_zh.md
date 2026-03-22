@@ -170,20 +170,65 @@ python scripts/extract_node_track_embeddings.py \
   --geo_backend none
 ```
 
-如果已经完成多相机点云融合：
+如果要做 branch-specific 几何分支，先把点云写到独立子目录，避免覆盖正式 `RGB-only`：
 
 ```bash
 python scripts/recon_fuse_depth_points.py \
   --scene_dir data/nodes/node01/scenes/<scene_id> \
   --depth_subdir depth \
-  --mask_subdir masks
+  --mask_subdir masks \
+  --out_subdir recon/points_fused
+```
+
+`RGB + predicted-depth geometry`（当前冻结为 `cam0 + open3d_fpfh`）：
+
+```bash
+python scripts/recon_fuse_depth_points.py \
+  --scene_dir data/nodes/node01/scenes/<scene_id> \
+  --cams cam0 \
+  --depth_subdir depth \
+  --mask_subdir masks \
+  --out_subdir recon/points_depth_cam0
+```
+
+```bash
+python scripts/build_node_tracklets.py \
+  --scene_dir data/nodes/node01/scenes/<scene_id> \
+  --mask_subdir masks \
+  --depth_subdir depth \
+  --points_subdir recon/points_depth_cam0 \
+  --out tracks_rgb_predicted_depth_geometry/tracklets.json \
+  --min_timestamps 5
 ```
 
 ```bash
 python scripts/extract_node_track_embeddings.py \
   --scene_dir data/nodes/node01/scenes/<scene_id> \
+  --tracklets tracks_rgb_predicted_depth_geometry/tracklets.json \
+  --out_dir embeddings_rgb_predicted_depth_geometry \
   --rgb_backend clip \
-  --geo_backend radial_hist
+  --geo_backend open3d_fpfh
+```
+
+`RGB + fused geometry`（当前冻结为三相机融合 + `open3d_fpfh`）：
+
+```bash
+python scripts/build_node_tracklets.py \
+  --scene_dir data/nodes/node01/scenes/<scene_id> \
+  --mask_subdir masks \
+  --depth_subdir depth \
+  --points_subdir recon/points_fused \
+  --out tracks_rgb_fused_geometry/tracklets.json \
+  --min_timestamps 5
+```
+
+```bash
+python scripts/extract_node_track_embeddings.py \
+  --scene_dir data/nodes/node01/scenes/<scene_id> \
+  --tracklets tracks_rgb_fused_geometry/tracklets.json \
+  --out_dir embeddings_rgb_fused_geometry \
+  --rgb_backend clip \
+  --geo_backend open3d_fpfh
 ```
 
 ### 5.4 做一次 retrieval
@@ -194,7 +239,17 @@ python scripts/eval_node_track_retrieval.py \
   --gallery_scene_dir data/nodes/node01/scenes/<gallery_scene_id> \
   --exclude_same_track_id \
   --exclude_same_scene \
+  --embeddings_subdir embeddings_rgb_fused_geometry \
   --out output/evals/<benchmark_id>/<run_name>.json
+```
+
+如果要批量复现实验矩阵，可直接使用：
+
+```bash
+python scripts/run_iciscae_branch_eval.py --branch rgb_predicted_depth_geometry
+python scripts/run_iciscae_branch_eval.py --branch rgb_fused_geometry
+python scripts/run_iciscae_branch_eval.py --branch gt_upper_bound
+python scripts/summarize_iciscae_branch_comparison.py
 ```
 
 ## 6. 节点结构验证

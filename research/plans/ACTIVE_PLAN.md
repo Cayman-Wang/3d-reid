@@ -1,11 +1,12 @@
 # ACTIVE_PLAN
 
 goal: 先用 MuJoCo 在 node01 上完成 UAV/aircraft 的 single-node、cross-scene、track-level 3D-aware retrieval benchmark，作为 ICISCAE 小论文；再在同一数据契约上扩展到 cross-node 与真实三相机迁移，作为毕业论文主线。
-current_milestone: M1 第三个飞行目标落地与 node01 正式 3x2 benchmark 采集
+current_milestone: M5 ICISCAE 收口：三组结果 + GT upper-bound + 论文草稿
 must_read:
   - research/plans/tri_camera_node_3d_aware_reid/master_plan_zh.md
   - research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v1.json
   - research/handoffs/tri_camera_node_engineering_handoff_zh.md
+  - research/reviews/iciscae_week_closure_2026_03_29_zh.md
 locked_decisions:
   - 研究主线固定为“三相机节点级 3D-aware track retrieval”，YOLO 门控 + 3DGS 仅保留为辅助 demo。
   - ICISCAE 小论文目标域固定为 UAV/aircraft；当前不再做人形 benchmark。
@@ -19,8 +20,11 @@ locked_decisions:
   - 正式 scene 协议固定为每个 identity 两条轨迹：line_nodes 和 circle_xz；split_role 统一为 both。
   - 正式检索评测默认开启 exclude_same_track_id 和 exclude_same_scene；研究目标矩阵保持 RGB-only / RGB + predicted-depth geometry / RGB + fused geometry，但工程顺序先跑 RGB-only，再补两条几何支路。
   - 当前小论文结果不得把 MuJoCo GT 作为主链输入；现有基于 masks_gt/depth_gt 跑通的 scene 仅作为 proof-of-pipeline 和 upper-bound 证据。
+  - `RGB + predicted-depth geometry` 的当前冻结实现固定为 `cam0` predicted `depth + mask` 回投点云，`points_subdir = recon/points_depth_cam0`，`geo_backend = open3d_fpfh`。
+  - `RGB + fused geometry` 的当前冻结实现固定为三相机 predicted `depth + mask` 融合点云，`points_subdir = recon/points_fused`，`geo_backend = open3d_fpfh`。
+  - `GT upper-bound` 只作为分析线，固定为 `masks_gt + depth_gt + fused geometry`，输出到 `recon/points_fused_gt` 与 `mvp-demo/output/evals/iciscae_node01_uav_v1/gt_upper_bound/`。
   - 权威研究文档统一收口到 research；mvp-demo 仅保留运行入口与资产说明。
-next_action: 按 manifest 验证 dji_mavic 场景可加载，并为 j10 / uav1 / dji_mavic 采集 node01 的 6 个正式 scene（显式 scene_id、显式 identity_id），随后补齐 predicted depth、predicted masks 和 RGB-only 首轮评测结果。
+next_action: 基于 `research/reviews/iciscae_week_closure_2026_03_29_zh.md` 收口小论文正文，重点解释“geometry 分支当前未优于 RGB-only、GT upper-bound 也未显著提升”的误差归因；若继续做实验，只优先重审 descriptor / fusion 设计，不再扩 scene 或提前切到 cross-node。
 out_of_scope:
   - 多目标关联与多实例同时检索
   - dynamic 3DGS 作为当前主线方法
@@ -30,4 +34,4 @@ out_of_scope:
   - 不把 cross-node retrieval 或真实节点迁移作为当前小论文成功条件
   - 不把组会阶段文档并入主线 research 文档
 latest_retrospective: none
-last_updated: 2026-03-16
+last_updated: 2026-03-29
