@@ -14,11 +14,11 @@ def _l2norm_rows(x: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     return x / (norms + eps)
 
 
-def _load_scene_embeddings(scene_dir: Path) -> tuple[np.ndarray, list[dict]]:
-    emb_path = scene_dir / "embeddings" / "tracks.npy"
-    meta_path = scene_dir / "embeddings" / "tracks_meta.json"
+def _load_scene_embeddings(scene_dir: Path, embeddings_subdir: str) -> tuple[np.ndarray, list[dict]]:
+    emb_path = scene_dir / str(embeddings_subdir) / "tracks.npy"
+    meta_path = scene_dir / str(embeddings_subdir) / "tracks_meta.json"
     if not emb_path.exists() or not meta_path.exists():
-        raise SystemExit(f"Missing embeddings in scene: {scene_dir}")
+        raise SystemExit(f"Missing embeddings in scene: {scene_dir} (subdir={embeddings_subdir})")
     embs = np.load(str(emb_path)).astype(np.float32)
     meta = json.loads(meta_path.read_text(encoding="utf-8"))
     if not isinstance(meta, list):
@@ -48,6 +48,7 @@ def main() -> None:
     ap.add_argument("--topk", default=5, type=int)
     ap.add_argument("--exclude_same_track_id", action="store_true")
     ap.add_argument("--exclude_same_scene", action="store_true")
+    ap.add_argument("--embeddings_subdir", default="embeddings", type=str)
     ap.add_argument("--out", default="", type=str, help="Optional results JSON path")
     args = ap.parse_args()
 
@@ -61,14 +62,14 @@ def main() -> None:
     q_embs_all: list[np.ndarray] = []
     q_meta_all: list[dict] = []
     for scene_dir in q_scenes:
-        embs, meta = _load_scene_embeddings(scene_dir)
+        embs, meta = _load_scene_embeddings(scene_dir, embeddings_subdir=str(args.embeddings_subdir))
         q_embs_all.append(_l2norm_rows(embs))
         q_meta_all.extend(meta)
 
     g_embs_all: list[np.ndarray] = []
     g_meta_all: list[dict] = []
     for scene_dir in g_scenes:
-        embs, meta = _load_scene_embeddings(scene_dir)
+        embs, meta = _load_scene_embeddings(scene_dir, embeddings_subdir=str(args.embeddings_subdir))
         g_embs_all.append(_l2norm_rows(embs))
         g_meta_all.extend(meta)
 
@@ -142,6 +143,7 @@ def main() -> None:
         all_results.append(result)
 
     summary = {
+        "embeddings_subdir": str(args.embeddings_subdir),
         "num_queries": len(q_meta_all),
         "num_gallery": len(g_meta_all),
         "metric_queries": metric_queries,

@@ -44,7 +44,23 @@ def _read_mask_u8(path: Path) -> np.ndarray:
     except Exception as e:  # pragma: no cover
         raise SystemExit(f"Missing dependency: cv2 (opencv-python). Error: {e!r}")
 
-    mask = cv2.imread(str(path), cv2.IMREAD_GRAYSCALE)
+    path_str = str(path)
+    if not path_str.isascii():
+        try:
+            data = np.fromfile(path_str, dtype=np.uint8)
+            mask = cv2.imdecode(data, cv2.IMREAD_GRAYSCALE)
+        except Exception:
+            mask = None
+        if mask is not None:
+            return np.asarray(mask, dtype=np.uint8)
+
+    mask = cv2.imread(path_str, cv2.IMREAD_GRAYSCALE)
+    if mask is None:
+        try:
+            data = np.fromfile(path_str, dtype=np.uint8)
+            mask = cv2.imdecode(data, cv2.IMREAD_GRAYSCALE)
+        except Exception:
+            mask = None
     if mask is None:
         raise SystemExit(f"Failed to read mask image: {path}")
     return np.asarray(mask, dtype=np.uint8)
@@ -229,6 +245,12 @@ def main() -> None:
         help='Optional single timestamp stem to process (e.g. "000000123456").',
     )
     ap.add_argument("--seed", default=0, type=int, help="RNG seed for subsampling.")
+    ap.add_argument(
+        "--out_subdir",
+        default="recon/points_fused",
+        type=str,
+        help='Relative output subdir under scene_dir. Default: "recon/points_fused".',
+    )
     ap.add_argument("--write_ply", action="store_true", help="Also write recon/points_fused_ply/<ts>.ply (debug).")
     args = ap.parse_args()
 
@@ -281,8 +303,10 @@ def main() -> None:
     if not stems:
         raise SystemExit("No timestamps found to process (empty depth folders?)")
 
-    out_dir = scene_dir / "recon" / "points_fused"
-    ply_dir = scene_dir / "recon" / "points_fused_ply"
+    out_rel = Path(str(args.out_subdir))
+    out_dir = out_rel if out_rel.is_absolute() else (scene_dir / out_rel)
+    ply_rel = out_rel.parent / f"{out_rel.name}_ply"
+    ply_dir = ply_rel if ply_rel.is_absolute() else (scene_dir / ply_rel)
     _ensure_dir(out_dir)
     if args.write_ply:
         _ensure_dir(ply_dir)
@@ -357,6 +381,7 @@ def main() -> None:
         "scene_dir": str(scene_dir),
         "rig_json": str(rig_path),
         "cams": cams,
+        "out_subdir": str(args.out_subdir),
         "depth_subdir": str(args.depth_subdir),
         "mask_subdir": str(args.mask_subdir),
         "depth_mode": str(args.depth_mode),
