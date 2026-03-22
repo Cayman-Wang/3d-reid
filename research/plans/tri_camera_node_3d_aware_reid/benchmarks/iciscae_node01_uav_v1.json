@@ -34,14 +34,29 @@
       "depth_source": "depth_anything_v2",
       "mask_layout": "flat",
       "sam2_camera_boxes": {
-        "cam0": null,
-        "cam1": null,
-        "cam2": null
+        "cam0": [
+          490,
+          300,
+          660,
+          720
+        ],
+        "cam1": [
+          600,
+          330,
+          800,
+          720
+        ],
+        "cam2": [
+          600,
+          270,
+          800,
+          640
+        ]
       },
       "min_valid_timestamps": 5,
       "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_j10_line_nodes_a.json",
       "capture_plan": {
-        "status": "planned",
+        "status": "completed",
         "mjcf": "mvp-demo/assets/scene/mujoco_humanoid_3cam_node_parallel_j10.xml",
         "target_body": "target",
         "identity_id": "j10",
@@ -63,14 +78,29 @@
       "depth_source": "depth_anything_v2",
       "mask_layout": "flat",
       "sam2_camera_boxes": {
-        "cam0": null,
-        "cam1": null,
-        "cam2": null
+        "cam0": [
+          490,
+          300,
+          660,
+          720
+        ],
+        "cam1": [
+          600,
+          330,
+          800,
+          720
+        ],
+        "cam2": [
+          600,
+          270,
+          800,
+          640
+        ]
       },
       "min_valid_timestamps": 5,
       "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_j10_circle_xz_b.json",
       "capture_plan": {
-        "status": "planned",
+        "status": "completed",
         "mjcf": "mvp-demo/assets/scene/mujoco_humanoid_3cam_node_parallel_j10.xml",
         "target_body": "target",
         "identity_id": "j10",
@@ -90,14 +120,29 @@
       "depth_source": "depth_anything_v2",
       "mask_layout": "flat",
       "sam2_camera_boxes": {
-        "cam0": null,
-        "cam1": null,
-        "cam2": null
+        "cam0": [
+          490,
+          300,
+          660,
+          720
+        ],
+        "cam1": [
+          600,
+          330,
+          800,
+          720
+        ],
+        "cam2": [
+          600,
+          270,
+          800,
+          640
+        ]
       },
       "min_valid_timestamps": 5,
       "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_uav1_line_nodes_a.json",
       "capture_plan": {
-        "status": "planned",
+        "status": "completed",
         "mjcf": "mvp-demo/assets/scene/mujoco_humanoid_uav1_3cam_node_parallel.xml",
         "target_body": "target",
         "identity_id": "uav1",
@@ -107,7 +152,7 @@
         "mid_y": 6.0,
         "mid_z": 2.0,
         "traj_period": 8.0,
-        "notes": "On Windows, the current Chinese asset directory may require an ASCII alias or Linux/WSL execution."
+        "notes": "Use the ASCII-safe uav1 asset alias and run from D:\\grad_project_ascii\\mvp-demo on Windows."
       }
     },
     {
@@ -120,14 +165,29 @@
       "depth_source": "depth_anything_v2",
       "mask_layout": "flat",
       "sam2_camera_boxes": {
-        "cam0": null,
-        "cam1": null,
-        "cam2": null
+        "cam0": [
+          490,
+          300,
+          660,
+          720
+        ],
+        "cam1": [
+          600,
+          330,
+          800,
+          720
+        ],
+        "cam2": [
+          600,
+          270,
+          800,
+          640
+        ]
       },
       "min_valid_timestamps": 5,
       "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_uav1_circle_xz_b.json",
       "capture_plan": {
-        "status": "planned",
+        "status": "completed",
         "mjcf": "mvp-demo/assets/scene/mujoco_humanoid_uav1_3cam_node_parallel.xml",
         "target_body": "target",
         "identity_id": "uav1",
@@ -135,7 +195,7 @@
         "traj_center": "0 6 2",
         "traj_radius": 1.0,
         "traj_period": 6.0,
-        "notes": "On Windows, the current Chinese asset directory may require an ASCII alias or Linux/WSL execution."
+        "notes": "Use the ASCII-safe uav1 asset alias and run from D:\\grad_project_ascii\\mvp-demo on Windows."
       }
     },
     {
@@ -148,14 +208,29 @@
       "depth_source": "depth_anything_v2",
       "mask_layout": "flat",
       "sam2_camera_boxes": {
-        "cam0": null,
-        "cam1": null,
-        "cam2": null
+        "cam0": [
+          490,
+          300,
+          660,
+          720
+        ],
+        "cam1": [
+          600,
+          330,
+          800,
+          720
+        ],
+        "cam2": [
+          600,
+          270,
+          800,
+          640
+        ]
       },
       "min_valid_timestamps": 5,
       "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_dji_mavic_line_nodes_a.json",
       "capture_plan": {
-        "status": "planned",
+        "status": "completed",
         "mjcf": "mvp-demo/assets/scene/mujoco_humanoid_dji_mavic_3cam_node_parallel.xml",
         "target_body": "target",
         "identity_id": "dji_mavic",
@@ -165,7 +240,7 @@
         "mid_y": 6.0,
         "mid_z": 2.0,
         "traj_period": 8.0,
-        "notes": "Use the plain-material DJI Mavic scene added in this plan implementation."
+        "notes": "Use the verified plain-material DJI Mavic scene and run from D:\\grad_project_ascii\\mvp-demo."
       }
     },
     {
@@ -178,14 +253,29 @@
       "depth_source": "depth_anything_v2",
       "mask_layout": "flat",
       "sam2_camera_boxes": {
-        "cam0": null,
-        "cam1": null,
-        "cam2": null
+        "cam0": [
+          490,
+          300,
+          660,
+          720
+        ],
+        "cam1": [
+          600,
+          330,
+          800,
+          720
+        ],
+        "cam2": [
+          600,
+          270,
+          800,
+          640
+        ]
       },
       "min_valid_timestamps": 5,
       "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_dji_mavic_circle_xz_b.json",
       "capture_plan": {
-        "status": "planned",
+        "status": "completed",
         "mjcf": "mvp-demo/assets/scene/mujoco_humanoid_dji_mavic_3cam_node_parallel.xml",
         "target_body": "target",
         "identity_id": "dji_mavic",
@@ -193,7 +283,7 @@
         "traj_center": "0 6 2",
         "traj_radius": 1.0,
         "traj_period": 6.0,
-        "notes": "Use the plain-material DJI Mavic scene added in this plan implementation."
+        "notes": "Use the verified plain-material DJI Mavic scene and run from D:\\grad_project_ascii\\mvp-demo."
       }
     }
   ]

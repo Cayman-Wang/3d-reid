@@ -6,118 +6,131 @@
 | --- | --- | --- |
 | `M0` 文档与协议冻结 | GREEN | 已完成 |
 | `2026-03-16` 准备任务 | GREEN | 已完成，可关单 |
-| `2026-03-17` `j10` 正式采集与下游 smoke | GREEN | 已于 `2026-03-22` 完成，两个正式 scene 的 `capture + tracklets + embeddings smoke` 均已通过 |
-| 正式 `6-scene` 数据落盘 | YELLOW | 已完成 `j10` 的 `2/6`，其余 `uav1 / dji_mavic` 仍未完成 |
-| predicted `depth` / `masks` | RED | 尚未开始正式批量产出 |
-| `RGB-only (CLIP + no geometry)` 正式评测 | RED | 尚未产出正式结果目录 |
-| 当前仓库内可展示原型 | YELLOW | 已有 proof-of-pipeline，但不能当正式 benchmark 结果 |
+| 正式 `6-scene` 数据落盘 | GREEN | `j10 / uav1 / dji_mavic` 的 `6` 个正式 scene 已全部生成 |
+| predicted `depth` / flat `masks` | GREEN | `6` 个正式 scene 已补齐 `cams/cam*/depth/` 与 `cams/cam*/masks/` |
+| `RGB-only (CLIP + no geometry)` 正式评测 | GREEN | 正式 JSON 已落盘到 `mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/` |
+| `RGB-only` 首轮结果质量 | YELLOW | 已形成正式基线，但 `all_formal_queries.json` 仅达 `mAP=0.6389`、`recall@1=0.3333` |
+| 当前仓库内可展示汇报材料 | GREEN | `6` 个正式 scene 均已生成 `presentation_assets/`，周收口文档已补齐 |
 
 一句话判断：
 
-`2026-03-16` 的准备性任务已经完成，`2026-03-17` 的 `j10` 两条正式 scene 已于 `2026-03-22` 在 ASCII 工作目录下完成 `capture + tracklets + embeddings smoke` 全链路验证；当前可以继续推进 `2026-03-18` 的 `uav1` 两条正式 scene 采集。
+`2026-03-16` 到 `2026-03-22` 这周的硬交付已经全部落盘，但当前 `RGB-only` 只能视为正式 baseline，不能直接作为“检索效果已经足够好”的结论；真正的误检索集中在 `uav1 / dji_mavic` 之间，下一步应优先补几何分支而不是继续重复同口径复跑。
 
 ## 2. 当前里程碑对照
 
-- 当前权威里程碑仍是 `M1 第三个飞行目标落地与 node01 正式 3x2 benchmark 采集`。
-- 正式 benchmark 已冻结为 `3 identities x 2 scenes`，身份集合固定为 `j10 / uav1 / dji_mavic`。
-- 截至 `2026-03-22`，manifest 中定义的 `6` 个正式 scene 目录已实际落盘 `2` 个，分别是：
+- 当前权威 benchmark 仍是 `node01` 的 `single-node, cross-scene, track-level retrieval`。
+- 正式身份集合固定为 `j10 / uav1 / dji_mavic`，正式 scene 已全部落盘：
   - `mj_node01_j10_line_nodes_a`
   - `mj_node01_j10_circle_xz_b`
-- 仓库内已有若干历史 scene，可证明链路跑通，但它们仍带有以下问题：
-  - scene 名不是正式命名；
-  - `identity_id` 仍出现 `person_a`；
-  - 已有 embedding 口径仍包含 `hist + radial_hist`；
-  - 有的 scene 仍依赖 `depth_gt / masks_gt`。
+  - `mj_node01_uav1_line_nodes_a`
+  - `mj_node01_uav1_circle_xz_b`
+  - `mj_node01_dji_mavic_line_nodes_a`
+  - `mj_node01_dji_mavic_circle_xz_b`
+- 每个正式 scene 当前都同时具备：
+  - 三路 `cams/cam*/frames/`，每路 `90` 帧
+  - `calib/rig.json`
+  - `frame_times.csv`
+  - `capture_meta.target.identity_id`
+  - predicted `cams/cam*/depth/*.npy`
+  - flat `cams/cam*/masks/*.png`
+  - `tracks/tracklets.json`
+  - `embeddings/tracks.npy`
+  - `presentation_assets/`
 
-## 3. `2026-03-16` 任务检查
+## 3. `2026-03-18` 到 `2026-03-20` 的执行结论
 
-| `2026-03-16` 任务 | 期望结果 | 实际检查 | 状态 |
-| --- | --- | --- | --- |
-| 确认 `j10 / uav1 / dji_mavic` 三个资产可加载路径 | 三个 MJCF 都有稳定可用的运行路径 | 本次复验中，三个 MJCF 在 `D:\\grad_project_ascii\\mvp-demo` 下均可被 `MuJoCo 3.6.0` 成功加载；`uav1` 场景已改用 `uav1_ascii` 资产别名 | GREEN |
-| 确认本周 `RGB-only` 命令口径 | `extract_node_track_embeddings.py` 支持 `--rgb_backend clip --geo_backend none`，并且环境可导入 `open_clip` | 脚本参数已支持 `clip / none`；`mvp_demo` 环境已复验可导入 `torch 2.10.0+cu128`、`mujoco 3.6.0`、`open_clip 3.3.0` | GREEN |
-| 冻结 `6` 条正式 scene 命名与采集命令 | `scene_id`、`identity_id`、轨迹参数全部固定 | 周计划文档已经写全 `6` 条命令；scene 名与 manifest 一致 | GREEN |
-| 输出风险清单 | 至少明确路径、资产稳定性、SAM2/depth、CLIP 环境风险 | 周计划文档已记录风险与回退策略 | GREEN |
-| 明确 `uav1` 是否需要 ASCII alias 或 WSL | 给出唯一执行口径 | 结论已固定为：使用 `ASCII alias + ASCII junction`，当前不需要切到 `WSL` | GREEN |
+### 3.1 正式采集已封闭
 
-### 3.1 关键证据
+- 已在 `D:\grad_project_ascii\mvp-demo`、`mvp_demo` 环境下补完 `uav1` 与 `dji_mavic` 的 `4` 条正式采集命令。
+- 截至 `2026-03-22`，正式 `6-scene` 已全部通过采集后检查：
+  - `capture_meta.target.identity_id` 正确；
+  - 三路 `frames/` 齐全且每路 `90` 帧；
+  - `rig.json` 与 `frame_times.csv` 齐全；
+  - scene 名与 manifest 一致。
+- 正式采集阶段已关闭，不再存在“`6-scene` 是否落齐”的未决问题。
 
-- 权威主计划和下一步动作已冻结在 `research/plans/ACTIVE_PLAN.md`。
-- 正式 `6-scene` manifest 已冻结在 `research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v1.json`。
-- `uav1` ASCII alias 已写入 `mvp-demo/assets/scene/mujoco_humanoid_uav1_3cam_node_parallel.xml`。
-- `uav1` smoke capture 已存在于 `mvp-demo/tmp/smoke_capture/node01/scenes/smoke_uav1_ascii/`，其 `capture_meta.json` 中 `identity_id = uav1`。
-- `2026-03-16` 的执行记录、风险清单和 `6` 条正式命令已收口到 `组会思路/26-03-16_iciscae_week_execution_schedule.md`。
+### 3.2 predicted 输入已补齐
 
-### 3.2 对 `2026-03-16` 的结论
+- `Depth Anything V2 Small` 已通过 `HF_ENDPOINT=https://hf-mirror.com` 成功下载并运行，`6` 个正式 scene 的三路相机各生成 `90` 张 predicted depth。
+- `SAM2.1 hiera tiny` checkpoint 已下载到 `mvp-demo/third_party/sam2/checkpoints/sam2.1_hiera_tiny.pt`。
+- 首轮 prompt box 因为框到了错误的小目标而被废弃；当前正式链路统一冻结以下三路 prompt box，并已回填到 benchmark manifest：
+  - `cam0 = [490, 300, 660, 720]`
+  - `cam1 = [600, 330, 800, 720]`
+  - `cam2 = [600, 270, 800, 640]`
+- 为满足正式 benchmark 的 flat mask 约束，当前保留 `mvp-demo/scripts/flatten_node_sam2_masks.py`，把 `obj_000/<ts>.png` 展平为 `cams/cam*/masks/<ts>.png`。
+- 当前 `6` 个正式 scene 的每路相机均已具备：
+  - `depth = 90/90`
+  - `flat masks = 90/90`
+  - `nonempty masks = 90/90`
+- 当前正式主链已不再依赖 `masks_gt / depth_gt`；GT 目录只保留为 upper-bound 与排错证据。
 
-- 从“准备任务是否完成”这个角度看：`已完成`。
-- 从“正式数据是否已经开始落盘”这个角度看：`已开始`，当前已完成 `j10` 的 `2` 条正式 scene。
+### 3.3 Windows 路径兼容性已收口
 
-## 4. `2026-03-17` 任务执行结论
+- 已补强以下脚本的 Windows Unicode 路径兼容性：
+  - `mvp-demo/scripts/build_node_tracklets.py`
+  - `mvp-demo/scripts/extract_node_track_embeddings.py`
+  - `mvp-demo/scripts/export_node_presentation_assets.py`
+  - `mvp-demo/scripts/run_node_sam2_masks.py`
+- 当前正式链路在 ASCII 工作目录下可稳定执行，不需要切到 WSL。
 
-结论：`已完成，且已达到完整通过标准`。
+## 4. `2026-03-21` 正式评测结果
 
-### 4.1 本次执行结果
+### 4.1 全量 summary
 
-- 已在 `D:\\grad_project_ascii\\mvp-demo` 工作目录、`mvp_demo` 环境下执行冻结命令，生成：
-  - `mvp-demo/data/nodes/node01/scenes/mj_node01_j10_line_nodes_a/`
-  - `mvp-demo/data/nodes/node01/scenes/mj_node01_j10_circle_xz_b/`
-- 两个 scene 的 `capture_meta.target.identity_id` 均为 `j10`。
-- 两个 scene 的 `calib/rig.json` 与 `frame_times.csv` 均已生成。
-- 两个 scene 三路相机 `cams/cam*/frames/` 均已生成，当前每路相机各有 `90` 帧。
-- 使用 `masks_gt + depth_gt` 做 GT smoke 时，`build_node_tracklets.py` 已成功为两个 scene 各生成 `1` 条 track，`identity_id` 均为 `j10`，`timestamp_stems` 数量均为 `90`。
-- `extract_node_track_embeddings.py --rgb_backend clip --geo_backend none` 也已在两个 scene 上成功跑通，产出 `embeddings/tracks.npy` 与 `embeddings/tracks_meta.json`，并确认元信息为 `rgb_backend = clip`、`geo_backend = none`。
+- 正式评测文件已落盘：
+  - 单 query 文件：`mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_*.json`
+  - 全量汇总：`mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/all_formal_queries.json`
+- `all_formal_queries.json` 的 summary 为：
+  - `num_queries = 6`
+  - `num_gallery = 6`
+  - `metric_queries = 6`
+  - `mAP = 0.6389`
+  - `recall@1 = 0.3333`
+  - `recall@5 = 1.0000`
+  - `recall@10 = 1.0000`
 
-### 4.2 仍需保持的执行约束
+### 4.2 每条正式 query 的结果
 
-1. 工作目录必须使用 `D:\\grad_project_ascii\\mvp-demo`，不要直接在中文仓库路径下跑 MuJoCo 正式采集。
-2. 后续 `uav1 / dji_mavic` 正式采集仍只能使用 manifest 冻结的正式 scene 名。
-3. `capture_meta.target.identity_id` 必须继续作为正式 benchmark 的身份权威来源，不能回退到 `person_a`。
-4. 后续正式结果仍不能用历史临时 scene 替代。
-5. 每次采集完成后仍需立刻检查：
-   - 三路 `frames/`
-   - `frame_times.csv`
-   - `calib/rig.json`
-   - `capture_meta.target.identity_id`
-
-## 5. 当前不能误判为“已完成”的事项
-
-以下事项截至 `2026-03-22` 仍不能算完成：
-
-- manifest 中 `6` 个正式 scene 目录仍未全部落齐；当前只完成 `j10` 的 `2` 个 scene。
-- `mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/` 尚未形成正式结果目录。
-- 当前仓库内检索结果仍是历史样例，不是正式 `RGB-only (CLIP + no geometry)` 结果。
-- 当前仓库内已有样例 scene 仍存在 `identity_id = person_a` 的旧口径。
-- 当前仓库内已有 embedding 结果仍可见 `rgb_backend = hist`、`geo_backend = radial_hist` 的旧实验配置。
-
-## 6. 建议的下一步
-
-最短路径已经从“执行 `2026-03-17` 的两条 `j10` 正式采集命令”切换为“继续推进 `2026-03-18` 的两条 `uav1` 正式采集命令”。下一步仍应沿同一检查模板收尾：
-
-1. `mj_node01_uav1_line_nodes_a/` 是否完整生成
-2. `mj_node01_uav1_circle_xz_b/` 是否完整生成
-3. 两个 scene 的 `capture_meta.target.identity_id` 是否都是 `uav1`
-4. 两个 scene 是否都能被后续 `build_node_tracklets.py` 正常识别
-5. 两个 scene 是否都能被 `extract_node_track_embeddings.py --rgb_backend clip --geo_backend none` 正常消费
-
-如果这五项都成立，就可以继续推进 `2026-03-19` 的 `dji_mavic` 两条正式 scene 采集。
-
-## 7. `2026-03-17` 实测验证结果
-
-本轮按 `2026-03-17` 验证方案对 `j10` 的两条正式 scene 做了实测复核，结果如下：
-
-| scene_id | identity_id | frames_per_cam | unique_timestamps | tracklets_ok | embeddings_ok | notes |
+| query_scene | identity_id | traj | mAP | recall@1 | top1_relevant | top1_track |
 | --- | --- | --- | --- | --- | --- | --- |
-| `mj_node01_j10_line_nodes_a` | `j10` | `90 / 90 / 90` | `90` | YES | YES | `rgb_backend=clip`, `geo_backend=none` |
-| `mj_node01_j10_circle_xz_b` | `j10` | `90 / 90 / 90` | `90` | YES | YES | `rgb_backend=clip`, `geo_backend=none` |
+| `mj_node01_j10_line_nodes_a` | `j10` | `line_nodes` | `1.0000` | `1.0000` | `YES` | `node01_mj_node01_j10_circle_xz_b` |
+| `mj_node01_j10_circle_xz_b` | `j10` | `circle_xz` | `1.0000` | `1.0000` | `YES` | `node01_mj_node01_j10_line_nodes_a` |
+| `mj_node01_uav1_line_nodes_a` | `uav1` | `line_nodes` | `0.5000` | `0.0000` | `NO` | `node01_mj_node01_dji_mavic_line_nodes_a` |
+| `mj_node01_uav1_circle_xz_b` | `uav1` | `circle_xz` | `0.5000` | `0.0000` | `NO` | `node01_mj_node01_dji_mavic_circle_xz_b` |
+| `mj_node01_dji_mavic_line_nodes_a` | `dji_mavic` | `line_nodes` | `0.5000` | `0.0000` | `NO` | `node01_mj_node01_uav1_line_nodes_a` |
+| `mj_node01_dji_mavic_circle_xz_b` | `dji_mavic` | `circle_xz` | `0.3333` | `0.0000` | `NO` | `node01_mj_node01_uav1_circle_xz_b` |
 
-补充结论：
+### 4.3 结果解释
 
-- 两个正式 scene 的目录名、`scene_id`、`target.identity_id`、轨迹类型都符合 `2026-03-17` 计划要求。
-- 两个 scene 都具备 `frames/`、`frame_times.csv`、`calib/rig.json`，且 `frame_times.csv` 都包含 `270` 行、`90` 个唯一时间戳、`3` 个相机。
-- 使用 `masks_gt + depth_gt` 做 GT smoke 时，`build_node_tracklets.py` 已成功为两个 scene 各生成 `1` 条 track，`identity_id` 均为 `j10`，`timestamp_stems` 数量均为 `90`。
-- `extract_node_track_embeddings.py --rgb_backend clip --geo_backend none` 已在两个 scene 上成功跑通；本次通过预先下载本地 CLIP 权重文件并显式传入 `--clip_pretrained`，规避了在线拉取 Hugging Face 权重的超时问题。
+- 当前 `RGB-only` 正式链路已经是可复现实验，不再是 smoke 样例。
+- `j10` 的两条 query 都能在跨 scene 检索中稳定回到同身份正样本，说明 baseline 至少具备最基本的跨轨迹识别能力。
+- 误检索集中在 `uav1 / dji_mavic` 之间，并且主要发生在相同轨迹形态下：
+  - `uav1_line_nodes_a -> dji_mavic_line_nodes_a`
+  - `uav1_circle_xz_b -> dji_mavic_circle_xz_b`
+  - `dji_mavic_line_nodes_a -> uav1_line_nodes_a`
+  - `dji_mavic_circle_xz_b -> uav1_circle_xz_b`（正确正样本已退到 `rank3`）
+- 这说明 `CLIP + no geometry` 能形成正式 baseline，但对外形接近的飞行器目标仍有明显混淆；下一轮实验应优先验证几何信息是否能够打破这类近邻混淆。
 
-因此：
+## 5. `2026-03-22` 汇报材料状态
 
-- 按“最低通过”标准，`2026-03-17` 已通过。
-- 按“完整通过”标准，`2026-03-17` 现也已通过。
+- `6` 个正式 scene 已全部导出 `presentation_assets/`，每个 scene 当前都有：
+  - `3` 张 `overview_*.png`
+  - `triview_video.mp4`
+  - `manifest.json`
+- 本周收口文档已生成：
+  - `research/reviews/iciscae_week_closure_2026_03_22_zh.md`
+- 当前可以直接用于导师汇报的材料包括：
+  - 正式 `6-scene` 清单
+  - predicted 输入完成证据
+  - `RGB-only` 正式结果表
+  - 案例图与三视图视频
+  - `uav1 / dji_mavic` 混淆的失败分析
+
+## 6. 下一步建议
+
+当前最短路径已经从“补齐正式 scene 与正式结果”切换为“冻结现有 baseline，并尽快补几何支路”。建议顺序如下：
+
+1. 直接使用 `research/reviews/iciscae_week_closure_2026_03_22_zh.md` 写 benchmark protocol、实验设置和结果分析。
+2. 在现有 `6-scene` benchmark 上优先推进 `rgb_predicted_depth_geometry`，验证 predicted depth 是否能缓解 `uav1 / dji_mavic` 的近形态混淆。
+3. 再进入 `rgb_fused_geometry`，把当前 `presentation_assets` 和失败案例直接复用到论文图表。
+4. 不建议继续重复当前 `CLIP + no geometry` 口径复跑，除非更换 backbone 或显著扩充 scene 多样性。

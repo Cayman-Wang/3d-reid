@@ -270,6 +270,19 @@ conda run -n mvp_demo python scripts/eval_node_track_retrieval.py `
 - 两个 scene 的命名完全匹配 manifest。
 - 若切换到 ASCII alias 或 WSL，命令和路径要被记录下来，后续可复现。
 
+执行记录（于 `2026-03-22` 补执行并补记，`2026-03-18` 任务已完成）：
+
+- 已在 `D:\grad_project_ascii\mvp-demo` 工作目录、`mvp_demo` 环境下执行冻结的两条 `uav1` 正式采集命令，生成：
+  - `mvp-demo/data/nodes/node01/scenes/mj_node01_uav1_line_nodes_a/`
+  - `mvp-demo/data/nodes/node01/scenes/mj_node01_uav1_circle_xz_b/`
+- 两个 scene 均已通过采集后检查：
+  - `capture_meta.target.identity_id == uav1`
+  - 三路 `cams/cam*/frames/` 各 `90` 帧
+  - `frame_times.csv` 已生成
+  - `calib/rig.json` 已生成
+- 本次执行未切到 `WSL`；继续沿用 `ASCII alias + ASCII junction` 的冻结口径即可稳定运行。
+- 结论：`2026-03-18` 的 `uav1` 正式采集任务可以关单，下一步推进 `2026-03-19` 的 `dji_mavic` 两条正式 scene。
+
 ### 2026-03-19
 
 目标：完成 `dji_mavic` 的两条正式 scene，并封闭正式采集阶段。
@@ -293,6 +306,21 @@ conda run -n mvp_demo python scripts/eval_node_track_retrieval.py `
 - 每个 scene 都有三路 `frames/`、`rig.json`、`frame_times.csv`。
 - 当天关闭“正式采集是否完成”这个问题，不把采集拖到后半周。
 
+执行记录（于 `2026-03-22` 补执行并补记，`2026-03-19` 任务已完成）：
+
+- 已在 `D:\grad_project_ascii\mvp-demo` 工作目录、`mvp_demo` 环境下执行冻结的两条 `dji_mavic` 正式采集命令，生成：
+  - `mvp-demo/data/nodes/node01/scenes/mj_node01_dji_mavic_line_nodes_a/`
+  - `mvp-demo/data/nodes/node01/scenes/mj_node01_dji_mavic_circle_xz_b/`
+- `dji_mavic` 本轮未触发 `big_dji` fallback；当前纯材质版 MJCF 可稳定完成正式采集。
+- 截至 `2026-03-22`，正式 `6-scene` 清单已全部落齐：
+  - `mj_node01_j10_line_nodes_a`
+  - `mj_node01_j10_circle_xz_b`
+  - `mj_node01_uav1_line_nodes_a`
+  - `mj_node01_uav1_circle_xz_b`
+  - `mj_node01_dji_mavic_line_nodes_a`
+  - `mj_node01_dji_mavic_circle_xz_b`
+- 结论：`2026-03-19` 的正式采集阶段已封闭，后续不再存在“正式 scene 是否落齐”的未决问题。
+
 ### 2026-03-20
 
 目标：把 `6` 个正式 scene 补成论文主链输入。
@@ -314,6 +342,25 @@ conda run -n mvp_demo python scripts/eval_node_track_retrieval.py `
 - 正式 benchmark 主链不再依赖 `masks_gt/` 和 `depth_gt/`。
 - 覆盖率不足的 scene 当天标记重跑。
 - `mask_layout` 保持为 `flat`。
+
+执行记录（于 `2026-03-22` 补执行并补记，`2026-03-20` 任务已完成）：
+
+- 已对正式 `6` 个 scene 全部补齐 predicted `depth` 与 predicted `masks`：
+  - predicted depth 使用 `Depth Anything V2 Small`
+  - predicted masks 使用 `SAM2.1 hiera tiny`
+- `Depth Anything V2` 的下载通过 `HF_ENDPOINT=https://hf-mirror.com` 成功解决 Hugging Face 直连超时问题。
+- `SAM2.1` checkpoint 已补到 `mvp-demo/third_party/sam2/checkpoints/sam2.1_hiera_tiny.pt`；首轮错误 prompt box 已废弃，当前正式 `6-scene` 统一冻结以下三路 prompt box，并已回填到 `research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v1.json`：
+  - `cam0 = [490, 300, 660, 720]`
+  - `cam1 = [600, 330, 800, 720]`
+  - `cam2 = [600, 270, 800, 640]`
+- 为满足正式 `flat masks` 协议，当前使用：
+  - `mvp-demo/scripts/flatten_node_sam2_masks.py`
+- 当前 `6` 个 scene 的每路相机均已具备：
+  - `cams/cam*/depth/` 下 `90` 张 `.npy`
+  - `cams/cam*/masks/` 下 `90` 张 flat `.png`
+  - `nonempty masks = 90/90`
+- 当前主链已切换为 `frames + masks + depth + rig.json + frame_times.csv`；`masks_gt / depth_gt` 只保留为 upper-bound 与排错用途。
+
 
 ### 2026-03-21
 
@@ -340,6 +387,34 @@ conda run -n mvp_demo python scripts/eval_node_track_retrieval.py `
 - 结果命名不再使用 `hist + radial_hist` smoke 口径。
 - 结果目录与 manifest 的 `eval_out_json` 保持一致。
 
+执行记录（于 `2026-03-22` 补执行并补记，`2026-03-21` 任务已完成）：
+
+- 已对正式 `6` 个 scene 统一执行：
+  - `build_node_tracklets.py --mask_subdir masks --depth_subdir depth --min_timestamps 5`
+  - `extract_node_track_embeddings.py --rgb_backend clip --geo_backend none`
+  - `eval_node_track_retrieval.py --exclude_same_track_id --exclude_same_scene`
+- 当前每个正式 scene 均已生成：
+  - `tracks/tracklets.json`
+  - `embeddings/tracks.npy`
+  - `embeddings/tracks_meta.json`
+- 正式 `RGB-only` 结果目录已落盘到：
+  - `mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/`
+- 全量汇总文件：
+  - `mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/all_formal_queries.json`
+- 当前首轮正式 summary 为：
+  - `mAP = 0.6389`
+  - `recall@1 = 0.3333`
+  - `recall@5 = 1.0000`
+  - `recall@10 = 1.0000`
+- `j10` 的两条 query 当前均能正确回到同身份跨 scene 正样本。
+- 当前最主要的误检索集中在 `uav1 / dji_mavic` 之间：
+  - `mj_node01_uav1_line_nodes_a -> top1 = node01_mj_node01_dji_mavic_line_nodes_a`
+  - `mj_node01_uav1_circle_xz_b -> top1 = node01_mj_node01_dji_mavic_circle_xz_b`
+  - `mj_node01_dji_mavic_line_nodes_a -> top1 = node01_mj_node01_uav1_line_nodes_a`
+  - `mj_node01_dji_mavic_circle_xz_b -> top1 = node01_mj_node01_uav1_circle_xz_b`（正确正样本已退到 `rank3`）
+- 结论：`2026-03-21` 的正式 `RGB-only` 结果已经形成，但它只能作为正式 baseline，不能直接当作“检索质量已经足够好”的结论；下一步必须用论文文字和几何分支去解释并缓解当前混淆。
+
+
 ### 2026-03-22
 
 目标：把本周实验转换成小论文可写材料。
@@ -363,6 +438,24 @@ conda run -n mvp_demo python scripts/eval_node_track_retrieval.py `
 
 - 形成一个可以给导师汇报的“本周已完成 / 下周要补”的包。
 - 不再只剩零散日志、命令输出和中间截图。
+
+执行记录（`2026-03-22` 当天已完成）：
+
+- 已为正式 `6` 个 scene 全部导出 `presentation_assets/`：
+  - 每个 scene 各有 `3` 张 `overview_*.png`
+  - 每个 scene 各有 `triview_video.mp4`
+  - 每个 scene 各有 `manifest.json`
+- 已生成周收口文档：
+  - `research/reviews/iciscae_week_closure_2026_03_22_zh.md`
+- 已更新本周状态板：
+  - `research/reviews/current_progress_board_2026_03_22_zh.md`
+- 当前可直接用于导师汇报的包已经具备：
+  - 正式 `6-scene` 清单
+  - predicted `masks/depth` 完成证据
+  - `RGB-only` 首轮结果表
+  - `presentation_assets` 案例图与三视图视频
+  - `uav1 / dji_mavic` 混淆的失败分析与后续改进方向
+- 结论：本周目标已经从“执行版周计划”收口成“可汇报、可写论文、可继续补几何支路”的完整包。
 
 ## 4. 周验收标准
 
