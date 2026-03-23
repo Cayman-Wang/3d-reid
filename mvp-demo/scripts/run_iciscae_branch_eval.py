@@ -8,7 +8,19 @@ import sys
 from pathlib import Path
 
 
-BRANCH_CONFIGS = {
+DEFAULT_BRANCH_CONFIGS = {
+    "rgb_only": {
+        "cams": "cam0,cam1,cam2",
+        "depth_subdir": "depth",
+        "mask_subdir": "masks",
+        "points_subdir": "recon/points_rgb_only_unused",
+        "tracklets_rel": "tracks/tracklets.json",
+        "embeddings_subdir": "embeddings",
+        "eval_subdir": "rgb_only",
+        "rgb_backend": "clip",
+        "geo_backend": "none",
+        "run_recon": False,
+    },
     "rgb_predicted_depth_geometry": {
         "cams": "cam0",
         "depth_subdir": "depth",
@@ -17,7 +29,9 @@ BRANCH_CONFIGS = {
         "tracklets_rel": "tracks_rgb_predicted_depth_geometry/tracklets.json",
         "embeddings_subdir": "embeddings_rgb_predicted_depth_geometry",
         "eval_subdir": "rgb_predicted_depth_geometry",
+        "rgb_backend": "clip",
         "geo_backend": "open3d_fpfh",
+        "run_recon": True,
     },
     "rgb_fused_geometry": {
         "cams": "cam0,cam1,cam2",
@@ -27,7 +41,9 @@ BRANCH_CONFIGS = {
         "tracklets_rel": "tracks_rgb_fused_geometry/tracklets.json",
         "embeddings_subdir": "embeddings_rgb_fused_geometry",
         "eval_subdir": "rgb_fused_geometry",
+        "rgb_backend": "clip",
         "geo_backend": "open3d_fpfh",
+        "run_recon": True,
     },
     "gt_upper_bound": {
         "cams": "cam0,cam1,cam2",
@@ -37,7 +53,9 @@ BRANCH_CONFIGS = {
         "tracklets_rel": "tracks_gt_upper_bound/tracklets.json",
         "embeddings_subdir": "embeddings_gt_upper_bound",
         "eval_subdir": "gt_upper_bound",
+        "rgb_backend": "clip",
         "geo_backend": "open3d_fpfh",
+        "run_recon": True,
     },
 }
 
@@ -58,14 +76,47 @@ def _load_manifest(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _resolve_branch_config(manifest: dict, branch: str) -> tuple[dict, list[str]]:
+    manifest_cfgs = manifest.get("branch_configs") or {}
+    available = sorted(set(DEFAULT_BRANCH_CONFIGS.keys()) | set(manifest_cfgs.keys()))
+
+    if branch in manifest_cfgs:
+        cfg = dict(manifest_cfgs[branch])
+    elif branch in DEFAULT_BRANCH_CONFIGS:
+        cfg = dict(DEFAULT_BRANCH_CONFIGS[branch])
+    else:
+        raise SystemExit(f"Unknown --branch={branch!r}. Available: {available}")
+
+    cfg.setdefault("eval_subdir", branch)
+    cfg.setdefault("mask_subdir", "masks")
+    cfg.setdefault("depth_subdir", "depth")
+    cfg.setdefault("tracklets_rel", "tracks/tracklets.json")
+    cfg.setdefault("embeddings_subdir", "embeddings")
+    cfg.setdefault("rgb_backend", "clip")
+    cfg.setdefault("geo_backend", "none")
+    cfg.setdefault(
+        "points_subdir",
+        "recon/points_rgb_only_unused" if str(cfg["geo_backend"]) == "none" else "recon/points_fused",
+    )
+    cfg.setdefault("run_recon", str(cfg["geo_backend"]) != "none")
+
+    cams = cfg.get("cams", "cam0,cam1,cam2")
+    if isinstance(cams, (list, tuple)):
+        cfg["cams"] = ",".join(str(cam).strip() for cam in cams if str(cam).strip())
+    else:
+        cfg["cams"] = str(cams)
+
+    return cfg, available
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Run one ICISCAE branch end-to-end over the frozen 6-scene manifest.")
     ap.add_argument(
         "--manifest",
-        default="research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v1.json",
+        default="research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v3_clean.json",
         type=str,
     )
-    ap.add_argument("--branch", required=True, choices=sorted(BRANCH_CONFIGS.keys()), type=str)
+    ap.add_argument("--branch", required=True, type=str)
     ap.add_argument("--topk", default=5, type=int)
     args = ap.parse_args()
 
@@ -80,7 +131,8 @@ def main() -> None:
     if not entries:
         raise SystemExit(f"No entries found in manifest: {manifest_path}")
 
-    cfg = dict(BRANCH_CONFIGS[str(args.branch)])
+    cfg, available_branches = _resolve_branch_config(manifest, str(args.branch))
+    print(f"[cfg] branch={args.branch} available={available_branches}")
     scene_items: list[tuple[str, Path]] = []
     for entry in entries:
         scene_id = str(entry["scene_id"])
@@ -103,23 +155,24 @@ def main() -> None:
     (eval_root / "run_meta.json").write_text(json.dumps(run_meta, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     for scene_id, scene_dir in scene_items:
-        _run(
-            [
-                sys.executable,
-                str(scripts_dir / "recon_fuse_depth_points.py"),
-                "--scene_dir",
-                str(scene_dir),
-                "--cams",
-                str(cfg["cams"]),
-                "--depth_subdir",
-                str(cfg["depth_subdir"]),
-                "--mask_subdir",
-                str(cfg["mask_subdir"]),
-                "--out_subdir",
-                str(cfg["points_subdir"]),
-            ],
-            cwd=repo_root,
-        )
+        if bool(cfg.get("run_recon")):
+            _run(
+                [
+                    sys.executable,
+                    str(scripts_dir / "recon_fuse_depth_points.py"),
+                    "--scene_dir",
+                    str(scene_dir),
+                    "--cams",
+                    str(cfg["cams"]),
+                    "--depth_subdir",
+                    str(cfg["depth_subdir"]),
+                    "--mask_subdir",
+                    str(cfg["mask_subdir"]),
+                    "--out_subdir",
+                    str(cfg["points_subdir"]),
+                ],
+                cwd=repo_root,
+            )
 
         _run(
             [
@@ -152,7 +205,7 @@ def main() -> None:
                 "--out_dir",
                 str(cfg["embeddings_subdir"]),
                 "--rgb_backend",
-                "clip",
+                str(cfg["rgb_backend"]),
                 "--geo_backend",
                 str(cfg["geo_backend"]),
             ],

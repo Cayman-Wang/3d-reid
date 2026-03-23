@@ -130,7 +130,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Capture a 3-camera MuJoCo node (parallel optical axes) to disk.")
     ap.add_argument(
         "--mjcf",
-        default=str(Path(__file__).resolve().parents[1] / "assets" / "mujoco_3cam_node_parallel.xml"),
+        default=str(Path(__file__).resolve().parents[1] / "assets" / "scene" / "mujoco_3cam_node_parallel_j10.xml"),
         type=str,
         help="MJCF with a node body and 3 cameras.",
     )

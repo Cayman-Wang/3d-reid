@@ -1,6 +1,6 @@
 {
-  "benchmark_id": "iciscae_node01_uav_v1",
-  "description": "MuJoCo-only node01 single-node cross-scene UAV/aircraft benchmark for the ICISCAE paper.",
+  "benchmark_id": "iciscae_node01_uav_v3_clean",
+  "description": "MuJoCo-only node01 single-node cross-scene UAV/aircraft benchmark for the ICISCAE paper (v3 clean: no humanoid scenes).",
   "paper_scope": {
     "paper": "ICISCAE",
     "task": "single-node cross-scene track-level retrieval",
@@ -25,9 +25,9 @@
   ],
   "entries": [
     {
-      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_j10_line_nodes_a",
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_j10_clean_line_nodes_a",
       "node_id": "node01",
-      "scene_id": "mj_node01_j10_line_nodes_a",
+      "scene_id": "mj_node01_j10_clean_line_nodes_a",
       "identity_id": "j10",
       "split_role": "both",
       "mask_source": "sam2_pred",
@@ -54,10 +54,10 @@
         ]
       },
       "min_valid_timestamps": 5,
-      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_j10_line_nodes_a.json",
+      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_only/mj_node01_j10_clean_line_nodes_a.json",
       "capture_plan": {
         "status": "completed",
-        "mjcf": "mvp-demo/assets/scene/legacy/humanoid/mujoco_humanoid_3cam_node_parallel_j10.xml",
+        "mjcf": "mvp-demo/assets/scene/mujoco_3cam_node_parallel_j10.xml",
         "target_body": "target",
         "identity_id": "j10",
         "traj": "line_nodes",
@@ -68,16 +68,16 @@
         "traj_period": 8.0
       },
       "eval_out_jsons": {
-        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_j10_line_nodes_a.json",
-        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_predicted_depth_geometry/mj_node01_j10_line_nodes_a.json",
-        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_fused_geometry/mj_node01_j10_line_nodes_a.json",
-        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v1/gt_upper_bound/mj_node01_j10_line_nodes_a.json"
+        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_only/mj_node01_j10_clean_line_nodes_a.json",
+        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_predicted_depth_geometry/mj_node01_j10_clean_line_nodes_a.json",
+        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_fused_geometry/mj_node01_j10_clean_line_nodes_a.json",
+        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/gt_upper_bound/mj_node01_j10_clean_line_nodes_a.json"
       }
     },
     {
-      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_j10_circle_xz_b",
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_j10_clean_circle_xz_b",
       "node_id": "node01",
-      "scene_id": "mj_node01_j10_circle_xz_b",
+      "scene_id": "mj_node01_j10_clean_circle_xz_b",
       "identity_id": "j10",
       "split_role": "both",
       "mask_source": "sam2_pred",
@@ -104,10 +104,10 @@
         ]
       },
       "min_valid_timestamps": 5,
-      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_j10_circle_xz_b.json",
+      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_only/mj_node01_j10_clean_circle_xz_b.json",
       "capture_plan": {
         "status": "completed",
-        "mjcf": "mvp-demo/assets/scene/legacy/humanoid/mujoco_humanoid_3cam_node_parallel_j10.xml",
+        "mjcf": "mvp-demo/assets/scene/mujoco_3cam_node_parallel_j10.xml",
         "target_body": "target",
         "identity_id": "j10",
         "traj": "circle_xz",
@@ -116,16 +116,16 @@
         "traj_period": 6.0
       },
       "eval_out_jsons": {
-        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_j10_circle_xz_b.json",
-        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_predicted_depth_geometry/mj_node01_j10_circle_xz_b.json",
-        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_fused_geometry/mj_node01_j10_circle_xz_b.json",
-        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v1/gt_upper_bound/mj_node01_j10_circle_xz_b.json"
+        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_only/mj_node01_j10_clean_circle_xz_b.json",
+        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_predicted_depth_geometry/mj_node01_j10_clean_circle_xz_b.json",
+        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_fused_geometry/mj_node01_j10_clean_circle_xz_b.json",
+        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/gt_upper_bound/mj_node01_j10_clean_circle_xz_b.json"
       }
     },
     {
-      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_uav1_line_nodes_a",
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_uav1_clean_line_nodes_a",
       "node_id": "node01",
-      "scene_id": "mj_node01_uav1_line_nodes_a",
+      "scene_id": "mj_node01_uav1_clean_line_nodes_a",
       "identity_id": "uav1",
       "split_role": "both",
       "mask_source": "sam2_pred",
@@ -152,10 +152,10 @@
         ]
       },
       "min_valid_timestamps": 5,
-      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_uav1_line_nodes_a.json",
+      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_only/mj_node01_uav1_clean_line_nodes_a.json",
       "capture_plan": {
         "status": "completed",
-        "mjcf": "mvp-demo/assets/scene/legacy/v1/mujoco_humanoid_uav1_3cam_node_parallel.xml",
+        "mjcf": "mvp-demo/assets/scene/mujoco_uav1_3cam_node_parallel_v2.xml",
         "target_body": "target",
         "identity_id": "uav1",
         "traj": "line_nodes",
@@ -164,19 +164,19 @@
         "mid_y": 6.0,
         "mid_z": 2.0,
         "traj_period": 8.0,
-        "notes": "Use the ASCII-safe uav1 asset alias and run from D:\\grad_project_ascii\\mvp-demo on Windows."
+        "notes": "Use the ASCII-safe clean uav1 split-material scene and run from D:\\grad_project_ascii\\mvp-demo on Windows."
       },
       "eval_out_jsons": {
-        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_uav1_line_nodes_a.json",
-        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_predicted_depth_geometry/mj_node01_uav1_line_nodes_a.json",
-        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_fused_geometry/mj_node01_uav1_line_nodes_a.json",
-        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v1/gt_upper_bound/mj_node01_uav1_line_nodes_a.json"
+        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_only/mj_node01_uav1_clean_line_nodes_a.json",
+        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_predicted_depth_geometry/mj_node01_uav1_clean_line_nodes_a.json",
+        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_fused_geometry/mj_node01_uav1_clean_line_nodes_a.json",
+        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/gt_upper_bound/mj_node01_uav1_clean_line_nodes_a.json"
       }
     },
     {
-      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_uav1_circle_xz_b",
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_uav1_clean_circle_xz_b",
       "node_id": "node01",
-      "scene_id": "mj_node01_uav1_circle_xz_b",
+      "scene_id": "mj_node01_uav1_clean_circle_xz_b",
       "identity_id": "uav1",
       "split_role": "both",
       "mask_source": "sam2_pred",
@@ -203,30 +203,30 @@
         ]
       },
       "min_valid_timestamps": 5,
-      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_uav1_circle_xz_b.json",
+      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_only/mj_node01_uav1_clean_circle_xz_b.json",
       "capture_plan": {
         "status": "completed",
-        "mjcf": "mvp-demo/assets/scene/legacy/v1/mujoco_humanoid_uav1_3cam_node_parallel.xml",
+        "mjcf": "mvp-demo/assets/scene/mujoco_uav1_3cam_node_parallel_v2.xml",
         "target_body": "target",
         "identity_id": "uav1",
         "traj": "circle_xz",
         "traj_center": "0 6 2",
         "traj_radius": 1.0,
         "traj_period": 6.0,
-        "notes": "Use the ASCII-safe uav1 asset alias and run from D:\\grad_project_ascii\\mvp-demo on Windows."
+        "notes": "Use the ASCII-safe clean uav1 split-material scene and run from D:\\grad_project_ascii\\mvp-demo on Windows."
       },
       "eval_out_jsons": {
-        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_uav1_circle_xz_b.json",
-        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_predicted_depth_geometry/mj_node01_uav1_circle_xz_b.json",
-        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_fused_geometry/mj_node01_uav1_circle_xz_b.json",
-        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v1/gt_upper_bound/mj_node01_uav1_circle_xz_b.json"
+        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_only/mj_node01_uav1_clean_circle_xz_b.json",
+        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_predicted_depth_geometry/mj_node01_uav1_clean_circle_xz_b.json",
+        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_fused_geometry/mj_node01_uav1_clean_circle_xz_b.json",
+        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/gt_upper_bound/mj_node01_uav1_clean_circle_xz_b.json"
       }
     },
     {
-      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_dji_mavic_line_nodes_a",
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_su34_clean_line_nodes_a",
       "node_id": "node01",
-      "scene_id": "mj_node01_dji_mavic_line_nodes_a",
-      "identity_id": "dji_mavic",
+      "scene_id": "mj_node01_su34_clean_line_nodes_a",
+      "identity_id": "su34",
       "split_role": "both",
       "mask_source": "sam2_pred",
       "depth_source": "depth_anything_v2",
@@ -252,32 +252,32 @@
         ]
       },
       "min_valid_timestamps": 5,
-      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_dji_mavic_line_nodes_a.json",
+      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_only/mj_node01_su34_clean_line_nodes_a.json",
       "capture_plan": {
         "status": "completed",
-        "mjcf": "mvp-demo/assets/scene/legacy/v1/mujoco_humanoid_dji_mavic_3cam_node_parallel.xml",
+        "mjcf": "mvp-demo/assets/scene/mujoco_su34_3cam_node_parallel.xml",
         "target_body": "target",
-        "identity_id": "dji_mavic",
+        "identity_id": "su34",
         "traj": "line_nodes",
         "traj_from_body": "node01",
         "traj_to_body": "node02",
         "mid_y": 6.0,
         "mid_z": 2.0,
         "traj_period": 8.0,
-        "notes": "Use the verified plain-material DJI Mavic scene and run from D:\\grad_project_ascii\\mvp-demo."
+        "notes": "Use the ASCII-safe clean su34 split-material scene and run from D:\\grad_project_ascii\\mvp-demo on Windows."
       },
       "eval_out_jsons": {
-        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_dji_mavic_line_nodes_a.json",
-        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_predicted_depth_geometry/mj_node01_dji_mavic_line_nodes_a.json",
-        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_fused_geometry/mj_node01_dji_mavic_line_nodes_a.json",
-        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v1/gt_upper_bound/mj_node01_dji_mavic_line_nodes_a.json"
+        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_only/mj_node01_su34_clean_line_nodes_a.json",
+        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_predicted_depth_geometry/mj_node01_su34_clean_line_nodes_a.json",
+        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_fused_geometry/mj_node01_su34_clean_line_nodes_a.json",
+        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/gt_upper_bound/mj_node01_su34_clean_line_nodes_a.json"
       }
     },
     {
-      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_dji_mavic_circle_xz_b",
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_su34_clean_circle_xz_b",
       "node_id": "node01",
-      "scene_id": "mj_node01_dji_mavic_circle_xz_b",
-      "identity_id": "dji_mavic",
+      "scene_id": "mj_node01_su34_clean_circle_xz_b",
+      "identity_id": "su34",
       "split_role": "both",
       "mask_source": "sam2_pred",
       "depth_source": "depth_anything_v2",
@@ -303,23 +303,23 @@
         ]
       },
       "min_valid_timestamps": 5,
-      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_dji_mavic_circle_xz_b.json",
+      "eval_out_json": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_only/mj_node01_su34_clean_circle_xz_b.json",
       "capture_plan": {
         "status": "completed",
-        "mjcf": "mvp-demo/assets/scene/legacy/v1/mujoco_humanoid_dji_mavic_3cam_node_parallel.xml",
+        "mjcf": "mvp-demo/assets/scene/mujoco_su34_3cam_node_parallel.xml",
         "target_body": "target",
-        "identity_id": "dji_mavic",
+        "identity_id": "su34",
         "traj": "circle_xz",
         "traj_center": "0 6 2",
         "traj_radius": 1.0,
         "traj_period": 6.0,
-        "notes": "Use the verified plain-material DJI Mavic scene and run from D:\\grad_project_ascii\\mvp-demo."
+        "notes": "Use the ASCII-safe clean su34 split-material scene and run from D:\\grad_project_ascii\\mvp-demo on Windows."
       },
       "eval_out_jsons": {
-        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/mj_node01_dji_mavic_circle_xz_b.json",
-        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_predicted_depth_geometry/mj_node01_dji_mavic_circle_xz_b.json",
-        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_fused_geometry/mj_node01_dji_mavic_circle_xz_b.json",
-        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v1/gt_upper_bound/mj_node01_dji_mavic_circle_xz_b.json"
+        "rgb_only": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_only/mj_node01_su34_clean_circle_xz_b.json",
+        "rgb_predicted_depth_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_predicted_depth_geometry/mj_node01_su34_clean_circle_xz_b.json",
+        "rgb_fused_geometry": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_fused_geometry/mj_node01_su34_clean_circle_xz_b.json",
+        "gt_upper_bound": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/gt_upper_bound/mj_node01_su34_clean_circle_xz_b.json"
       }
     }
   ],
@@ -327,8 +327,8 @@
     "gt_upper_bound"
   ],
   "comparison_artifacts": {
-    "summary_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/branch_comparison_summary.json",
-    "summary_md": "mvp-demo/output/evals/iciscae_node01_uav_v1/branch_comparison_summary.md"
+    "summary_json": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/branch_comparison_summary.json",
+    "summary_md": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/branch_comparison_summary.md"
   },
   "branch_configs": {
     "rgb_only": {
@@ -339,7 +339,7 @@
       "embeddings_subdir": "embeddings",
       "rgb_backend": "clip",
       "geo_backend": "none",
-      "result_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_only/all_queries_vs_all_scenes.json"
+      "result_json": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_only/all_queries_vs_all_scenes.json"
     },
     "rgb_predicted_depth_geometry": {
       "official_result_line": true,
@@ -354,7 +354,7 @@
       "embeddings_subdir": "embeddings_rgb_predicted_depth_geometry",
       "rgb_backend": "clip",
       "geo_backend": "open3d_fpfh",
-      "result_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_predicted_depth_geometry/all_queries_vs_all_scenes.json"
+      "result_json": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_predicted_depth_geometry/all_queries_vs_all_scenes.json"
     },
     "rgb_fused_geometry": {
       "official_result_line": true,
@@ -371,7 +371,7 @@
       "embeddings_subdir": "embeddings_rgb_fused_geometry",
       "rgb_backend": "clip",
       "geo_backend": "open3d_fpfh",
-      "result_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/rgb_fused_geometry/all_queries_vs_all_scenes.json"
+      "result_json": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/rgb_fused_geometry/all_queries_vs_all_scenes.json"
     },
     "gt_upper_bound": {
       "official_result_line": false,
@@ -388,7 +388,7 @@
       "embeddings_subdir": "embeddings_gt_upper_bound",
       "rgb_backend": "clip",
       "geo_backend": "open3d_fpfh",
-      "result_json": "mvp-demo/output/evals/iciscae_node01_uav_v1/gt_upper_bound/all_queries_vs_all_scenes.json"
+      "result_json": "mvp-demo/output/evals/iciscae_node01_uav_v3_clean/gt_upper_bound/all_queries_vs_all_scenes.json"
     }
   }
 }

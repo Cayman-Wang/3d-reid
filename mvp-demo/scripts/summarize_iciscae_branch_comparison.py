@@ -4,6 +4,8 @@ import argparse
 import json
 from pathlib import Path
 
+from analyze_iciscae_failure_modes import generate_failure_analysis
+
 
 def _load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -25,12 +27,14 @@ def _fmt_metric(value) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Summarize branch-level ICISCAE eval results into JSON + Markdown.")
-    ap.add_argument("--benchmark_id", default="iciscae_node01_uav_v1", type=str)
+    ap.add_argument("--benchmark_id", default="iciscae_node01_uav_v3_clean", type=str)
     ap.add_argument(
         "--branches",
         nargs="+",
         default=["rgb_only", "rgb_predicted_depth_geometry", "rgb_fused_geometry", "gt_upper_bound"],
     )
+    ap.add_argument("--baseline_branch", default="rgb_only", type=str)
+    ap.add_argument("--skip_failure_analysis", action="store_true")
     args = ap.parse_args()
 
     repo_root = Path(__file__).resolve().parents[2]
@@ -109,6 +113,14 @@ def main() -> None:
             )
 
     (eval_root / "branch_comparison_summary.md").write_text("\n".join(md_lines) + "\n", encoding="utf-8")
+
+    if not bool(args.skip_failure_analysis):
+        generate_failure_analysis(
+            eval_root=eval_root,
+            benchmark_id=str(args.benchmark_id),
+            branches=[str(branch) for branch in args.branches],
+            baseline_branch=str(args.baseline_branch),
+        )
 
 
 if __name__ == "__main__":
