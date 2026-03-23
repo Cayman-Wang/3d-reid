@@ -38,7 +38,7 @@
   <asset>
     <texture type="skybox" builtin="gradient" rgb1=".3 .5 .7" rgb2="0 0 0" width="32" height="512"/>
     <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>
-    <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2"/>
+    <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance="0" specular="0" shininess="0"/>
     <texture name="su34_tex_Sukleft" type="2d" file="../models/su34/Map/Sukleft.png"/>
     <texture name="su34_tex_Suktop" type="2d" file="../models/su34/Map/Suktop.png"/>
     <texture name="su34_tex_R_tail" type="2d" file="../models/su34/Map/R-tail.png"/>

@@ -38,7 +38,7 @@
   <asset>
     <texture type="skybox" builtin="gradient" rgb1=".3 .5 .7" rgb2="0 0 0" width="32" height="512"/>
     <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>
-    <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2"/>
+    <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance="0" specular="0" shininess="0"/>
     <texture name="uav1_tex_cgaxis_models_117_01" type="2d" file="../models/uav1_ascii/cgaxis_models_117_01.png"/>
     <mesh name="uav1_mesh_cgaxis_models_117_01_01" file="../models/uav1_ascii/meshes/uav1_mtl_cgaxis_models_117_01_01.obj" scale="0.02 0.02 0.02"/>
     <mesh name="uav1_mesh_cgaxis_models_117_01_05" file="../models/uav1_ascii/meshes/uav1_mtl_cgaxis_models_117_01_05.obj" scale="0.02 0.02 0.02"/>
