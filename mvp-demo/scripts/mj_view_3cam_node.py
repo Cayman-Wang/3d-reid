@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import math
+import time
 from pathlib import Path
 
 import numpy as np
@@ -36,12 +37,12 @@ def main() -> None:
     ap = argparse.ArgumentParser(
         description=(
             "Open a MuJoCo viewer and animate a target along a straight segment between two bodies "
-            "(back-and-forth)."
+            "(back-and-forth) using real wall-clock time."
         )
     )
     ap.add_argument(
         "--mjcf",
-        default=str(Path(__file__).resolve().parents[1] / "assets" / "mujoco_humanoid_3cam_node_parallel.xml"),
+        default=str(Path(__file__).resolve().parents[1] / "assets" / "scene" / "mujoco_3cam_node_parallel_j10.xml"),
         type=str,
         help="MJCF to load.",
     )
@@ -50,7 +51,12 @@ def main() -> None:
     ap.add_argument("--target_body", default="target", type=str, help="Moving target body name (must have <freejoint/>).")
     ap.add_argument("--mid_y", default=6.0, type=float, help="Translate the segment so its midpoint has this world Y.")
     ap.add_argument("--mid_z", default=2.0, type=float, help="Translate the segment so its midpoint has this world Z.")
-    ap.add_argument("--period_s", default=12.0, type=float, help="Back-and-forth period in seconds (<=0 => static).")
+    ap.add_argument(
+        "--period_s",
+        default=12.0,
+        type=float,
+        help="Real-world back-and-forth period in seconds (<=0 => static).",
+    )
     ap.add_argument(
         "--roll_dps",
         default=0.0,
@@ -106,7 +112,6 @@ def main() -> None:
     quat_roll = np.empty(4, dtype=np.float64)
     roll_rate_rad_s = math.radians(float(args.roll_dps))
 
-    dt = float(model.opt.timestep)
     with mujoco.viewer.launch_passive(model, data) as viewer:
         # Make it easier to find the motion segment in free camera mode.
         try:
@@ -114,25 +119,24 @@ def main() -> None:
         except Exception:
             pass
 
+        start_wall_time = time.perf_counter()
         while viewer.is_running():
-            t = float(data.time)
-            s = _triangular_wave_0_1_0(t, float(args.period_s))
+            elapsed_s = float(time.perf_counter() - start_wall_time)
+            s = _triangular_wave_0_1_0(elapsed_s, float(args.period_s))
             pos = ((1.0 - s) * a + s * b).astype(np.float32)
 
             data.qpos[qpos_adr + 0 : qpos_adr + 3] = pos  # type: ignore[index]
             if abs(roll_rate_rad_s) > 0.0:
-                roll_rad = (roll_rate_rad_s * t) % (2.0 * math.pi)
+                roll_rad = (roll_rate_rad_s * elapsed_s) % (2.0 * math.pi)
                 mujoco.mju_axisAngle2Quat(quat_roll, axis, float(roll_rad))
                 data.qpos[qpos_adr + 3 : qpos_adr + 7] = quat_roll  # type: ignore[index]
             else:
                 data.qpos[qpos_adr + 3 : qpos_adr + 7] = quat_identity  # type: ignore[index]
             data.qvel[:] = 0.0
+            data.time = elapsed_s
 
             mujoco.mj_forward(model, data)
             viewer.sync()
-
-            # Advance time so the trajectory animates even if everything else is kinematic.
-            data.time = t + dt
 
 
 if __name__ == "__main__":
