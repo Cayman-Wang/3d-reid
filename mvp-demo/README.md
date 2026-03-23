@@ -17,6 +17,14 @@
 - `UAV/aircraft`
 - `single-node, cross-scene, track-level retrieval`
 
+当前激活 benchmark 为 `iciscae_node01_uav_v3_clean`，身份集合固定为：
+
+- `j10`
+- `uav1`
+- `su34`
+
+历史 `iciscae_node01_uav_v1 / v2` 结果只保留为归档，不再作为当前主线。
+
 主链路只消费：
 
 - `cams/cam*/frames/`
@@ -37,14 +45,30 @@ conda activate mvp_demo
 python -m pip install -r requirements_node_pipeline.txt
 ```
 
+如果是第一次使用 `uav1_v2 / su34` 的 clean 场景，先在本地生成 split meshes：
+
+```bash
+python scripts/prepare_su34_png_textures.py
+
+python scripts/split_obj_by_usemtl.py \
+  --obj assets/models/uav1_ascii/cgaxis_models_117_01_obj_drone.obj \
+  --out-dir assets/models/uav1_ascii/meshes \
+  --prefix uav1_mtl_
+
+python scripts/split_obj_by_usemtl.py \
+  --obj assets/models/su34/Sukhoi-34.obj \
+  --out-dir assets/models/su34/meshes \
+  --prefix su34_mtl_
+```
+
 ### 1. 采集一个三相机场景
 
 ```bash
 python scripts/mj_capture_3cam_node.py \
-  --mjcf assets/scene/mujoco_humanoid_3cam_node_parallel_j10.xml \
+  --mjcf assets/scene/mujoco_su34_3cam_node_parallel.xml \
   --node_id node01 \
-  --scene_id mj_node01_j10_line_nodes_a \
-  --identity_id j10 \
+  --scene_id mj_node01_su34_clean_line_nodes_a \
+  --identity_id su34 \
   --traj line_nodes \
   --save_depth \
   --save_masks_gt
@@ -112,7 +136,7 @@ python scripts/extract_node_track_embeddings.py \
 python scripts/extract_node_track_embeddings.py \
   --scene_dir data/nodes/node01/scenes/<scene_id> \
   --rgb_backend clip \
-  --geo_backend radial_hist
+  --geo_backend open3d_fpfh
 ```
 
 ### 7. 做检索评测
@@ -128,9 +152,51 @@ python scripts/eval_node_track_retrieval.py \
 
 ## 当前可用场景
 
-- `assets/scene/mujoco_humanoid_3cam_node_parallel_j10.xml`
-- `assets/scene/mujoco_humanoid_uav1_3cam_node_parallel.xml`
-- `assets/scene/mujoco_humanoid_dji_mavic_3cam_node_parallel.xml`
+- `assets/scene/mujoco_3cam_node_parallel.xml`
+- `assets/scene/mujoco_3cam_node_parallel_j10.xml`
+- `assets/scene/mujoco_uav1_3cam_node_parallel_v2.xml`
+- `assets/scene/mujoco_su34_3cam_node_parallel.xml`
+
+历史归档场景：
+
+- `assets/scene/legacy/v1/`
+- `assets/scene/legacy/humanoid/`
+
+说明：
+
+- `assets/scene/` 根目录只保留当前 clean 主线场景。
+- 所有 `mujoco_humanoid_*.xml` 已归档到 `assets/scene/legacy/`，不再作为当前推荐入口。
+
+## 当前推荐 benchmark 入口
+
+`v3_clean` 结果线建议显式传入 manifest：
+
+```bash
+python scripts/run_iciscae_branch_eval.py \
+  --manifest research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v3_clean.json \
+  --branch rgb_only
+```
+
+全部 branch 跑完后，统一结果与失败分析可一起生成：
+
+```bash
+python scripts/summarize_iciscae_branch_comparison.py \
+  --benchmark_id iciscae_node01_uav_v3_clean
+```
+
+该命令当前会同时输出：
+
+- `output/evals/iciscae_node01_uav_v3_clean/branch_comparison_summary.json`
+- `output/evals/iciscae_node01_uav_v3_clean/branch_comparison_summary.md`
+- `output/evals/iciscae_node01_uav_v3_clean/query_failure_analysis.json`
+- `output/evals/iciscae_node01_uav_v3_clean/query_failure_analysis.md`
+
+如果只想单独重跑逐 query 失败分析，也可以直接执行：
+
+```bash
+python scripts/analyze_iciscae_failure_modes.py \
+  --benchmark_id iciscae_node01_uav_v3_clean
+```
 
 ## 历史脚本说明
 

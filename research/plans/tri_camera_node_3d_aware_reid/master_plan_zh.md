@@ -1,8 +1,8 @@
 # tri_camera_node_3d_aware_reid 主计划（中文）
 
 - 创建日期：2026-03-15
-- 最近冻结：2026-03-16
-- 状态：ICISCAE 范围已收紧到 `node01 + UAV/aircraft + single-node cross-scene`，当前进入 M1 资产落地与正式 scene 采集
+- 最近冻结：2026-03-23
+- 状态：ICISCAE 范围固定为 `node01 + UAV/aircraft + single-node cross-scene`，当前主线为 `v3_clean benchmark: j10 / uav1 / su34`，已完成 clean `6 scene` 采集与四条结果线
 
 ## 一、冻结结论
 
@@ -82,9 +82,9 @@
 
 ### 5.2 当前本地证据
 
-- 已经存在少量完成到 `tracks/`、`embeddings/` 与 retrieval JSON 的 `node01` scenes，证明 pipeline 已经从“想法”进入“可运行原型”。
-- 当前正式候选 scene 仍主要集中在单一 `identity_id`，其中可直接参考的结果主要来自 `j10` 场景，尚不足以形成正式 benchmark。
-- 现有使用 `masks_gt/` 或 `depth_gt/` 跑通的结果只保留为 proof-of-pipeline 和 upper-bound，不进入小论文主结果。
+- 当前 `v3_clean` 的 `6` 条正式 scene 已全部落盘，`tracks/`、`embeddings/`、单 scene eval JSON 与全量 summary 已齐备。
+- 当前 `v3_clean` 四条结果线已完成：`rgb_only (mAP=0.5750, R@1=0.3333)`、`rgb_predicted_depth_geometry (0.4222, 0.1667)`、`rgb_fused_geometry (0.4833, 0.1667)`、`gt_upper_bound (0.8333, 0.6667)`。
+- clean 场景下移除 humanoid 后，geometry 两条分支仍未超过 `rgb_only`，说明当前主瓶颈仍更偏向 `SAM2/depth` 感知误差，而不只是场景遮挡。
 
 ### 5.3 为什么当前不再做人形
 
@@ -96,15 +96,18 @@
 
 | identity_id | 资产来源 | 当前状态 | 对应 MJCF |
 | --- | --- | --- | --- |
-| `j10` | `assets/models/J10` | 已有现成场景与主结果证据 | `mvp-demo/assets/scene/mujoco_humanoid_3cam_node_parallel_j10.xml` |
-| `uav1` | `assets/models/无人机1` | 已有现成场景与纹理链，但 Windows 直跑受中文资产路径限制 | `mvp-demo/assets/scene/mujoco_humanoid_uav1_3cam_node_parallel.xml` |
-| `dji_mavic` | `assets/models/DJI Mavic Air Drone` | 本轮新增 MuJoCo 场景，默认纯材质版本 | `mvp-demo/assets/scene/mujoco_humanoid_dji_mavic_3cam_node_parallel.xml` |
-| `big_dji` | `assets/models/大疆无人机` | 只作为 `dji_mavic` 失败时的 fallback | 待需要时再补对应 MJCF |
+| `j10` | `assets/models/J10` | 当前激活 clean 场景，去除 humanoid 干扰 | `mvp-demo/assets/scene/mujoco_3cam_node_parallel_j10.xml` |
+| `uav1` | `assets/models/uav1_ascii` | 当前激活的 clean `v2` split-material 场景，按 J10 式显式导入 | `mvp-demo/assets/scene/mujoco_uav1_3cam_node_parallel_v2.xml` |
+| `su34` | `assets/models/su34` | 当前激活的 clean 第三身份场景，按 J10 式显式导入 | `mvp-demo/assets/scene/mujoco_su34_3cam_node_parallel.xml` |
+| `dji_mavic` | `assets/models/DJI Mavic Air Drone` | 仅保留为 `v1` 历史身份与结果归档，不再继续修复 | `mvp-demo/assets/scene/legacy/v1/mujoco_humanoid_dji_mavic_3cam_node_parallel.xml` |
 
 冻结结论如下：
 
-- 小论文正式 benchmark 默认身份集合固定为 `j10 / uav1 / dji_mavic`。
-- 若 `dji_mavic` 在实际采集或渲染中仍不稳定，再回退到 `big_dji`，但不回退到 `ikun`。
+- 历史 `v1` benchmark 保留 `j10 / uav1 / dji_mavic`，但不再作为当前主线。
+- 历史 `v2` benchmark 保留 `j10 / uav1 / su34`，但当前主线已切到 clean `v3_clean`。
+- 历史 `v1` 的 `uav1 / dji_mavic` 场景 canonical 路径统一收口到 `mvp-demo/assets/scene/legacy/v1/`；历史 humanoid 主线场景统一收口到 `mvp-demo/assets/scene/legacy/humanoid/`。
+- 活跃 `mvp-demo/assets/scene/` 根目录只保留 clean 场景，不再保留任何 `mujoco_humanoid_*.xml`。
+- `dji_mavic` 不再继续修复；若后续确实需要替补第三身份，优先沿 `su34` 这条显式材质链继续扩展，不回退到 `ikun`。
 - `C919 / A380 / 3D白色大疆` 目前缺少可直接被 MuJoCo 使用的 `obj/stl + 材质` 组合，不纳入近阶段主线。
 
 ## 七、ICISCAE 正式 benchmark 协议
@@ -113,11 +116,13 @@
 
 - 正式 benchmark 不再写死在计划正文中。
 - 权威文件固定为：
-  - `research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v1.json`
+  - 当前激活：`research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v3_clean.json`
+  - 历史归档：`research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v2.json`
+  - 历史归档：`research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v1.json`
 
 ### 7.2 固定协议
 
-- `benchmark_id`：`iciscae_node01_uav_v1`
+- `benchmark_id`：`iciscae_node01_uav_v3_clean`
 - `node_id`：`node01`
 - `task`：`single-node, cross-scene, track-level retrieval`
 - `split_role`：所有正式 scene 均为 `both`
@@ -146,14 +151,14 @@
    - `traj_radius=1`
    - `traj_period=6`
 
-计划中的正式 scene_id 固定如下：
+当前激活的正式 scene_id 固定如下：
 
-- `mj_node01_j10_line_nodes_a`
-- `mj_node01_j10_circle_xz_b`
-- `mj_node01_uav1_line_nodes_a`
-- `mj_node01_uav1_circle_xz_b`
-- `mj_node01_dji_mavic_line_nodes_a`
-- `mj_node01_dji_mavic_circle_xz_b`
+- `mj_node01_j10_clean_line_nodes_a`
+- `mj_node01_j10_clean_circle_xz_b`
+- `mj_node01_uav1_clean_line_nodes_a`
+- `mj_node01_uav1_clean_circle_xz_b`
+- `mj_node01_su34_clean_line_nodes_a`
+- `mj_node01_su34_clean_circle_xz_b`
 
 ### 7.4 主结果矩阵
 
@@ -176,11 +181,11 @@
 - 完成定义：
   - 后续执行不再依赖组会稿或口头约定。
 
-### M1 第三个飞行目标落地与正式 scene 采集
+### M1 clean 资产与正式 scene 采集
 
 - 交付物：
-  - `dji_mavic` 对应的 MuJoCo 场景可被加载。
-  - 按 manifest 为 `j10 / uav1 / dji_mavic` 采集 `6` 个正式 scene。
+  - `j10 / uav1 / su34` 对应的 clean MuJoCo 场景可被加载。
+  - 按 `v3_clean manifest` 为 `j10 / uav1 / su34` 落地 `6` 个正式 clean scene。
 - 完成定义：
   - 每个 scene 都带显式 `scene_id` 和显式 `identity_id`。
   - 每个 scene 都能导出三路 `frames/`、`rig.json` 和 `frame_times.csv`。
@@ -252,13 +257,15 @@
 - `identity_id` 缺失会直接导致评测指标无效。
   - 对策：统一以 `capture_meta.target.identity_id` 为权威来源。
 - Windows 下 MuJoCo 可能无法直接加载中文资产目录。
-  - 对策：当前 `dji_mavic` 使用 ASCII 资产目录；`uav1` 若在 Windows 直跑失败，则改用 ASCII 资产别名或 Linux/WSL 环境执行采集。
-- `dji_mavic` 可能缺少完整材质链。
-  - 对策：当前场景先采用纯材质版本，先保证可导入、可采集、可检索。
+  - 对策：当前激活的 `uav1_v2` 与 `su34` 都固定从 ASCII-safe 路径运行；不再把中文资产目录作为主线入口。
+- 多材质 OBJ 在 MuJoCo 中可能因为单材质压缩、JPG 纹理或薄片 mesh 失败。
+  - 对策：统一改成 J10 式显式 `texture/material/mesh` 图，`uav1` 使用 PNG 纹理，`su34` 对 split mesh 固定使用 `inertia="shell"`。
 - SAM2 和 depth 覆盖率可能不足。
   - 对策：先做覆盖率检查，再进入 embedding 提取。
 - 小 baseline 下 predicted depth 噪声大。
   - 对策：先把 `predicted-depth geometry` 视为弱几何分支，再用 `fused geometry` 判断几何是否带来真正收益。
+- clean 场景下若 geometry 仍弱于 `RGB-only`，说明问题不只来自 humanoid 遮挡。
+  - 对策：把 `GT upper-bound` 作为感知误差诊断线，重点检查 `SAM2` mask 与 depth 回投质量。
 
 ## 十一、当前不做与文档入口
 
@@ -271,5 +278,5 @@
 当前应优先阅读：
 
 - `research/plans/ACTIVE_PLAN.md`
-- `research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v1.json`
+- `research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v3_clean.json`
 - `research/handoffs/tri_camera_node_engineering_handoff_zh.md`

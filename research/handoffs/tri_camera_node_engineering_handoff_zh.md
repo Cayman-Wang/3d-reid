@@ -6,7 +6,7 @@
 
 - `research/plans/ACTIVE_PLAN.md`
 - `research/plans/tri_camera_node_3d_aware_reid/master_plan_zh.md`
-- `research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v1.json`
+- `research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v3_clean.json`
 
 为准。
 
@@ -57,19 +57,28 @@
 ### 3.1 节点结构
 
 - `mvp-demo/assets/mujoco_3cam_node_parallel.xml`
-- `mvp-demo/assets/mujoco_humanoid_3cam_node_parallel.xml`
 
 ### 3.2 当前目标场景
 
-- `mvp-demo/assets/scene/mujoco_humanoid_3cam_node_parallel_j10.xml`
-- `mvp-demo/assets/scene/mujoco_humanoid_uav1_3cam_node_parallel.xml`
-- `mvp-demo/assets/scene/mujoco_humanoid_dji_mavic_3cam_node_parallel.xml`
+- `mvp-demo/assets/scene/mujoco_3cam_node_parallel_j10.xml`
+- `mvp-demo/assets/scene/mujoco_uav1_3cam_node_parallel_v2.xml`
+- `mvp-demo/assets/scene/mujoco_su34_3cam_node_parallel.xml`
 
 当前小论文正式身份集合固定为：
 
 - `j10`
 - `uav1`
-- `dji_mavic`
+- `su34`
+
+历史 `v1` 归档场景统一收口到：
+
+- `mvp-demo/assets/scene/legacy/v1/mujoco_humanoid_uav1_3cam_node_parallel.xml`
+- `mvp-demo/assets/scene/legacy/v1/mujoco_humanoid_dji_mavic_3cam_node_parallel.xml`
+- `mvp-demo/assets/scene/legacy/humanoid/mujoco_humanoid_3cam_node_parallel_j10.xml`
+- `mvp-demo/assets/scene/legacy/humanoid/mujoco_humanoid_uav1_3cam_node_parallel_v2.xml`
+- `mvp-demo/assets/scene/legacy/humanoid/mujoco_humanoid_su34_3cam_node_parallel.xml`
+
+其中 `dji_mavic` 只保留为 `v1` 历史身份与结果复现，不再作为当前主线目标；当前主线不再默认使用任何 humanoid 场景。
 
 ## 4. 数据契约
 
@@ -118,9 +127,9 @@ python -m pip install -r requirements_node_pipeline.txt
 
 ```bash
 python scripts/mj_capture_3cam_node.py \
-  --mjcf assets/scene/mujoco_humanoid_3cam_node_parallel_j10.xml \
+  --mjcf assets/scene/mujoco_3cam_node_parallel_j10.xml \
   --node_id node01 \
-  --scene_id mj_node01_j10_line_nodes_a \
+  --scene_id mj_node01_j10_clean_line_nodes_a \
   --identity_id j10 \
   --traj line_nodes \
   --save_depth \
@@ -246,10 +255,21 @@ python scripts/eval_node_track_retrieval.py \
 如果要批量复现实验矩阵，可直接使用：
 
 ```bash
-python scripts/run_iciscae_branch_eval.py --branch rgb_predicted_depth_geometry
-python scripts/run_iciscae_branch_eval.py --branch rgb_fused_geometry
-python scripts/run_iciscae_branch_eval.py --branch gt_upper_bound
-python scripts/summarize_iciscae_branch_comparison.py
+python scripts/run_iciscae_branch_eval.py --manifest research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v3_clean.json --branch rgb_predicted_depth_geometry
+python scripts/run_iciscae_branch_eval.py --manifest research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v3_clean.json --branch rgb_fused_geometry
+python scripts/run_iciscae_branch_eval.py --manifest research/plans/tri_camera_node_3d_aware_reid/benchmarks/iciscae_node01_uav_v3_clean.json --branch gt_upper_bound
+python scripts/summarize_iciscae_branch_comparison.py --benchmark_id iciscae_node01_uav_v3_clean
+```
+
+`summarize_iciscae_branch_comparison.py` 当前会同时生成：
+
+- `branch_comparison_summary.json/.md`
+- `query_failure_analysis.json/.md`
+
+如果只想在既有结果上重跑逐 query 失败分析，可直接执行：
+
+```bash
+python scripts/analyze_iciscae_failure_modes.py --benchmark_id iciscae_node01_uav_v3_clean
 ```
 
 ## 6. 节点结构验证
