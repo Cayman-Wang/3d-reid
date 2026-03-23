@@ -1,0 +1,99 @@
+<!--
+  Based on:
+    mvp-demo/assets/scene/mujoco_humanoid_uav1_3cam_node_parallel_v2.xml
+
+  Change:
+    Remove the humanoid-related content and keep a clean 3-camera node scene
+    with the split-material UAV1 target import.
+-->
+
+<!-- Copyright 2021 DeepMind Technologies Limited
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<mujoco model="3CamNodeParallel_UAV1V2">
+  <option timestep="0.005"/>
+
+  <visual>
+    <headlight ambient="0.85 0.85 0.85" diffuse="0.30 0.30 0.30" specular="0.05 0.05 0.05"/>
+    <map force="0.1" zfar="30"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global offwidth="2560" offheight="1440" elevation="-20" azimuth="120"/>
+    <quality offsamples="0"/>
+  </visual>
+
+  <statistic center="0 0 0.7"/>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1=".3 .5 .7" rgb2="0 0 0" width="32" height="512"/>
+    <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>
+    <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2"/>
+    <texture name="uav1_tex_cgaxis_models_117_01" type="2d" file="../models/uav1_ascii/cgaxis_models_117_01.png"/>
+    <mesh name="uav1_mesh_cgaxis_models_117_01_01" file="../models/uav1_ascii/meshes/uav1_mtl_cgaxis_models_117_01_01.obj" scale="0.02 0.02 0.02"/>
+    <mesh name="uav1_mesh_cgaxis_models_117_01_05" file="../models/uav1_ascii/meshes/uav1_mtl_cgaxis_models_117_01_05.obj" scale="0.02 0.02 0.02"/>
+    <mesh name="uav1_mesh_cgaxis_models_117_01_06" file="../models/uav1_ascii/meshes/uav1_mtl_cgaxis_models_117_01_06.obj" scale="0.02 0.02 0.02"/>
+    <mesh name="uav1_mesh_cgaxis_models_117_01_03" file="../models/uav1_ascii/meshes/uav1_mtl_cgaxis_models_117_01_03.obj" scale="0.02 0.02 0.02"/>
+    <mesh name="uav1_mesh_cgaxis_models_117_01_02" file="../models/uav1_ascii/meshes/uav1_mtl_cgaxis_models_117_01_02.obj" scale="0.02 0.02 0.02"/>
+    <mesh name="uav1_mesh_cgaxis_models_117_01_04" file="../models/uav1_ascii/meshes/uav1_mtl_cgaxis_models_117_01_04.obj" scale="0.02 0.02 0.02"/>
+    <material name="uav1_mat_cgaxis_models_117_01_01" texture="uav1_tex_cgaxis_models_117_01" rgba="1 1 1 1"/>
+    <material name="uav1_mat_cgaxis_models_117_01_05" texture="uav1_tex_cgaxis_models_117_01" rgba="1 1 1 1"/>
+    <material name="uav1_mat_cgaxis_models_117_01_06" rgba="0.027451 0.027451 0.027451 1"/>
+    <material name="uav1_mat_cgaxis_models_117_01_03" rgba="0.5 0.5 0.5 1"/>
+    <material name="uav1_mat_cgaxis_models_117_01_02" rgba="0.5 0.5 0.5 0.07"/>
+    <material name="uav1_mat_cgaxis_models_117_01_04" rgba="0.94902 0.94902 0.94902 1"/>
+  </asset>
+
+  <worldbody>
+    <geom name="floor" size="0 0 .05" type="plane" material="grid" condim="3"/>
+    <light name="top_center" pos="10 6 12" diffuse="0.85 0.85 0.85" specular="0.03 0.03 0.03" castshadow="false"/>
+    <light name="front_fill" pos="10 -10 6" diffuse="0.45 0.45 0.45" specular="0.02 0.02 0.02" castshadow="false"/>
+    <light name="back_fill" pos="10 22 6" diffuse="0.45 0.45 0.45" specular="0.02 0.02 0.02" castshadow="false"/>
+    <light name="left_fill" pos="-8 6 6" diffuse="0.40 0.40 0.40" specular="0.02 0.02 0.02" castshadow="false"/>
+    <light name="right_fill" pos="28 6 6" diffuse="0.40 0.40 0.40" specular="0.02 0.02 0.02" castshadow="false"/>
+
+    <body name="node01" pos="0 -3 1.6">
+      <site name="node01_origin" pos="0 0 0" size="0.02" rgba="1 1 0 1"/>
+      <camera name="node01_cam0" pos="0.45 0 0.0" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node01_cam1" pos="-0.225 0 0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node01_cam2" pos="-0.225 0 -0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <geom name="node01_cam0_marker" type="sphere" pos="0.45 -0.08 0.0" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node01_cam1_marker" type="sphere" pos="-0.225 -0.08 0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node01_cam2_marker" type="sphere" pos="-0.225 -0.08 -0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+    </body>
+
+    <body name="node02" pos="20 -3 1.6">
+      <site name="node02_origin" pos="0 0 0" size="0.02" rgba="1 1 0 1"/>
+      <camera name="node02_cam0" pos="0.45 0 0.0" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node02_cam1" pos="-0.225 0 0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node02_cam2" pos="-0.225 0 -0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <geom name="node02_cam0_marker" type="sphere" pos="0.45 -0.08 0.0" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node02_cam1_marker" type="sphere" pos="-0.225 -0.08 0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node02_cam2_marker" type="sphere" pos="-0.225 -0.08 -0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+    </body>
+
+    <body name="target" pos="0 6 2.0">
+      <freejoint/>
+      <inertial pos="0 0 0" mass="1" diaginertia="0.1 0.1 0.1"/>
+      <body name="target_uav1" pos="0.06381794 0.11241283 -0.19634207" quat="0.7071068 0.7071068 0 0">
+        <geom name="target_uav1_cgaxis_models_117_01_01" type="mesh" mesh="uav1_mesh_cgaxis_models_117_01_01" material="uav1_mat_cgaxis_models_117_01_01" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_uav1_cgaxis_models_117_01_05" type="mesh" mesh="uav1_mesh_cgaxis_models_117_01_05" material="uav1_mat_cgaxis_models_117_01_05" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_uav1_cgaxis_models_117_01_06" type="mesh" mesh="uav1_mesh_cgaxis_models_117_01_06" material="uav1_mat_cgaxis_models_117_01_06" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_uav1_cgaxis_models_117_01_03" type="mesh" mesh="uav1_mesh_cgaxis_models_117_01_03" material="uav1_mat_cgaxis_models_117_01_03" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_uav1_cgaxis_models_117_01_02" type="mesh" mesh="uav1_mesh_cgaxis_models_117_01_02" material="uav1_mat_cgaxis_models_117_01_02" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_uav1_cgaxis_models_117_01_04" type="mesh" mesh="uav1_mesh_cgaxis_models_117_01_04" material="uav1_mat_cgaxis_models_117_01_04" contype="0" conaffinity="0" group="1"/>
+      </body>
+      <geom name="target_uav1_proxy" type="box" size="0.42 0.426 0.196" rgba="0.25 0.25 0.95 0.05" contype="1" conaffinity="1" group="3"/>
+    </body>
+  </worldbody>
+</mujoco>

@@ -4,6 +4,7 @@
 
   Change:
     Add a compact 3-camera "node" rig (parallel optical axes) for capture/validation.
+    Replace the imported target mesh from uav1 -> DJI Mavic Air.
 
   Notes:
     - The node cameras follow the same convention as our minimal rig MJCF:
@@ -27,10 +28,11 @@
      limitations under the License.
 -->
 
-<mujoco model="Humanoid_3CamNodeParallel">
+<mujoco model="Humanoid_DJIMavic_3CamNodeParallel">
   <option timestep="0.005"/>
 
   <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.65 0.65 0.65" specular="0.25 0.25 0.25"/>
     <map force="0.1" zfar="30"/>
     <rgba haze="0.15 0.25 0.35 1"/>
     <global offwidth="2560" offheight="1440" elevation="-20" azimuth="120"/>
@@ -46,8 +48,10 @@
     <material name="body" texture="body" texuniform="true" rgba="0.8 0.6 .4 1"/>
     <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>
     <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2"/>
-    <!-- Decimated mesh (<200k faces) to satisfy MuJoCo STL loader limits. -->
-    <mesh name="ikun_180k" file="../models/ikun/ikun_180k.stl"/>
+    <!-- The OBJ uses centimeters; scale it into meters and enlarge 2x for the current scene layout. -->
+    <mesh name="dji_mavic_drone" file="../../../models/DJI Mavic Air Drone/DJI_mavic_air_drone.obj" scale="0.02 0.02 0.02"/>
+    <!-- The original asset is missing a checked-in material chain, so use a plain light material for now. -->
+    <material name="dji_mavic_mat" rgba="0.92 0.92 0.95 1" specular="0.4" shininess="0.2"/>
   </asset>
 
   <default>
@@ -60,7 +64,7 @@
         <geom size=".06"/>
       </default>
       <default class="shin">
-        <geom fromto="0 0 0 0 0 -.3"  size=".049"/>
+        <geom fromto="0 0 0 0 0 -.3" size=".049"/>
       </default>
       <default class="foot">
         <geom size=".027"/>
@@ -68,7 +72,7 @@
           <geom fromto="-.07 -.01 0 .14 -.03 0"/>
         </default>
         <default class="foot2">
-          <geom fromto="-.07 .01 0 .14  .03 0"/>
+          <geom fromto="-.07 .01 0 .14 .03 0"/>
         </default>
       </default>
       <default class="arm_upper">
@@ -121,54 +125,37 @@
 
   <worldbody>
     <geom name="floor" size="0 0 .05" type="plane" material="grid" condim="3"/>
-    <light name="spotlight" mode="targetbodycom" target="torso" diffuse=".8 .8 .8" specular="0.3 0.3 0.3" pos="0 -6 4" cutoff="30"/>
-    <light name="top" pos="0 0 2" mode="trackcom"/>
+    <light name="spotlight" mode="targetbodycom" target="torso" diffuse="1.2 1.2 1.2" specular="0.6 0.6 0.6" pos="0 -6 4" cutoff="30"/>
+    <light name="top" pos="0 0 2" mode="trackcom" diffuse="0.9 0.9 0.9" specular="0.3 0.3 0.3"/>
 
     <!-- Node rig root. Cameras are mounted relative to this body. -->
     <body name="node01" pos="0 -3 1.6">
-      <!-- Node origin marker -->
       <site name="node01_origin" pos="0 0 0" size="0.02" rgba="1 1 0 1"/>
-
-      <!--
-        Camera orientation:
-        - x axis -> +X
-        - y axis -> +Z (image up)
-        => z axis (right-handed) -> -Y, so camera -Z looks along +Y.
-      -->
       <camera name="node01_cam0" pos="0.45 0 0.0" xyaxes="1 0 0  0 0 1" fovy="60"/>
       <camera name="node01_cam1" pos="-0.225 0 0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
       <camera name="node01_cam2" pos="-0.225 0 -0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
-
-      <!--
-        Small semi-transparent markers for quick visual debugging.
-        Offset slightly behind the camera positions so selecting fixed cameras doesn't place the camera
-        inside a marker sphere (which can occlude the view as a big ball).
-      -->
       <geom name="node01_cam0_marker" type="sphere" pos="0.45 -0.08 0.0" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
       <geom name="node01_cam1_marker" type="sphere" pos="-0.225 -0.08 0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
       <geom name="node01_cam2_marker" type="sphere" pos="-0.225 -0.08 -0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
-	    </body>
+    </body>
 
-	    <!-- Second node: translated so the two nodes cover different regions (non-overlapping views in a bounded depth range). -->
-	    <body name="node02" pos="20 -3 1.6">
-	      <site name="node02_origin" pos="0 0 0" size="0.02" rgba="1 1 0 1"/>
+    <body name="node02" pos="20 -3 1.6">
+      <site name="node02_origin" pos="0 0 0" size="0.02" rgba="1 1 0 1"/>
+      <camera name="node02_cam0" pos="0.45 0 0.0" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node02_cam1" pos="-0.225 0 0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node02_cam2" pos="-0.225 0 -0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <geom name="node02_cam0_marker" type="sphere" pos="0.45 -0.08 0.0" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node02_cam1_marker" type="sphere" pos="-0.225 -0.08 0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node02_cam2_marker" type="sphere" pos="-0.225 -0.08 -0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+    </body>
 
-	      <camera name="node02_cam0" pos="0.45 0 0.0" xyaxes="1 0 0  0 0 1" fovy="60"/>
-	      <camera name="node02_cam1" pos="-0.225 0 0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
-	      <camera name="node02_cam2" pos="-0.225 0 -0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
-
-	      <geom name="node02_cam0_marker" type="sphere" pos="0.45 -0.08 0.0" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
-	      <geom name="node02_cam1_marker" type="sphere" pos="-0.225 -0.08 0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
-	      <geom name="node02_cam2_marker" type="sphere" pos="-0.225 -0.08 -0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
-	    </body>
-		
-		    <body name="torso" pos="0 0 1.282" childclass="body">
-		      <freejoint name="root"/>
-		      <geom name="torso" fromto="0 -.07 0 0 .07 0" size=".07"/>
-	      <geom name="waist_upper" fromto="-.01 -.06 -.12 -.01 .06 -.12" size=".06"/>
-	      <body name="head" pos="0 0 .19">
-	        <geom name="head" type="sphere" size=".09"/>
-	      </body>
+    <body name="torso" pos="0 0 1.282" childclass="body">
+      <freejoint name="root"/>
+      <geom name="torso" fromto="0 -.07 0 0 .07 0" size=".07"/>
+      <geom name="waist_upper" fromto="-.01 -.06 -.12 -.01 .06 -.12" size=".06"/>
+      <body name="head" pos="0 0 .19">
+        <geom name="head" type="sphere" size=".09"/>
+      </body>
       <body name="waist_lower" pos="-.01 0 -.26">
         <geom name="waist_lower" fromto="0 -.06 0 0 .06 0" size=".06"/>
         <joint name="abdomen_z" pos="0 0 .065" axis="0 0 1" range="-45 45" class="joint_big_stiff"/>
@@ -211,7 +198,7 @@
         </body>
       </body>
       <body name="upper_arm_right" pos="0 -.17 .06">
-        <joint name="shoulder1_right" axis="2 1 1"  class="shoulder"/>
+        <joint name="shoulder1_right" axis="2 1 1" class="shoulder"/>
         <joint name="shoulder2_right" axis="0 -1 1" class="shoulder"/>
         <geom name="upper_arm_right" fromto="0 0 0 .16 -.16 -.16" class="arm_upper"/>
         <body name="lower_arm_right" pos=".18 -.18 -.18">
@@ -224,7 +211,7 @@
       </body>
       <body name="upper_arm_left" pos="0 .17 .06">
         <joint name="shoulder1_left" axis="-2 1 -1" class="shoulder"/>
-        <joint name="shoulder2_left" axis="0 -1 -1"  class="shoulder"/>
+        <joint name="shoulder2_left" axis="0 -1 -1" class="shoulder"/>
         <geom name="upper_arm_left" fromto="0 0 0 .16 .16 -.16" class="arm_upper"/>
         <body name="lower_arm_left" pos=".18 .18 -.18">
           <joint name="elbow_left" axis="0 -1 -1" class="elbow"/>
@@ -239,10 +226,11 @@
     <!-- Dynamic target (free joint => belongs to mjCAT_DYNAMIC, useful for mask-from-depth). -->
     <body name="target" pos="0 6 2.0">
       <freejoint/>
-      <!-- Keep a simple inertial so the freejoint body always has valid mass/inertia. -->
       <inertial pos="0 0 0" mass="1" diaginertia="0.1 0.1 0.1"/>
-      <!-- ikun.stl is Y-up; rotate +90deg about X so it becomes Z-up in MuJoCo. -->
-      <geom name="target_ikun" type="mesh" mesh="ikun_180k" pos="0 0 -0.483832" quat="0.7071068 0.7071068 0 0" rgba="0.95 0.25 0.25 1" contype="1" conaffinity="1"/>
+      <!-- DJI Mavic mesh is Y-up; rotate +90deg about X so it becomes Z-up in MuJoCo. -->
+      <geom name="target_dji_mavic_visual" type="mesh" mesh="dji_mavic_drone" quat="0.7071068 0.7071068 0 0" material="dji_mavic_mat" rgba="1 1 1 1" contype="0" conaffinity="0" group="1"/>
+      <!-- Collision proxy: keep physics stable and avoid expensive mesh collisions. -->
+      <geom name="target_dji_mavic_collision" type="box" size="0.38 0.19 0.32" rgba="0.18 0.38 0.88 0.15" contype="1" conaffinity="1" group="3"/>
     </body>
   </worldbody>
 
@@ -263,40 +251,30 @@
   </tendon>
 
   <actuator>
-    <motor name="abdomen_z"       gear="40"  joint="abdomen_z"/>
-    <motor name="abdomen_y"       gear="40"  joint="abdomen_y"/>
-    <motor name="abdomen_x"       gear="40"  joint="abdomen_x"/>
-    <motor name="hip_x_right"     gear="40"  joint="hip_x_right"/>
-    <motor name="hip_z_right"     gear="40"  joint="hip_z_right"/>
-    <motor name="hip_y_right"     gear="120" joint="hip_y_right"/>
-    <motor name="knee_right"      gear="80"  joint="knee_right"/>
-    <motor name="ankle_y_right"   gear="20"  joint="ankle_y_right"/>
-    <motor name="ankle_x_right"   gear="20"  joint="ankle_x_right"/>
-    <motor name="hip_x_left"      gear="40"  joint="hip_x_left"/>
-    <motor name="hip_z_left"      gear="40"  joint="hip_z_left"/>
-    <motor name="hip_y_left"      gear="120" joint="hip_y_left"/>
-    <motor name="knee_left"       gear="80"  joint="knee_left"/>
-    <motor name="ankle_y_left"    gear="20"  joint="ankle_y_left"/>
-    <motor name="ankle_x_left"    gear="20"  joint="ankle_x_left"/>
-    <motor name="shoulder1_right" gear="20"  joint="shoulder1_right"/>
-    <motor name="shoulder2_right" gear="20"  joint="shoulder2_right"/>
-    <motor name="elbow_right"     gear="40"  joint="elbow_right"/>
-    <motor name="shoulder1_left"  gear="20"  joint="shoulder1_left"/>
-    <motor name="shoulder2_left"  gear="20"  joint="shoulder2_left"/>
-    <motor name="elbow_left"      gear="40"  joint="elbow_left"/>
+    <motor name="abdomen_z" gear="40" joint="abdomen_z"/>
+    <motor name="abdomen_y" gear="40" joint="abdomen_y"/>
+    <motor name="abdomen_x" gear="40" joint="abdomen_x"/>
+    <motor name="hip_x_right" gear="40" joint="hip_x_right"/>
+    <motor name="hip_z_right" gear="40" joint="hip_z_right"/>
+    <motor name="hip_y_right" gear="120" joint="hip_y_right"/>
+    <motor name="knee_right" gear="80" joint="knee_right"/>
+    <motor name="ankle_y_right" gear="20" joint="ankle_y_right"/>
+    <motor name="ankle_x_right" gear="20" joint="ankle_x_right"/>
+    <motor name="hip_x_left" gear="40" joint="hip_x_left"/>
+    <motor name="hip_z_left" gear="40" joint="hip_z_left"/>
+    <motor name="hip_y_left" gear="120" joint="hip_y_left"/>
+    <motor name="knee_left" gear="80" joint="knee_left"/>
+    <motor name="ankle_y_left" gear="20" joint="ankle_y_left"/>
+    <motor name="ankle_x_left" gear="20" joint="ankle_x_left"/>
+    <motor name="shoulder1_right" gear="20" joint="shoulder1_right"/>
+    <motor name="shoulder2_right" gear="20" joint="shoulder2_right"/>
+    <motor name="elbow_right" gear="40" joint="elbow_right"/>
+    <motor name="shoulder1_left" gear="20" joint="shoulder1_left"/>
+    <motor name="shoulder2_left" gear="20" joint="shoulder2_left"/>
+    <motor name="elbow_left" gear="40" joint="elbow_left"/>
   </actuator>
 
   <keyframe>
-    <!--
-    The values below are split into rows for readibility (qpos order):
-      torso position
-      torso orientation
-      spinal
-      right leg
-      left leg
-      arms
-      target freejoint (pos + quat)
-    -->
     <key name="squat"
          qpos="0 0 0.596
                0.988015 0 0.154359 0

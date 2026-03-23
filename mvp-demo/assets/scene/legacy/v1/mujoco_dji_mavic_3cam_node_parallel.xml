@@ -1,0 +1,78 @@
+<!--
+  Based on:
+    mvp-demo/assets/scene/mujoco_humanoid_dji_mavic_3cam_node_parallel.xml
+
+  Change:
+    Remove the humanoid-related content and keep a clean 3-camera node scene
+    with the DJI Mavic target import.
+-->
+
+<!-- Copyright 2021 DeepMind Technologies Limited
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<mujoco model="3CamNodeParallel_DJIMavic">
+  <option timestep="0.005"/>
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.65 0.65 0.65" specular="0.25 0.25 0.25"/>
+    <map force="0.1" zfar="30"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global offwidth="2560" offheight="1440" elevation="-20" azimuth="120"/>
+    <quality offsamples="0"/>
+  </visual>
+
+  <statistic center="0 0 0.7"/>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1=".3 .5 .7" rgb2="0 0 0" width="32" height="512"/>
+    <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>
+    <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2"/>
+    <mesh name="dji_mavic_drone" file="../../../models/DJI Mavic Air Drone/DJI_mavic_air_drone.obj" scale="0.02 0.02 0.02"/>
+    <material name="dji_mavic_mat" rgba="0.92 0.92 0.95 1" specular="0.4" shininess="0.2"/>
+  </asset>
+
+  <worldbody>
+    <geom name="floor" size="0 0 .05" type="plane" material="grid" condim="3"/>
+    <light name="top" pos="0 0 6" diffuse="0.9 0.9 0.9" specular="0.15 0.15 0.15"/>
+    <light name="fill" pos="0 -6 4" diffuse="0.75 0.75 0.75" specular="0.12 0.12 0.12"/>
+
+    <body name="node01" pos="0 -3 1.6">
+      <site name="node01_origin" pos="0 0 0" size="0.02" rgba="1 1 0 1"/>
+      <camera name="node01_cam0" pos="0.45 0 0.0" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node01_cam1" pos="-0.225 0 0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node01_cam2" pos="-0.225 0 -0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <geom name="node01_cam0_marker" type="sphere" pos="0.45 -0.08 0.0" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node01_cam1_marker" type="sphere" pos="-0.225 -0.08 0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node01_cam2_marker" type="sphere" pos="-0.225 -0.08 -0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+    </body>
+
+    <body name="node02" pos="20 -3 1.6">
+      <site name="node02_origin" pos="0 0 0" size="0.02" rgba="1 1 0 1"/>
+      <camera name="node02_cam0" pos="0.45 0 0.0" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node02_cam1" pos="-0.225 0 0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node02_cam2" pos="-0.225 0 -0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <geom name="node02_cam0_marker" type="sphere" pos="0.45 -0.08 0.0" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node02_cam1_marker" type="sphere" pos="-0.225 -0.08 0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node02_cam2_marker" type="sphere" pos="-0.225 -0.08 -0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+    </body>
+
+    <body name="target" pos="0 6 2.0">
+      <freejoint/>
+      <inertial pos="0 0 0" mass="1" diaginertia="0.1 0.1 0.1"/>
+      <geom name="target_dji_mavic_visual" type="mesh" mesh="dji_mavic_drone" quat="0.7071068 0.7071068 0 0" material="dji_mavic_mat" rgba="1 1 1 1" contype="0" conaffinity="0" group="1"/>
+      <geom name="target_dji_mavic_collision" type="box" size="0.38 0.19 0.32" rgba="0.18 0.38 0.88 0.15" contype="1" conaffinity="1" group="3"/>
+    </body>
+  </worldbody>
+</mujoco>

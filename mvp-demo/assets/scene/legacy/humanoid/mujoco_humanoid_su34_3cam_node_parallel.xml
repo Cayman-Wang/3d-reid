@@ -1,0 +1,399 @@
+<!--
+  Based on:
+    mvp-demo/third_party/mujoco-3.4.0/model/humanoid/humanoid.xml
+
+  Change:
+    Add a compact 3-camera "node" rig (parallel optical axes) for capture/validation.
+    Replace the imported target mesh from dji_mavic -> su34 (J10-style explicit MuJoCo asset graph).
+
+  Notes:
+    - The node cameras follow the same convention as our minimal rig MJCF:
+      x: right, y: forward (look direction), z: up; camera forward is +Y in node frame.
+    - A simple freejoint "target" body is included so mj_view_3cam_node.py / mj_capture_3cam_node.py
+      can run with defaults.
+-->
+
+<!-- Copyright 2021 DeepMind Technologies Limited
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<mujoco model="Humanoid_SU34_3CamNodeParallel">
+  <option timestep="0.005"/>
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.65 0.65 0.65" specular="0.25 0.25 0.25"/>
+    <map force="0.1" zfar="30"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global offwidth="2560" offheight="1440" elevation="-20" azimuth="120"/>
+    <!-- Disable multisampling to reduce aliasing and make mask-from-depth more stable. -->
+    <quality offsamples="0"/>
+  </visual>
+
+  <statistic center="0 0 0.7"/>
+
+    <asset>
+    <texture type="skybox" builtin="gradient" rgb1=".3 .5 .7" rgb2="0 0 0" width="32" height="512"/>
+    <texture name="body" type="cube" builtin="flat" mark="cross" width="128" height="128" rgb1="0.8 0.6 0.4" rgb2="0.8 0.6 0.4" markrgb="1 1 1"/>
+    <material name="body" texture="body" texuniform="true" rgba="0.8 0.6 .4 1"/>
+    <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>
+    <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2"/>
+    <texture name="su34_tex_Sukleft" type="2d" file="../../../models/su34/Map/Sukleft.png"/>
+    <texture name="su34_tex_Suktop" type="2d" file="../../../models/su34/Map/Suktop.png"/>
+    <texture name="su34_tex_R_tail" type="2d" file="../../../models/su34/Map/R-tail.png"/>
+    <texture name="su34_tex_R1_tail" type="2d" file="../../../models/su34/Map/R1-tail.png"/>
+    <texture name="su34_tex_F_panel" type="2d" file="../../../models/su34/Map/F-panel.png"/>
+    <texture name="su34_tex_Lr_panel" type="2d" file="../../../models/su34/Map/Lr-panel.png"/>
+    <texture name="su34_tex_C_panel" type="2d" file="../../../models/su34/Map/C-panel.png"/>
+    <texture name="su34_tex_Sukright" type="2d" file="../../../models/su34/Map/Sukright.png"/>
+    <texture name="su34_tex_R_ona" type="2d" file="../../../models/su34/Map/R-ona.png"/>
+    <texture name="su34_tex_L_ona" type="2d" file="../../../models/su34/Map/L-ona.png"/>
+    <mesh name="su34_mesh_F_G_Blue" file="../../../models/su34/meshes/su34_mtl_F_G_Blue.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_D_G_Gray" file="../../../models/su34/meshes/su34_mtl_D_G_Gray.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_Gears" file="../../../models/su34/meshes/su34_mtl_Gears.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_M_Gray" file="../../../models/su34/meshes/su34_mtl_M_Gray.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_F_Black" file="../../../models/su34/meshes/su34_mtl_F_Black.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_Chrome" file="../../../models/su34/meshes/su34_mtl_Chrome.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_Olive_D" file="../../../models/su34/meshes/su34_mtl_Olive_D.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_Fueldoor" file="../../../models/su34/meshes/su34_mtl_Fueldoor.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_Bottom" file="../../../models/su34/meshes/su34_mtl_Bottom.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_Camufla" file="../../../models/su34/meshes/su34_mtl_Camufla.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_Glass2" file="../../../models/su34/meshes/su34_mtl_Glass2.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_Out_tail" file="../../../models/su34/meshes/su34_mtl_Out_tail.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_In_tail" file="../../../models/su34/meshes/su34_mtl_In_tail.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_Cockpit" file="../../../models/su34/meshes/su34_mtl_Cockpit.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_G_Black" file="../../../models/su34/meshes/su34_mtl_G_Black.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_wire_184228153" file="../../../models/su34/meshes/su34_mtl_wire_184228153.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_F_Panel" file="../../../models/su34/meshes/su34_mtl_F_Panel.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_L_Panel" file="../../../models/su34/meshes/su34_mtl_L_Panel.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_C_Panel" file="../../../models/su34/meshes/su34_mtl_C_Panel.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_Glass" file="../../../models/su34/meshes/su34_mtl_Glass.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_Kubinka" file="../../../models/su34/meshes/su34_mtl_Kubinka.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_L_43" file="../../../models/su34/meshes/su34_mtl_L_43.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_R_43" file="../../../models/su34/meshes/su34_mtl_R_43.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_F_Engi" file="../../../models/su34/meshes/su34_mtl_F_Engi.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_BK_Engi" file="../../../models/su34/meshes/su34_mtl_BK_Engi.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_R_ona" file="../../../models/su34/meshes/su34_mtl_R_ona.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <mesh name="su34_mesh_L_ona" file="../../../models/su34/meshes/su34_mtl_L_ona.obj" scale="0.005 0.005 0.005" inertia="shell"/>
+    <material name="su34_mat_F_G_Blue" rgba="0.7765 0.8471 0.8627 1"/>
+    <material name="su34_mat_D_G_Gray" rgba="0.3059 0.349 0.4 1"/>
+    <material name="su34_mat_Gears" rgba="0.1176 0.1176 0.1176 1"/>
+    <material name="su34_mat_M_Gray" rgba="0.7 0.7 0.7 1"/>
+    <material name="su34_mat_F_Black" rgba="0.1569 0.1569 0.1569 1"/>
+    <material name="su34_mat_Chrome" rgba="0.6039 0.6706 0.7176 1"/>
+    <material name="su34_mat_Olive_D" rgba="0.2549 0.3647 0.2745 1"/>
+    <material name="su34_mat_Fueldoor" texture="su34_tex_Sukleft" rgba="1 1 1 1"/>
+    <material name="su34_mat_Bottom" rgba="0.6824 0.8275 0.8588 1"/>
+    <material name="su34_mat_Camufla" texture="su34_tex_Suktop" rgba="1 1 1 1"/>
+    <material name="su34_mat_Glass2" rgba="1 1 1 0.9"/>
+    <material name="su34_mat_Out_tail" texture="su34_tex_R_tail" rgba="1 1 1 1"/>
+    <material name="su34_mat_In_tail" texture="su34_tex_R1_tail" rgba="1 1 1 1"/>
+    <material name="su34_mat_Cockpit" rgba="0.3059 0.349 0.4 1"/>
+    <material name="su34_mat_G_Black" rgba="0 0 0 1"/>
+    <material name="su34_mat_wire_184228153" rgba="0.7216 0.8941 0.6 1"/>
+    <material name="su34_mat_F_Panel" texture="su34_tex_F_panel" rgba="1 1 1 1"/>
+    <material name="su34_mat_L_Panel" texture="su34_tex_Lr_panel" rgba="1 1 1 1"/>
+    <material name="su34_mat_C_Panel" texture="su34_tex_C_panel" rgba="1 1 1 1"/>
+    <material name="su34_mat_Glass" rgba="0.051 0.1961 0.0039 0.5"/>
+    <material name="su34_mat_Kubinka" texture="su34_tex_Suktop" rgba="1 1 1 1"/>
+    <material name="su34_mat_L_43" texture="su34_tex_Sukleft" rgba="1 1 1 1"/>
+    <material name="su34_mat_R_43" texture="su34_tex_Sukright" rgba="1 1 1 1"/>
+    <material name="su34_mat_F_Engi" rgba="0.3569 0.4039 0.4078 1"/>
+    <material name="su34_mat_BK_Engi" rgba="0.1725 0.2314 0.2353 1"/>
+    <material name="su34_mat_R_ona" texture="su34_tex_R_ona" rgba="1 1 1 1"/>
+    <material name="su34_mat_L_ona" texture="su34_tex_L_ona" rgba="1 1 1 1"/>
+  </asset>
+
+  <default>
+    <motor ctrlrange="-1 1" ctrllimited="true"/>
+    <default class="body">
+
+      <!-- geoms -->
+      <geom type="capsule" condim="1" friction=".7" solimp=".9 .99 .003" solref=".015 1" material="body" group="1"/>
+      <default class="thigh">
+        <geom size=".06"/>
+      </default>
+      <default class="shin">
+        <geom fromto="0 0 0 0 0 -.3" size=".049"/>
+      </default>
+      <default class="foot">
+        <geom size=".027"/>
+        <default class="foot1">
+          <geom fromto="-.07 -.01 0 .14 -.03 0"/>
+        </default>
+        <default class="foot2">
+          <geom fromto="-.07 .01 0 .14 .03 0"/>
+        </default>
+      </default>
+      <default class="arm_upper">
+        <geom size=".04"/>
+      </default>
+      <default class="arm_lower">
+        <geom size=".031"/>
+      </default>
+      <default class="hand">
+        <geom type="sphere" size=".04"/>
+      </default>
+
+      <!-- joints -->
+      <joint type="hinge" damping=".2" stiffness="1" armature=".01" limited="true" solimplimit="0 .99 .01"/>
+      <default class="joint_big">
+        <joint damping="5" stiffness="10"/>
+        <default class="hip_x">
+          <joint range="-30 10"/>
+        </default>
+        <default class="hip_z">
+          <joint range="-60 35"/>
+        </default>
+        <default class="hip_y">
+          <joint axis="0 1 0" range="-150 20"/>
+        </default>
+        <default class="joint_big_stiff">
+          <joint stiffness="20"/>
+        </default>
+      </default>
+      <default class="knee">
+        <joint pos="0 0 .02" axis="0 -1 0" range="-160 2"/>
+      </default>
+      <default class="ankle">
+        <joint range="-50 50"/>
+        <default class="ankle_y">
+          <joint pos="0 0 .08" axis="0 1 0" stiffness="6"/>
+        </default>
+        <default class="ankle_x">
+          <joint pos="0 0 .04" stiffness="3"/>
+        </default>
+      </default>
+      <default class="shoulder">
+        <joint range="-85 60"/>
+      </default>
+      <default class="elbow">
+        <joint range="-100 50" stiffness="0"/>
+      </default>
+    </default>
+  </default>
+
+  <worldbody>
+    <geom name="floor" size="0 0 .05" type="plane" material="grid" condim="3"/>
+    <light name="spotlight" mode="targetbodycom" target="torso" diffuse="1.2 1.2 1.2" specular="0.6 0.6 0.6" pos="0 -6 4" cutoff="30"/>
+    <light name="top" pos="0 0 2" mode="trackcom" diffuse="0.9 0.9 0.9" specular="0.3 0.3 0.3"/>
+
+    <!-- Node rig root. Cameras are mounted relative to this body. -->
+    <body name="node01" pos="0 -3 1.6">
+      <site name="node01_origin" pos="0 0 0" size="0.02" rgba="1 1 0 1"/>
+      <camera name="node01_cam0" pos="0.45 0 0.0" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node01_cam1" pos="-0.225 0 0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node01_cam2" pos="-0.225 0 -0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <geom name="node01_cam0_marker" type="sphere" pos="0.45 -0.08 0.0" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node01_cam1_marker" type="sphere" pos="-0.225 -0.08 0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node01_cam2_marker" type="sphere" pos="-0.225 -0.08 -0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+    </body>
+
+    <body name="node02" pos="20 -3 1.6">
+      <site name="node02_origin" pos="0 0 0" size="0.02" rgba="1 1 0 1"/>
+      <camera name="node02_cam0" pos="0.45 0 0.0" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node02_cam1" pos="-0.225 0 0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node02_cam2" pos="-0.225 0 -0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <geom name="node02_cam0_marker" type="sphere" pos="0.45 -0.08 0.0" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node02_cam1_marker" type="sphere" pos="-0.225 -0.08 0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node02_cam2_marker" type="sphere" pos="-0.225 -0.08 -0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+    </body>
+
+    <body name="torso" pos="0 0 1.282" childclass="body">
+      <freejoint name="root"/>
+      <geom name="torso" fromto="0 -.07 0 0 .07 0" size=".07"/>
+      <geom name="waist_upper" fromto="-.01 -.06 -.12 -.01 .06 -.12" size=".06"/>
+      <body name="head" pos="0 0 .19">
+        <geom name="head" type="sphere" size=".09"/>
+      </body>
+      <body name="waist_lower" pos="-.01 0 -.26">
+        <geom name="waist_lower" fromto="0 -.06 0 0 .06 0" size=".06"/>
+        <joint name="abdomen_z" pos="0 0 .065" axis="0 0 1" range="-45 45" class="joint_big_stiff"/>
+        <joint name="abdomen_y" pos="0 0 .065" axis="0 1 0" range="-75 30" class="joint_big"/>
+        <body name="pelvis" pos="0 0 -.165">
+          <joint name="abdomen_x" pos="0 0 .1" axis="1 0 0" range="-35 35" class="joint_big"/>
+          <geom name="butt" fromto="-.02 -.07 0 -.02 .07 0" size=".09"/>
+          <body name="thigh_right" pos="0 -.1 -.04">
+            <joint name="hip_x_right" axis="1 0 0" class="hip_x"/>
+            <joint name="hip_z_right" axis="0 0 1" class="hip_z"/>
+            <joint name="hip_y_right" class="hip_y"/>
+            <geom name="thigh_right" fromto="0 0 0 0 .01 -.34" class="thigh"/>
+            <body name="shin_right" pos="0 .01 -.4">
+              <joint name="knee_right" class="knee"/>
+              <geom name="shin_right" class="shin"/>
+              <body name="foot_right" pos="0 0 -.39">
+                <joint name="ankle_y_right" class="ankle_y"/>
+                <joint name="ankle_x_right" class="ankle_x" axis="1 0 .5"/>
+                <geom name="foot1_right" class="foot1"/>
+                <geom name="foot2_right" class="foot2"/>
+              </body>
+            </body>
+          </body>
+          <body name="thigh_left" pos="0 .1 -.04">
+            <joint name="hip_x_left" axis="-1 0 0" class="hip_x"/>
+            <joint name="hip_z_left" axis="0 0 -1" class="hip_z"/>
+            <joint name="hip_y_left" class="hip_y"/>
+            <geom name="thigh_left" fromto="0 0 0 0 -.01 -.34" class="thigh"/>
+            <body name="shin_left" pos="0 -.01 -.4">
+              <joint name="knee_left" class="knee"/>
+              <geom name="shin_left" fromto="0 0 0 0 0 -.3" class="shin"/>
+              <body name="foot_left" pos="0 0 -.39">
+                <joint name="ankle_y_left" class="ankle_y"/>
+                <joint name="ankle_x_left" class="ankle_x" axis="-1 0 -.5"/>
+                <geom name="foot1_left" class="foot1"/>
+                <geom name="foot2_left" class="foot2"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <body name="upper_arm_right" pos="0 -.17 .06">
+        <joint name="shoulder1_right" axis="2 1 1" class="shoulder"/>
+        <joint name="shoulder2_right" axis="0 -1 1" class="shoulder"/>
+        <geom name="upper_arm_right" fromto="0 0 0 .16 -.16 -.16" class="arm_upper"/>
+        <body name="lower_arm_right" pos=".18 -.18 -.18">
+          <joint name="elbow_right" axis="0 -1 1" class="elbow"/>
+          <geom name="lower_arm_right" fromto=".01 .01 .01 .17 .17 .17" class="arm_lower"/>
+          <body name="hand_right" pos=".18 .18 .18">
+            <geom name="hand_right" zaxis="1 1 1" class="hand"/>
+          </body>
+        </body>
+      </body>
+      <body name="upper_arm_left" pos="0 .17 .06">
+        <joint name="shoulder1_left" axis="-2 1 -1" class="shoulder"/>
+        <joint name="shoulder2_left" axis="0 -1 -1" class="shoulder"/>
+        <geom name="upper_arm_left" fromto="0 0 0 .16 .16 -.16" class="arm_upper"/>
+        <body name="lower_arm_left" pos=".18 .18 -.18">
+          <joint name="elbow_left" axis="0 -1 -1" class="elbow"/>
+          <geom name="lower_arm_left" fromto=".01 -.01 .01 .17 -.17 .17" class="arm_lower"/>
+          <body name="hand_left" pos=".18 -.18 .18">
+            <geom name="hand_left" zaxis="1 -1 1" class="hand"/>
+          </body>
+        </body>
+      </body>
+    </body>
+
+    <!-- Dynamic target (free joint => belongs to mjCAT_DYNAMIC, useful for mask-from-depth). -->
+    <body name="target" pos="0 6 2.0">
+      <freejoint/>
+      <inertial pos="0 0 0" mass="1" diaginertia="0.1 0.1 0.1"/>
+      <body name="target_su34" pos="0.011244 0.0362665 -0.0834365" quat="0.7071068 0.7071068 0 0">
+        <geom name="target_su34_F_G_Blue" type="mesh" mesh="su34_mesh_F_G_Blue" material="su34_mat_F_G_Blue" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_D_G_Gray" type="mesh" mesh="su34_mesh_D_G_Gray" material="su34_mat_D_G_Gray" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_Gears" type="mesh" mesh="su34_mesh_Gears" material="su34_mat_Gears" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_M_Gray" type="mesh" mesh="su34_mesh_M_Gray" material="su34_mat_M_Gray" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_F_Black" type="mesh" mesh="su34_mesh_F_Black" material="su34_mat_F_Black" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_Chrome" type="mesh" mesh="su34_mesh_Chrome" material="su34_mat_Chrome" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_Olive_D" type="mesh" mesh="su34_mesh_Olive_D" material="su34_mat_Olive_D" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_Fueldoor" type="mesh" mesh="su34_mesh_Fueldoor" material="su34_mat_Fueldoor" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_Bottom" type="mesh" mesh="su34_mesh_Bottom" material="su34_mat_Bottom" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_Camufla" type="mesh" mesh="su34_mesh_Camufla" material="su34_mat_Camufla" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_Glass2" type="mesh" mesh="su34_mesh_Glass2" material="su34_mat_Glass2" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_Out_tail" type="mesh" mesh="su34_mesh_Out_tail" material="su34_mat_Out_tail" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_In_tail" type="mesh" mesh="su34_mesh_In_tail" material="su34_mat_In_tail" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_Cockpit" type="mesh" mesh="su34_mesh_Cockpit" material="su34_mat_Cockpit" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_G_Black" type="mesh" mesh="su34_mesh_G_Black" material="su34_mat_G_Black" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_wire_184228153" type="mesh" mesh="su34_mesh_wire_184228153" material="su34_mat_wire_184228153" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_F_Panel" type="mesh" mesh="su34_mesh_F_Panel" material="su34_mat_F_Panel" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_L_Panel" type="mesh" mesh="su34_mesh_L_Panel" material="su34_mat_L_Panel" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_C_Panel" type="mesh" mesh="su34_mesh_C_Panel" material="su34_mat_C_Panel" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_Glass" type="mesh" mesh="su34_mesh_Glass" material="su34_mat_Glass" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_Kubinka" type="mesh" mesh="su34_mesh_Kubinka" material="su34_mat_Kubinka" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_L_43" type="mesh" mesh="su34_mesh_L_43" material="su34_mat_L_43" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_R_43" type="mesh" mesh="su34_mesh_R_43" material="su34_mat_R_43" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_F_Engi" type="mesh" mesh="su34_mesh_F_Engi" material="su34_mat_F_Engi" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_BK_Engi" type="mesh" mesh="su34_mesh_BK_Engi" material="su34_mat_BK_Engi" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_R_ona" type="mesh" mesh="su34_mesh_R_ona" material="su34_mat_R_ona" contype="0" conaffinity="0" group="1"/>
+        <geom name="target_su34_L_ona" type="mesh" mesh="su34_mesh_L_ona" material="su34_mat_L_ona" contype="0" conaffinity="0" group="1"/>
+      </body>
+      <geom name="target_su34_proxy" type="box" size="0.572 0.994 0.251" rgba="0.18 0.38 0.88 0.05" contype="1" conaffinity="1" group="3"/>
+    </body>
+  </worldbody>
+
+  <contact>
+    <exclude body1="waist_lower" body2="thigh_right"/>
+    <exclude body1="waist_lower" body2="thigh_left"/>
+  </contact>
+
+  <tendon>
+    <fixed name="hamstring_right" limited="true" range="-0.3 2">
+      <joint joint="hip_y_right" coef=".5"/>
+      <joint joint="knee_right" coef="-.5"/>
+    </fixed>
+    <fixed name="hamstring_left" limited="true" range="-0.3 2">
+      <joint joint="hip_y_left" coef=".5"/>
+      <joint joint="knee_left" coef="-.5"/>
+    </fixed>
+  </tendon>
+
+  <actuator>
+    <motor name="abdomen_z" gear="40" joint="abdomen_z"/>
+    <motor name="abdomen_y" gear="40" joint="abdomen_y"/>
+    <motor name="abdomen_x" gear="40" joint="abdomen_x"/>
+    <motor name="hip_x_right" gear="40" joint="hip_x_right"/>
+    <motor name="hip_z_right" gear="40" joint="hip_z_right"/>
+    <motor name="hip_y_right" gear="120" joint="hip_y_right"/>
+    <motor name="knee_right" gear="80" joint="knee_right"/>
+    <motor name="ankle_y_right" gear="20" joint="ankle_y_right"/>
+    <motor name="ankle_x_right" gear="20" joint="ankle_x_right"/>
+    <motor name="hip_x_left" gear="40" joint="hip_x_left"/>
+    <motor name="hip_z_left" gear="40" joint="hip_z_left"/>
+    <motor name="hip_y_left" gear="120" joint="hip_y_left"/>
+    <motor name="knee_left" gear="80" joint="knee_left"/>
+    <motor name="ankle_y_left" gear="20" joint="ankle_y_left"/>
+    <motor name="ankle_x_left" gear="20" joint="ankle_x_left"/>
+    <motor name="shoulder1_right" gear="20" joint="shoulder1_right"/>
+    <motor name="shoulder2_right" gear="20" joint="shoulder2_right"/>
+    <motor name="elbow_right" gear="40" joint="elbow_right"/>
+    <motor name="shoulder1_left" gear="20" joint="shoulder1_left"/>
+    <motor name="shoulder2_left" gear="20" joint="shoulder2_left"/>
+    <motor name="elbow_left" gear="40" joint="elbow_left"/>
+  </actuator>
+
+  <keyframe>
+    <key name="squat"
+         qpos="0 0 0.596
+               0.988015 0 0.154359 0
+               0 0.4 0
+               -0.25 -0.5 -2.5 -2.65 -0.8 0.56
+               -0.25 -0.5 -2.5 -2.65 -0.8 0.56
+               0 0 0 0 0 0
+               0 6 2 1 0 0 0"/>
+    <key name="stand_on_left_leg"
+         qpos="0 0 1.21948
+               0.971588 -0.179973 0.135318 -0.0729076
+               -0.0516 -0.202 0.23
+               -0.24 -0.007 -0.34 -1.76 -0.466 -0.0415
+               -0.08 -0.01 -0.37 -0.685 -0.35 -0.09
+               0.109 -0.067 -0.7 -0.05 0.12 0.16
+               0 6 2 1 0 0 0"/>
+    <key name="prone"
+         qpos="0.4 0 0.0757706
+               0.7325 0 0.680767 0
+               0 0.0729 0
+               0.0077 0.0019 -0.026 -0.351 -0.27 0
+               0.0077 0.0019 -0.026 -0.351 -0.27 0
+               0.56 -0.62 -1.752
+               0.56 -0.62 -1.752
+               0 6 2 1 0 0 0"/>
+    <key name="supine"
+         qpos="-0.4 0 0.08122
+               0.722788 0 -0.69107 0
+               0 -0.25 0
+               0.0182 0.0142 0.3 0.042 -0.44 -0.02
+               0.0182 0.0142 0.3 0.042 -0.44 -0.02
+               0.186 -0.73 -1.73
+               0.186 -0.73 -1.73
+               0 6 2 1 0 0 0"/>
+  </keyframe>
+</mujoco>

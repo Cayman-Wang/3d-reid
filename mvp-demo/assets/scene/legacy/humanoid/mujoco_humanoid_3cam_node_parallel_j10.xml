@@ -4,7 +4,6 @@
 
   Change:
     Add a compact 3-camera "node" rig (parallel optical axes) for capture/validation.
-    Replace the imported target mesh from ikun -> uav (mvp-demo/assets/models/uav1_ascii).
 
   Notes:
     - The node cameras follow the same convention as our minimal rig MJCF:
@@ -28,12 +27,11 @@
      limitations under the License.
 -->
 
-<mujoco model="Humanoid_UAV1_3CamNodeParallel">
+<mujoco model="Humanoid_3CamNodeParallel">
   <option timestep="0.005"/>
 
   <visual>
-    <!-- Brighter overall lighting (keeps the original humanoid scene style). -->
-    <headlight ambient="0.35 0.35 0.35" diffuse="0.65 0.65 0.65" specular="0.25 0.25 0.25"/>
+    <headlight ambient="0.5 0.5 0.5" diffuse="0.85 0.85 0.85" specular="0.3 0.3 0.3"/>
     <map force="0.1" zfar="30"/>
     <rgba haze="0.15 0.25 0.35 1"/>
     <global offwidth="2560" offheight="1440" elevation="-20" azimuth="120"/>
@@ -49,13 +47,44 @@
     <material name="body" texture="body" texuniform="true" rgba="0.8 0.6 .4 1"/>
     <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>
     <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance=".2"/>
-    <!-- cgaxis drone OBJ appears to be in centimeters; scale to meters for MuJoCo. -->
-    <!-- The model looked too small in the humanoid scene; scale up 2x. -->
-    <!-- Use an ASCII-safe alias directory so Windows MuJoCo can resolve the UAV asset. -->
-    <mesh name="uav1_drone" file="../models/uav1_ascii/cgaxis_models_117_01_obj_drone.obj" scale="0.02 0.02 0.02"/>
-    <!-- If the OBJ UVs match this atlas, MuJoCo will render the textured mesh. -->
-    <texture name="uav1_tex" type="2d" file="../models/uav1_ascii/cgaxis_models_117_01.png"/>
-    <material name="uav1_mat" texture="uav1_tex" texuniform="false"/>
+
+    <!-- J10 textures/materials/meshes (per usemtl split). -->
+    <texture name="j10_tex_seat_martin_baker_mk16_c" type="2d" file="../../../models/J10/textures/seat_martin_baker_mk16_c.png"/>
+    <texture name="j10_tex_j_10a_c" type="2d" file="../../../models/J10/textures/j_10a_c.png"/>
+    <texture name="j10_tex_j_10a_interrior_c" type="2d" file="../../../models/J10/textures/j_10a_interrior_c.png"/>
+    <texture name="j10_tex_j_10a_inside_c" type="2d" file="../../../models/J10/textures/j_10a_inside_c.png"/>
+    <texture name="j10_tex_ch_1140l_drop_tank_pylon_bluegrey_c" type="2d" file="../../../models/J10/textures/ch_1140l_drop_tank_pylon_bluegrey_c.png"/>
+    <texture name="j10_tex_ch_800l_fyx800_drop_tank_c" type="2d" file="../../../models/J10/textures/ch_800l_fyx800_drop_tank_c.png"/>
+    <texture name="j10_tex_ch_1600l_drop_tank_pylon_c" type="2d" file="../../../models/J10/textures/ch_1600l_drop_tank_pylon_c.png"/>
+    <texture name="j10_tex_ch_1600l_drop_tank_c" type="2d" file="../../../models/J10/textures/ch_1600l_drop_tank_c.png"/>
+
+    <material name="j10_mat_m_4b1c7250_f6a8_456f_96a4_45549ea99bf4" texture="j10_tex_seat_martin_baker_mk16_c" rgba="1 1 1 1"/>
+    <material name="j10_mat_m_606e1620_dba4_48d8_ae53_872f4361bb56" texture="j10_tex_j_10a_c" rgba="1 1 1 1"/>
+    <material name="j10_mat_m_88013eb3_11f4_4b69_a264_cdaba0202692" texture="j10_tex_j_10a_interrior_c" rgba="1 1 1 1"/>
+    <material name="j10_mat_m_36d13c1b_90ec_425e_80c9_fba5523861d2" rgba="0 0 0 0.17"/>
+    <material name="j10_mat_m_4bb1e5e9_657a_4ea2_aaf7_e7de73f09a45" texture="j10_tex_j_10a_inside_c" rgba="1 1 1 1"/>
+    <material name="j10_mat_m_008b3ba6_42f2_4d1b_9d69_4433b7358bf4" rgba="0 0 0 0.9"/>
+    <material name="j10_mat_df82431e_acb1_43c8_ad03_2561b6f70272" rgba="1 0 1 1"/>
+    <material name="j10_mat_m_307a4104_348b_4b73_8b30_f1327793c5fd" texture="j10_tex_ch_1140l_drop_tank_pylon_bluegrey_c" rgba="1 1 1 1"/>
+    <material name="j10_mat_a2ff61ff_436f_4922_b179_0605e5840f55" texture="j10_tex_ch_800l_fyx800_drop_tank_c" rgba="1 1 1 1"/>
+    <material name="j10_mat_m_2c5e7af3_f723_4883_a280_7f61ccdebf84" texture="j10_tex_ch_1600l_drop_tank_pylon_c" rgba="1 1 1 1"/>
+    <material name="j10_mat_cb0bff92_f934_4bad_a9e5_dcea0c0ad841" texture="j10_tex_j_10a_c" rgba="1 1 1 1"/>
+    <material name="j10_mat_m_327269de_1678_4421_9b6d_2932af504444" rgba="0 0 0 0.9"/>
+    <material name="j10_mat_d31ed11d_e05e_4eae_b8e0_6bafa4cdc7d3" texture="j10_tex_ch_1600l_drop_tank_c" rgba="1 1 1 1"/>
+
+    <mesh name="j10_mesh_m_4b1c7250_f6a8_456f_96a4_45549ea99bf4" file="../../../models/J10/meshes/j10_mtl_m_4b1c7250_f6a8_456f_96a4_45549ea99bf4.obj" scale="0.12 0.12 0.12"/>
+    <mesh name="j10_mesh_m_606e1620_dba4_48d8_ae53_872f4361bb56" file="../../../models/J10/meshes/j10_mtl_m_606e1620_dba4_48d8_ae53_872f4361bb56.obj" scale="0.12 0.12 0.12"/>
+    <mesh name="j10_mesh_m_88013eb3_11f4_4b69_a264_cdaba0202692" file="../../../models/J10/meshes/j10_mtl_m_88013eb3_11f4_4b69_a264_cdaba0202692.obj" scale="0.12 0.12 0.12"/>
+    <mesh name="j10_mesh_m_36d13c1b_90ec_425e_80c9_fba5523861d2" file="../../../models/J10/meshes/j10_mtl_m_36d13c1b_90ec_425e_80c9_fba5523861d2.obj" scale="0.12 0.12 0.12"/>
+    <mesh name="j10_mesh_m_4bb1e5e9_657a_4ea2_aaf7_e7de73f09a45" file="../../../models/J10/meshes/j10_mtl_m_4bb1e5e9_657a_4ea2_aaf7_e7de73f09a45.obj" scale="0.12 0.12 0.12"/>
+    <mesh name="j10_mesh_m_008b3ba6_42f2_4d1b_9d69_4433b7358bf4" file="../../../models/J10/meshes/j10_mtl_m_008b3ba6_42f2_4d1b_9d69_4433b7358bf4.obj" scale="0.12 0.12 0.12"/>
+    <mesh name="j10_mesh_df82431e_acb1_43c8_ad03_2561b6f70272" file="../../../models/J10/meshes/j10_mtl_df82431e_acb1_43c8_ad03_2561b6f70272.obj" scale="0.12 0.12 0.12"/>
+    <mesh name="j10_mesh_m_307a4104_348b_4b73_8b30_f1327793c5fd" file="../../../models/J10/meshes/j10_mtl_m_307a4104_348b_4b73_8b30_f1327793c5fd.obj" scale="0.12 0.12 0.12"/>
+    <mesh name="j10_mesh_a2ff61ff_436f_4922_b179_0605e5840f55" file="../../../models/J10/meshes/j10_mtl_a2ff61ff_436f_4922_b179_0605e5840f55.obj" scale="0.12 0.12 0.12"/>
+    <mesh name="j10_mesh_m_2c5e7af3_f723_4883_a280_7f61ccdebf84" file="../../../models/J10/meshes/j10_mtl_m_2c5e7af3_f723_4883_a280_7f61ccdebf84.obj" scale="0.12 0.12 0.12"/>
+    <mesh name="j10_mesh_cb0bff92_f934_4bad_a9e5_dcea0c0ad841" file="../../../models/J10/meshes/j10_mtl_cb0bff92_f934_4bad_a9e5_dcea0c0ad841.obj" scale="0.12 0.12 0.12"/>
+    <mesh name="j10_mesh_m_327269de_1678_4421_9b6d_2932af504444" file="../../../models/J10/meshes/j10_mtl_m_327269de_1678_4421_9b6d_2932af504444.obj" scale="0.12 0.12 0.12"/>
+    <mesh name="j10_mesh_d31ed11d_e05e_4eae_b8e0_6bafa4cdc7d3" file="../../../models/J10/meshes/j10_mtl_d31ed11d_e05e_4eae_b8e0_6bafa4cdc7d3.obj" scale="0.12 0.12 0.12"/>
   </asset>
 
   <default>
@@ -129,8 +158,9 @@
 
   <worldbody>
     <geom name="floor" size="0 0 .05" type="plane" material="grid" condim="3"/>
-    <light name="spotlight" mode="targetbodycom" target="torso" diffuse="1.2 1.2 1.2" specular="0.6 0.6 0.6" pos="0 -6 4" cutoff="30"/>
-    <light name="top" pos="0 0 2" mode="trackcom" diffuse="0.9 0.9 0.9" specular="0.3 0.3 0.3"/>
+    <light name="spotlight" mode="targetbodycom" target="torso" diffuse=".8 .8 .8" specular="0.3 0.3 0.3" pos="0 -6 4" cutoff="30"/>
+    <light name="top" pos="0 0 2" mode="trackcom"/>
+    <light name="fill" pos="0 0 6" diffuse="0.9 0.9 0.9" specular="0.15 0.15 0.15"/>
 
     <!-- Node rig root. Cameras are mounted relative to this body. -->
     <body name="node01" pos="0 -3 1.6">
@@ -147,10 +177,10 @@
       <camera name="node01_cam1" pos="-0.225 0 0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
       <camera name="node01_cam2" pos="-0.225 0 -0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
 
-      <!-- Small semi-transparent markers for quick visual debugging. -->
       <!--
-        Markers are offset slightly behind the camera positions so selecting the fixed cameras in the viewer
-        doesn't put the camera inside a marker sphere (which can occlude the whole view as a "white ball").
+        Small semi-transparent markers for quick visual debugging.
+        Offset slightly behind the camera positions so selecting fixed cameras doesn't place the camera
+        inside a marker sphere (which can occlude the view as a big ball).
       -->
       <geom name="node01_cam0_marker" type="sphere" pos="0.45 -0.08 0.0" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
       <geom name="node01_cam1_marker" type="sphere" pos="-0.225 -0.08 0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
@@ -249,10 +279,22 @@
       <freejoint/>
       <!-- Keep a simple inertial so the freejoint body always has valid mass/inertia. -->
       <inertial pos="0 0 0" mass="1" diaginertia="0.1 0.1 0.1"/>
-      <!-- Drone mesh is typically Y-up; rotate +90deg about X so it becomes Z-up in MuJoCo. -->
-      <geom name="target_uav1_visual" type="mesh" mesh="uav1_drone" quat="0.7071068 0.7071068 0 0" material="uav1_mat" rgba="1 1 1 1" contype="0" conaffinity="0" group="1"/>
-      <!-- Collision proxy: keep physics stable and avoid expensive mesh collisions. -->
-      <geom name="target_uav1_collision" type="box" size="0.44 0.22 0.44" rgba="0.25 0.25 0.95 0.15" contype="1" conaffinity="1" group="3"/>
+      <!-- J10 OBJ is Y-up; rotate +90deg about X so it becomes Z-up in MuJoCo. -->
+      <body name="target_j10" pos="0 0.1675056 -0.0888456" quat="0.7071068 0.7071068 0 0">
+        <geom name="target_j10_m_4b1c7250_f6a8_456f_96a4_45549ea99bf4" type="mesh" mesh="j10_mesh_m_4b1c7250_f6a8_456f_96a4_45549ea99bf4" material="j10_mat_m_4b1c7250_f6a8_456f_96a4_45549ea99bf4" contype="1" conaffinity="1"/>
+        <geom name="target_j10_m_606e1620_dba4_48d8_ae53_872f4361bb56" type="mesh" mesh="j10_mesh_m_606e1620_dba4_48d8_ae53_872f4361bb56" material="j10_mat_m_606e1620_dba4_48d8_ae53_872f4361bb56" contype="1" conaffinity="1"/>
+        <geom name="target_j10_m_88013eb3_11f4_4b69_a264_cdaba0202692" type="mesh" mesh="j10_mesh_m_88013eb3_11f4_4b69_a264_cdaba0202692" material="j10_mat_m_88013eb3_11f4_4b69_a264_cdaba0202692" contype="1" conaffinity="1"/>
+        <geom name="target_j10_m_36d13c1b_90ec_425e_80c9_fba5523861d2" type="mesh" mesh="j10_mesh_m_36d13c1b_90ec_425e_80c9_fba5523861d2" material="j10_mat_m_36d13c1b_90ec_425e_80c9_fba5523861d2" contype="1" conaffinity="1"/>
+        <geom name="target_j10_m_4bb1e5e9_657a_4ea2_aaf7_e7de73f09a45" type="mesh" mesh="j10_mesh_m_4bb1e5e9_657a_4ea2_aaf7_e7de73f09a45" material="j10_mat_m_4bb1e5e9_657a_4ea2_aaf7_e7de73f09a45" contype="1" conaffinity="1"/>
+        <geom name="target_j10_m_008b3ba6_42f2_4d1b_9d69_4433b7358bf4" type="mesh" mesh="j10_mesh_m_008b3ba6_42f2_4d1b_9d69_4433b7358bf4" material="j10_mat_m_008b3ba6_42f2_4d1b_9d69_4433b7358bf4" contype="1" conaffinity="1"/>
+        <geom name="target_j10_df82431e_acb1_43c8_ad03_2561b6f70272" type="mesh" mesh="j10_mesh_df82431e_acb1_43c8_ad03_2561b6f70272" material="j10_mat_df82431e_acb1_43c8_ad03_2561b6f70272" contype="1" conaffinity="1"/>
+        <geom name="target_j10_m_307a4104_348b_4b73_8b30_f1327793c5fd" type="mesh" mesh="j10_mesh_m_307a4104_348b_4b73_8b30_f1327793c5fd" material="j10_mat_m_307a4104_348b_4b73_8b30_f1327793c5fd" contype="1" conaffinity="1"/>
+        <geom name="target_j10_a2ff61ff_436f_4922_b179_0605e5840f55" type="mesh" mesh="j10_mesh_a2ff61ff_436f_4922_b179_0605e5840f55" material="j10_mat_a2ff61ff_436f_4922_b179_0605e5840f55" contype="1" conaffinity="1"/>
+        <geom name="target_j10_m_2c5e7af3_f723_4883_a280_7f61ccdebf84" type="mesh" mesh="j10_mesh_m_2c5e7af3_f723_4883_a280_7f61ccdebf84" material="j10_mat_m_2c5e7af3_f723_4883_a280_7f61ccdebf84" contype="1" conaffinity="1"/>
+        <geom name="target_j10_cb0bff92_f934_4bad_a9e5_dcea0c0ad841" type="mesh" mesh="j10_mesh_cb0bff92_f934_4bad_a9e5_dcea0c0ad841" material="j10_mat_cb0bff92_f934_4bad_a9e5_dcea0c0ad841" contype="1" conaffinity="1"/>
+        <geom name="target_j10_m_327269de_1678_4421_9b6d_2932af504444" type="mesh" mesh="j10_mesh_m_327269de_1678_4421_9b6d_2932af504444" material="j10_mat_m_327269de_1678_4421_9b6d_2932af504444" contype="1" conaffinity="1"/>
+        <geom name="target_j10_d31ed11d_e05e_4eae_b8e0_6bafa4cdc7d3" type="mesh" mesh="j10_mesh_d31ed11d_e05e_4eae_b8e0_6bafa4cdc7d3" material="j10_mat_d31ed11d_e05e_4eae_b8e0_6bafa4cdc7d3" contype="1" conaffinity="1"/>
+      </body>
     </body>
   </worldbody>
 
