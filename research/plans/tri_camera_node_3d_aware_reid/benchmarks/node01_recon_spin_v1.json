@@ -1,0 +1,307 @@
+{
+  "benchmark_id": "node01_recon_spin_v1",
+  "description": "Node01 reconstruction-focused spin benchmark for known-pose object-centric geometry enhancement.",
+  "scope": {
+    "task": "single-node cross-scene track-level retrieval with spin-enhanced reconstruction scenes",
+    "domain": "uav_aircraft",
+    "node_id": "node01",
+    "phase": "reconstruction_mainline"
+  },
+  "defaults": {
+    "split_role": "both",
+    "mask_source": "sam2_pred",
+    "depth_source": "depth_anything_v2",
+    "mask_layout": "flat",
+    "min_valid_timestamps": 5,
+    "retrieval_flags": {
+      "exclude_same_track_id": true,
+      "exclude_same_scene": true
+    }
+  },
+  "experiments": [
+    "rgb_only",
+    "rgb_fused_geometry",
+    "rgb_recon_enhanced_geometry"
+  ],
+  "entries": [
+    {
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_static_yp_a",
+      "node_id": "node01",
+      "scene_id": "mj_node01_j10_spin_static_yp_a",
+      "identity_id": "j10",
+      "split_role": "both",
+      "mask_source": "sam2_pred",
+      "depth_source": "depth_anything_v2",
+      "mask_layout": "flat",
+      "sam2_camera_boxes": {
+        "cam0": [490, 300, 660, 720],
+        "cam1": [600, 330, 800, 720],
+        "cam2": [600, 270, 800, 640]
+      },
+      "min_valid_timestamps": 5,
+      "capture_plan": {
+        "status": "planned",
+        "mjcf": "mvp-demo/assets/scene/mujoco_3cam_node_parallel_j10.xml",
+        "target_body": "target",
+        "identity_id": "j10",
+        "traj": "static_spin_yaw_pitch",
+        "traj_center": "0 6 2",
+        "traj_period": 8.0,
+        "fps": 30.0,
+        "seconds": 8.0,
+        "spin_axes": ["yaw", "pitch"],
+        "yaw_start_deg": -60.0,
+        "yaw_end_deg": 60.0,
+        "pitch_amp_deg": 10.0,
+        "pitch_period": 8.0,
+        "roll_amp_deg": 0.0
+      }
+    },
+    {
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_circle_yp_b",
+      "node_id": "node01",
+      "scene_id": "mj_node01_j10_spin_circle_yp_b",
+      "identity_id": "j10",
+      "split_role": "both",
+      "mask_source": "sam2_pred",
+      "depth_source": "depth_anything_v2",
+      "mask_layout": "flat",
+      "sam2_camera_boxes": {
+        "cam0": [490, 300, 660, 720],
+        "cam1": [600, 330, 800, 720],
+        "cam2": [600, 270, 800, 640]
+      },
+      "min_valid_timestamps": 5,
+      "capture_plan": {
+        "status": "planned",
+        "mjcf": "mvp-demo/assets/scene/mujoco_3cam_node_parallel_j10.xml",
+        "target_body": "target",
+        "identity_id": "j10",
+        "traj": "circle_xz_spin_yaw_pitch",
+        "traj_center": "0 6 2",
+        "traj_radius": 1.0,
+        "traj_period": 8.0,
+        "fps": 30.0,
+        "seconds": 8.0,
+        "spin_axes": ["yaw", "pitch"],
+        "yaw_start_deg": -60.0,
+        "yaw_end_deg": 60.0,
+        "pitch_amp_deg": 10.0,
+        "pitch_period": 8.0,
+        "roll_amp_deg": 0.0
+      }
+    },
+    {
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_uav1_spin_static_yp_a",
+      "node_id": "node01",
+      "scene_id": "mj_node01_uav1_spin_static_yp_a",
+      "identity_id": "uav1",
+      "split_role": "both",
+      "mask_source": "sam2_pred",
+      "depth_source": "depth_anything_v2",
+      "mask_layout": "flat",
+      "sam2_camera_boxes": {
+        "cam0": [490, 300, 660, 720],
+        "cam1": [600, 330, 800, 720],
+        "cam2": [600, 270, 800, 640]
+      },
+      "min_valid_timestamps": 5,
+      "capture_plan": {
+        "status": "planned",
+        "mjcf": "mvp-demo/assets/scene/mujoco_uav1_3cam_node_parallel_v2.xml",
+        "target_body": "target",
+        "identity_id": "uav1",
+        "traj": "static_spin_yaw_pitch",
+        "traj_center": "0 6 2",
+        "traj_period": 8.0,
+        "fps": 30.0,
+        "seconds": 8.0,
+        "spin_axes": ["yaw", "pitch"],
+        "yaw_start_deg": -60.0,
+        "yaw_end_deg": 60.0,
+        "pitch_amp_deg": 10.0,
+        "pitch_period": 8.0,
+        "roll_amp_deg": 0.0,
+        "notes": "Use the ASCII-safe clean uav1 split-material scene and run from D:\\grad_project_ascii\\mvp-demo on Windows."
+      }
+    },
+    {
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_uav1_spin_circle_yp_b",
+      "node_id": "node01",
+      "scene_id": "mj_node01_uav1_spin_circle_yp_b",
+      "identity_id": "uav1",
+      "split_role": "both",
+      "mask_source": "sam2_pred",
+      "depth_source": "depth_anything_v2",
+      "mask_layout": "flat",
+      "sam2_camera_boxes": {
+        "cam0": [490, 300, 660, 720],
+        "cam1": [600, 330, 800, 720],
+        "cam2": [600, 270, 800, 640]
+      },
+      "min_valid_timestamps": 5,
+      "capture_plan": {
+        "status": "planned",
+        "mjcf": "mvp-demo/assets/scene/mujoco_uav1_3cam_node_parallel_v2.xml",
+        "target_body": "target",
+        "identity_id": "uav1",
+        "traj": "circle_xz_spin_yaw_pitch",
+        "traj_center": "0 6 2",
+        "traj_radius": 1.0,
+        "traj_period": 8.0,
+        "fps": 30.0,
+        "seconds": 8.0,
+        "spin_axes": ["yaw", "pitch"],
+        "yaw_start_deg": -60.0,
+        "yaw_end_deg": 60.0,
+        "pitch_amp_deg": 10.0,
+        "pitch_period": 8.0,
+        "roll_amp_deg": 0.0,
+        "notes": "Use the ASCII-safe clean uav1 split-material scene and run from D:\\grad_project_ascii\\mvp-demo on Windows."
+      }
+    },
+    {
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_su34_spin_static_yp_a",
+      "node_id": "node01",
+      "scene_id": "mj_node01_su34_spin_static_yp_a",
+      "identity_id": "su34",
+      "split_role": "both",
+      "mask_source": "sam2_pred",
+      "depth_source": "depth_anything_v2",
+      "mask_layout": "flat",
+      "sam2_camera_boxes": {
+        "cam0": [490, 300, 660, 720],
+        "cam1": [600, 330, 800, 720],
+        "cam2": [600, 270, 800, 640]
+      },
+      "min_valid_timestamps": 5,
+      "capture_plan": {
+        "status": "planned",
+        "mjcf": "mvp-demo/assets/scene/mujoco_su34_3cam_node_parallel.xml",
+        "target_body": "target",
+        "identity_id": "su34",
+        "traj": "static_spin_yaw_pitch",
+        "traj_center": "0 6 2",
+        "traj_period": 8.0,
+        "fps": 30.0,
+        "seconds": 8.0,
+        "spin_axes": ["yaw", "pitch"],
+        "yaw_start_deg": -60.0,
+        "yaw_end_deg": 60.0,
+        "pitch_amp_deg": 10.0,
+        "pitch_period": 8.0,
+        "roll_amp_deg": 0.0,
+        "notes": "Use the ASCII-safe clean su34 split-material scene and run from D:\\grad_project_ascii\\mvp-demo on Windows."
+      }
+    },
+    {
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_su34_spin_circle_yp_b",
+      "node_id": "node01",
+      "scene_id": "mj_node01_su34_spin_circle_yp_b",
+      "identity_id": "su34",
+      "split_role": "both",
+      "mask_source": "sam2_pred",
+      "depth_source": "depth_anything_v2",
+      "mask_layout": "flat",
+      "sam2_camera_boxes": {
+        "cam0": [490, 300, 660, 720],
+        "cam1": [600, 330, 800, 720],
+        "cam2": [600, 270, 800, 640]
+      },
+      "min_valid_timestamps": 5,
+      "capture_plan": {
+        "status": "planned",
+        "mjcf": "mvp-demo/assets/scene/mujoco_su34_3cam_node_parallel.xml",
+        "target_body": "target",
+        "identity_id": "su34",
+        "traj": "circle_xz_spin_yaw_pitch",
+        "traj_center": "0 6 2",
+        "traj_radius": 1.0,
+        "traj_period": 8.0,
+        "fps": 30.0,
+        "seconds": 8.0,
+        "spin_axes": ["yaw", "pitch"],
+        "yaw_start_deg": -60.0,
+        "yaw_end_deg": 60.0,
+        "pitch_amp_deg": 10.0,
+        "pitch_period": 8.0,
+        "roll_amp_deg": 0.0,
+        "notes": "Use the ASCII-safe clean su34 split-material scene and run from D:\\grad_project_ascii\\mvp-demo on Windows."
+      }
+    }
+  ],
+  "analysis_runs": [
+    "gt_upper_bound",
+    "gt_recon_enhanced_geometry"
+  ],
+  "comparison_artifacts": {
+    "summary_json": "mvp-demo/output/evals/node01_recon_spin_v1/branch_comparison_summary.json",
+    "summary_md": "mvp-demo/output/evals/node01_recon_spin_v1/branch_comparison_summary.md"
+  },
+  "branch_configs": {
+    "rgb_only": {
+      "official_result_line": true,
+      "mask_subdir": "masks",
+      "depth_subdir": "depth",
+      "tracklets_rel": "tracks/tracklets.json",
+      "embeddings_subdir": "embeddings",
+      "rgb_backend": "clip",
+      "geo_backend": "none",
+      "result_json": "mvp-demo/output/evals/node01_recon_spin_v1/rgb_only/all_queries_vs_all_scenes.json"
+    },
+    "rgb_fused_geometry": {
+      "official_result_line": true,
+      "cams": ["cam0", "cam1", "cam2"],
+      "mask_subdir": "masks",
+      "depth_subdir": "depth",
+      "points_subdir": "recon/points_fused",
+      "tracklets_rel": "tracks_rgb_fused_geometry/tracklets.json",
+      "embeddings_subdir": "embeddings_rgb_fused_geometry",
+      "rgb_backend": "clip",
+      "geo_backend": "open3d_fpfh",
+      "result_json": "mvp-demo/output/evals/node01_recon_spin_v1/rgb_fused_geometry/all_queries_vs_all_scenes.json"
+    },
+    "gt_upper_bound": {
+      "official_result_line": false,
+      "cams": ["cam0", "cam1", "cam2"],
+      "mask_subdir": "masks_gt",
+      "depth_subdir": "depth_gt",
+      "points_subdir": "recon/points_fused_gt",
+      "tracklets_rel": "tracks_gt_upper_bound/tracklets.json",
+      "embeddings_subdir": "embeddings_gt_upper_bound",
+      "rgb_backend": "clip",
+      "geo_backend": "open3d_fpfh",
+      "result_json": "mvp-demo/output/evals/node01_recon_spin_v1/gt_upper_bound/all_queries_vs_all_scenes.json"
+    },
+    "gt_recon_enhanced_geometry": {
+      "official_result_line": false,
+      "cams": ["cam0", "cam1", "cam2"],
+      "mask_subdir": "masks_gt",
+      "depth_subdir": "depth_gt",
+      "points_subdir": "recon/points_recon_spin_gt",
+      "tracklets_rel": "tracks_gt_recon_enhanced_geometry/tracklets.json",
+      "embeddings_subdir": "embeddings_gt_recon_enhanced_geometry",
+      "eval_subdir": "gt_recon_enhanced_geometry",
+      "rgb_backend": "clip",
+      "geo_backend": "open3d_fpfh",
+      "run_recon": false,
+      "require_points": true,
+      "result_json": "mvp-demo/output/evals/node01_recon_spin_v1/gt_recon_enhanced_geometry/all_queries_vs_all_scenes.json"
+    },
+    "rgb_recon_enhanced_geometry": {
+      "official_result_line": true,
+      "cams": ["cam0", "cam1", "cam2"],
+      "mask_subdir": "masks",
+      "depth_subdir": "depth",
+      "points_subdir": "recon/points_recon_spin",
+      "tracklets_rel": "tracks_rgb_recon_enhanced_geometry/tracklets.json",
+      "embeddings_subdir": "embeddings_rgb_recon_enhanced_geometry",
+      "eval_subdir": "rgb_recon_enhanced_geometry",
+      "rgb_backend": "clip",
+      "geo_backend": "open3d_fpfh",
+      "run_recon": false,
+      "require_points": true,
+      "result_json": "mvp-demo/output/evals/node01_recon_spin_v1/rgb_recon_enhanced_geometry/all_queries_vs_all_scenes.json"
+    }
+  }
+}
