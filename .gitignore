@@ -45,6 +45,7 @@ mvp-demo/data/nodes/
 mvp-demo/output/
 mvp-demo/runs/
 mvp-demo/tmp/
+tmp/
 
 # Local cloned external repos (all third-party code lives outside this repo)
 mvp-demo/third_party/
