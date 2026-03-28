@@ -59,6 +59,83 @@ def _mj_znear_zfar_m(model) -> Tuple[float, float]:
     return znear, zfar
 
 
+def _rot_x_deg(angle_deg: float) -> np.ndarray:
+    a = math.radians(float(angle_deg))
+    c = math.cos(a)
+    s = math.sin(a)
+    return np.array(
+        [
+            [1.0, 0.0, 0.0],
+            [0.0, c, -s],
+            [0.0, s, c],
+        ],
+        dtype=np.float32,
+    )
+
+
+def _rot_z_deg(angle_deg: float) -> np.ndarray:
+    a = math.radians(float(angle_deg))
+    c = math.cos(a)
+    s = math.sin(a)
+    return np.array(
+        [
+            [c, -s, 0.0],
+            [s, c, 0.0],
+            [0.0, 0.0, 1.0],
+        ],
+        dtype=np.float32,
+    )
+
+
+def _quat_wxyz_from_R(R: np.ndarray) -> np.ndarray:
+    R = np.asarray(R, dtype=np.float64)
+    trace = float(np.trace(R))
+    if trace > 0.0:
+        s = math.sqrt(trace + 1.0) * 2.0
+        qw = 0.25 * s
+        qx = (R[2, 1] - R[1, 2]) / s
+        qy = (R[0, 2] - R[2, 0]) / s
+        qz = (R[1, 0] - R[0, 1]) / s
+    elif R[0, 0] > R[1, 1] and R[0, 0] > R[2, 2]:
+        s = math.sqrt(max(1e-12, 1.0 + float(R[0, 0]) - float(R[1, 1]) - float(R[2, 2]))) * 2.0
+        qw = (R[2, 1] - R[1, 2]) / s
+        qx = 0.25 * s
+        qy = (R[0, 1] + R[1, 0]) / s
+        qz = (R[0, 2] + R[2, 0]) / s
+    elif R[1, 1] > R[2, 2]:
+        s = math.sqrt(max(1e-12, 1.0 + float(R[1, 1]) - float(R[0, 0]) - float(R[2, 2]))) * 2.0
+        qw = (R[0, 2] - R[2, 0]) / s
+        qx = (R[0, 1] + R[1, 0]) / s
+        qy = 0.25 * s
+        qz = (R[1, 2] + R[2, 1]) / s
+    else:
+        s = math.sqrt(max(1e-12, 1.0 + float(R[2, 2]) - float(R[0, 0]) - float(R[1, 1]))) * 2.0
+        qw = (R[1, 0] - R[0, 1]) / s
+        qx = (R[0, 2] + R[2, 0]) / s
+        qy = (R[1, 2] + R[2, 1]) / s
+        qz = 0.25 * s
+    quat = np.array([qw, qx, qy, qz], dtype=np.float32)
+    quat /= max(1e-12, float(np.linalg.norm(quat)))
+    return quat
+
+
+def _spin_quat_wxyz(
+    t_sec: float,
+    *,
+    capture_seconds: float,
+    yaw_start_deg: float,
+    yaw_end_deg: float,
+    pitch_amp_deg: float,
+    pitch_period_sec: float,
+) -> tuple[np.ndarray, float, float]:
+    alpha = 0.0 if capture_seconds <= 1e-6 else min(max(t_sec / capture_seconds, 0.0), 1.0)
+    yaw_deg = float(yaw_start_deg) + alpha * (float(yaw_end_deg) - float(yaw_start_deg))
+    pitch_period = max(1e-6, float(pitch_period_sec))
+    pitch_deg = float(pitch_amp_deg) * math.sin(2.0 * math.pi * (t_sec / pitch_period))
+    R = _rot_z_deg(yaw_deg) @ _rot_x_deg(pitch_deg)
+    return _quat_wxyz_from_R(R), yaw_deg, pitch_deg
+
+
 def _render_depth(renderer) -> np.ndarray:
     # MuJoCo Python APIs differ slightly across versions.
     def _to_2d(d: np.ndarray) -> np.ndarray:
@@ -200,7 +277,15 @@ def main() -> None:
     ap.add_argument(
         "--traj",
         default="circle_xz",
-        choices=["static", "circle_xz", "line_x", "line_y", "line_nodes"],
+        choices=[
+            "static",
+            "circle_xz",
+            "line_x",
+            "line_y",
+            "line_nodes",
+            "static_spin_yaw_pitch",
+            "circle_xz_spin_yaw_pitch",
+        ],
         help="Simple kinematic trajectory for the target body.",
     )
     ap.add_argument(
@@ -230,6 +315,30 @@ def main() -> None:
     ap.add_argument("--traj_center", default="0 6 2", type=str, help='Trajectory center "x y z" in world/node frame.')
     ap.add_argument("--traj_radius", default=1.0, type=float, help="Trajectory radius (meters).")
     ap.add_argument("--traj_period", default=12.0, type=float, help="Trajectory period (seconds) for circle_xz.")
+    ap.add_argument(
+        "--yaw_start_deg",
+        default=-60.0,
+        type=float,
+        help="For spin trajectories: start yaw angle in degrees. The yaw sweep spans the capture duration.",
+    )
+    ap.add_argument(
+        "--yaw_end_deg",
+        default=60.0,
+        type=float,
+        help="For spin trajectories: end yaw angle in degrees. The yaw sweep spans the capture duration.",
+    )
+    ap.add_argument(
+        "--pitch_amp_deg",
+        default=10.0,
+        type=float,
+        help="For spin trajectories: pitch sine amplitude in degrees.",
+    )
+    ap.add_argument(
+        "--pitch_period",
+        default=8.0,
+        type=float,
+        help="For spin trajectories: pitch sine period in seconds.",
+    )
     args = ap.parse_args()
 
     try:
@@ -314,6 +423,9 @@ def main() -> None:
     target_body_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, str(args.target_body))
     if target_body_id < 0:
         raise SystemExit(f'Target body "{args.target_body}" not found in MJCF.')
+
+    spin_trajs = {"static_spin_yaw_pitch", "circle_xz_spin_yaw_pitch"}
+    spin_enabled = str(args.traj) in spin_trajs
 
     # Optional: resolve node-line endpoints for the line_nodes trajectory.
     line_from_id: Optional[int] = None
@@ -455,6 +567,20 @@ def main() -> None:
             "traj_center": [float(x) for x in traj_center.tolist()],
             "traj_radius": float(args.traj_radius),
             "traj_period": float(args.traj_period),
+            **(
+                {
+                    "spin_axes": ["yaw", "pitch"],
+                    "yaw_start_deg": float(args.yaw_start_deg),
+                    "yaw_end_deg": float(args.yaw_end_deg),
+                    "yaw_profile": "linear_across_capture_duration",
+                    "pitch_amp_deg": float(args.pitch_amp_deg),
+                    "pitch_period": float(args.pitch_period),
+                    "pitch_profile": "sine",
+                    "roll_amp_deg": 0.0,
+                }
+                if spin_enabled
+                else {}
+            ),
         },
     }
     (scene_dir / "capture_meta.json").write_text(
@@ -479,7 +605,15 @@ def main() -> None:
             if qpos_adr is not None:
                 if args.traj == "static":
                     pos = traj_center
+                elif args.traj == "static_spin_yaw_pitch":
+                    pos = traj_center
                 elif args.traj == "circle_xz":
+                    theta = 2.0 * math.pi * (t / max(1e-6, float(args.traj_period)))
+                    pos = traj_center + np.array(
+                        [float(args.traj_radius) * math.cos(theta), 0.0, float(args.traj_radius) * math.sin(theta)],
+                        dtype=np.float32,
+                    )
+                elif args.traj == "circle_xz_spin_yaw_pitch":
                     theta = 2.0 * math.pi * (t / max(1e-6, float(args.traj_period)))
                     pos = traj_center + np.array(
                         [float(args.traj_radius) * math.cos(theta), 0.0, float(args.traj_radius) * math.sin(theta)],
@@ -503,7 +637,18 @@ def main() -> None:
                     pos = traj_center
 
                 data.qpos[qpos_adr + 0 : qpos_adr + 3] = pos  # type: ignore[index]
-                data.qpos[qpos_adr + 3 : qpos_adr + 7] = np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32)  # wxyz
+                if spin_enabled:
+                    quat_wxyz, _yaw_deg, _pitch_deg = _spin_quat_wxyz(
+                        t,
+                        capture_seconds=float(args.seconds),
+                        yaw_start_deg=float(args.yaw_start_deg),
+                        yaw_end_deg=float(args.yaw_end_deg),
+                        pitch_amp_deg=float(args.pitch_amp_deg),
+                        pitch_period_sec=float(args.pitch_period),
+                    )
+                else:
+                    quat_wxyz = np.array([1.0, 0.0, 0.0, 0.0], dtype=np.float32)
+                data.qpos[qpos_adr + 3 : qpos_adr + 7] = quat_wxyz
                 data.qvel[:] = 0.0
                 data.time = t
 

@@ -76,6 +76,18 @@ def _load_manifest(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _ensure_points_ready(scene_dir: Path, points_subdir: str, branch: str) -> None:
+    points_dir = scene_dir / str(points_subdir)
+    if not points_dir.exists():
+        raise SystemExit(
+            f'Branch "{branch}" requires precomputed geometry, but points dir is missing: {points_dir}'
+        )
+    if not any(points_dir.glob("*.npy")):
+        raise SystemExit(
+            f'Branch "{branch}" requires precomputed geometry, but no *.npy files were found in: {points_dir}'
+        )
+
+
 def _resolve_branch_config(manifest: dict, branch: str) -> tuple[dict, list[str]]:
     manifest_cfgs = manifest.get("branch_configs") or {}
     available = sorted(set(DEFAULT_BRANCH_CONFIGS.keys()) | set(manifest_cfgs.keys()))
@@ -94,6 +106,7 @@ def _resolve_branch_config(manifest: dict, branch: str) -> tuple[dict, list[str]
     cfg.setdefault("embeddings_subdir", "embeddings")
     cfg.setdefault("rgb_backend", "clip")
     cfg.setdefault("geo_backend", "none")
+    cfg.setdefault("require_points", False)
     cfg.setdefault(
         "points_subdir",
         "recon/points_rgb_only_unused" if str(cfg["geo_backend"]) == "none" else "recon/points_fused",
@@ -173,6 +186,9 @@ def main() -> None:
                 ],
                 cwd=repo_root,
             )
+
+        if bool(cfg.get("require_points")):
+            _ensure_points_ready(scene_dir, str(cfg["points_subdir"]), str(args.branch))
 
         _run(
             [
