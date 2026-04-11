@@ -65,3 +65,7 @@ mvp-demo/assets/scene/tiyuzhongxin/input.ply
 # Local demo media
 mvp-demo/demo.mp4
 mvp-demo/**/*.mp4
+
+# Local meeting notes / slides
+组会思路/26-03-30_spin_recon_group_meeting_outline.md
+组会思路/3-30组会准备.docx
