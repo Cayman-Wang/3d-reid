@@ -37,6 +37,8 @@ MuJoCo 导出的 `masks_gt/`、`depth_gt/` 只用于排错和 upper-bound，不�
 
 ## 当前推荐命令链
 
+当前默认运行环境固定为 `conda` 环境 `mvp_demo`。未特别说明时，本目录中的主线脚本命令均默认在该环境中执行；涉及 MuJoCo scene 加载时，建议从 ASCII 工作目录运行。
+
 先安装节点级管线依赖：
 
 ```bash

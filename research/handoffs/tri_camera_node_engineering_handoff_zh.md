@@ -36,6 +36,8 @@
 
 ## 2. 当前工程入口
 
+默认运行环境固定为 `conda` 环境 `mvp_demo`。未特别说明时，本文档中的主链命令默认都在该环境中执行；涉及 MuJoCo scene 加载时，仍优先从 ASCII 工作目录运行。
+
 当前节点级主链脚本如下：
 
 1. `mvp-demo/scripts/mj_capture_3cam_node.py`
@@ -115,7 +117,7 @@ mvp-demo/data/nodes/<node_id>/scenes/<scene_id>/
 
 ## 5. 最小 smoke run
 
-先进入目录并安装节点级依赖：
+先进入目录并安装节点级依赖（默认环境：`mvp_demo`）：
 
 ```bash
 cd mvp-demo

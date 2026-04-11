@@ -9,6 +9,7 @@ must_read:
   - research/reviews/iciscae_v3_clean_failure_analysis_2026_03_23_zh.md
   - research/reviews/iciscae_paper_draft_v3_clean_2026_03_23_zh.md
 locked_decisions:
+  - 当前项目默认运行环境固定为 `conda` 环境 `mvp_demo`；未特别说明时，项目脚本、smoke check 和主线命令均默认在该环境中执行。
   - 研究主线固定为“三相机节点级 3D-aware track retrieval”，YOLO 门控 + 3DGS 仅保留为辅助 demo。
   - ICISCAE 小论文目标域固定为 UAV/aircraft；当前不再做人形 benchmark。
   - ICISCAE 的正式范围固定为 node01 的 single-node、cross-scene、track-level retrieval；允许 MuJoCo-only 仿真结果，但论文叙事必须写成仿真节点检索验证，不能宣称 cross-node 已完成。
