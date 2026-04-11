@@ -1,0 +1,62 @@
+<mujoco model="3CamNodeParallel_Proxy">
+  <option timestep="0.005"/>
+
+  <visual>
+    <headlight ambient="0.85 0.85 0.85" diffuse="0.30 0.30 0.30" specular="0.05 0.05 0.05"/>
+    <map force="0.1" zfar="30"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global offwidth="2560" offheight="1440" elevation="-20" azimuth="120"/>
+    <quality offsamples="0"/>
+  </visual>
+
+  <statistic center="0 0 0.7"/>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1=".3 .5 .7" rgb2="0 0 0" width="32" height="512"/>
+    <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>
+    <material name="grid" texture="grid" texrepeat="1 1" texuniform="true" reflectance="0" specular="0" shininess="0"/>
+    <material name="proxy_body" rgba="0.65 0.70 0.80 1.0"/>
+    <material name="proxy_wing" rgba="0.40 0.45 0.55 1.0"/>
+    <material name="proxy_tail" rgba="0.35 0.35 0.40 1.0"/>
+  </asset>
+
+  <worldbody>
+    <geom name="floor" size="0 0 .05" type="plane" material="grid" condim="3"/>
+    <light name="top_center" pos="10 6 12" diffuse="0.85 0.85 0.85" specular="0.03 0.03 0.03" castshadow="false"/>
+    <light name="front_fill" pos="10 -10 6" diffuse="0.45 0.45 0.45" specular="0.02 0.02 0.02" castshadow="false"/>
+    <light name="back_fill" pos="10 22 6" diffuse="0.45 0.45 0.45" specular="0.02 0.02 0.02" castshadow="false"/>
+    <light name="left_fill" pos="-8 6 6" diffuse="0.40 0.40 0.40" specular="0.02 0.02 0.02" castshadow="false"/>
+    <light name="right_fill" pos="28 6 6" diffuse="0.40 0.40 0.40" specular="0.02 0.02 0.02" castshadow="false"/>
+
+    <body name="node01" pos="0 -3 1.6">
+      <site name="node01_origin" pos="0 0 0" size="0.02" rgba="1 1 0 1"/>
+      <camera name="node01_cam0" pos="0.45 0 0.0" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node01_cam1" pos="-0.225 0 0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node01_cam2" pos="-0.225 0 -0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <geom name="node01_cam0_marker" type="sphere" pos="0.45 -0.08 0.0" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node01_cam1_marker" type="sphere" pos="-0.225 -0.08 0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node01_cam2_marker" type="sphere" pos="-0.225 -0.08 -0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+    </body>
+
+    <body name="node02" pos="20 -3 1.6">
+      <site name="node02_origin" pos="0 0 0" size="0.02" rgba="1 1 0 1"/>
+      <camera name="node02_cam0" pos="0.45 0 0.0" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node02_cam1" pos="-0.225 0 0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <camera name="node02_cam2" pos="-0.225 0 -0.389711" xyaxes="1 0 0  0 0 1" fovy="60"/>
+      <geom name="node02_cam0_marker" type="sphere" pos="0.45 -0.08 0.0" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node02_cam1_marker" type="sphere" pos="-0.225 -0.08 0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+      <geom name="node02_cam2_marker" type="sphere" pos="-0.225 -0.08 -0.389711" size="0.03" rgba="0 1 1 0.35" contype="0" conaffinity="0"/>
+    </body>
+
+    <body name="target" pos="0 6 2.0">
+      <freejoint/>
+      <inertial pos="0 0 0" mass="2" diaginertia="0.2 0.2 0.2"/>
+
+      <geom name="proxy_fuselage" type="box" size="0.45 0.08 0.07" pos="0 0 0" material="proxy_body" contype="1" conaffinity="1"/>
+      <geom name="proxy_nose" type="capsule" fromto="0.35 0 0  0.62 0 0" size="0.06" material="proxy_body" contype="1" conaffinity="1"/>
+      <geom name="proxy_wing_main" type="box" size="0.12 0.55 0.02" pos="-0.05 0 0.01" material="proxy_wing" contype="1" conaffinity="1"/>
+      <geom name="proxy_wing_tail" type="box" size="0.06 0.25 0.015" pos="-0.35 0 0.03" material="proxy_wing" contype="1" conaffinity="1"/>
+      <geom name="proxy_fin" type="box" size="0.02 0.10 0.16" pos="-0.33 0 0.15" material="proxy_tail" contype="1" conaffinity="1"/>
+    </body>
+  </worldbody>
+</mujoco>

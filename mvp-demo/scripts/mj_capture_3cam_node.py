@@ -11,6 +11,12 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
+from spin_scene_checks import format_mjcf_preflight_error, preflight_mjcf_assets
+
+
+def _default_mvp_demo_root() -> Path:
+    return Path(__file__).absolute().parents[1]
+
 
 def _now_scene_id(prefix: str) -> str:
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -207,13 +213,13 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Capture a 3-camera MuJoCo node (parallel optical axes) to disk.")
     ap.add_argument(
         "--mjcf",
-        default=str(Path(__file__).resolve().parents[1] / "assets" / "scene" / "mujoco_3cam_node_parallel_j10.xml"),
+        default=str(_default_mvp_demo_root() / "assets" / "scene" / "mujoco_3cam_node_parallel_j10.xml"),
         type=str,
         help="MJCF with a node body and 3 cameras.",
     )
     ap.add_argument(
         "--out_root",
-        default=str(Path(__file__).resolve().parents[1] / "data" / "nodes"),
+        default=str(_default_mvp_demo_root() / "data" / "nodes"),
         type=str,
         help="Output root. Scene is written to <out_root>/<node_id>/scenes/<scene_id>/ ...",
     )
@@ -367,6 +373,10 @@ def main() -> None:
     node_id = str(args.node_id).strip()
     node_body = str(args.node_body).strip() or node_id
     scene_id = str(args.scene_id).strip() or _now_scene_id(f"mj_{node_id}")
+
+    preflight = preflight_mjcf_assets(mjcf_path)
+    if not bool(preflight.get("ok")):
+        raise SystemExit(format_mjcf_preflight_error(preflight))
 
     # Output dirs.
     scene_dir = out_root / node_id / "scenes" / scene_id

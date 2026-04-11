@@ -69,7 +69,7 @@ def _run(cmd: list[str], cwd: Path) -> None:
 
 
 def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).absolute().parents[2]
 
 
 def _load_manifest(path: Path) -> dict:
