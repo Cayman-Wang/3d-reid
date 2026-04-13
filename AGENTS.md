@@ -39,8 +39,34 @@ Git history may not be available in this folder; use a simple convention going f
 
 ## Subagent Delegation
 
-- In this repository, Codex may automatically use subagents when parallel delegation can clearly speed up the task or reduce blocking on the main path.
-- Do not force subagent use for simple tasks; prefer local execution when delegation adds little value.
+- In this repository, Codex should automatically decide when to use subagents; do not require the user to explicitly request them.
+- Default posture is balanced: prefer local execution for simple tasks, and use subagents only when parallel delegation can materially reduce main-path latency, lower decision risk, or allow bounded sidecar work to proceed independently.
+- Do not use subagents for simple requests such as brief explanations, single-file trivial edits, small renames, or one-step checks.
+- For medium tasks, use one subagent when a clearly bounded analysis, implementation, or verification task can proceed in parallel without blocking the main agent's next action.
+- For complex or high-risk tasks, proactively use multiple subagents when the work can be partitioned into independent streams such as repository exploration, implementation in separate modules, or parallel verification.
+- Do not delegate the immediate blocking critical-path task if the main agent needs that result before it can continue.
+- Delegate only tasks with clear ownership and independently completable outcomes.
+- When multiple subagents write code or docs, assign disjoint ownership by file or module, and do not ask them to overwrite or revert each other's changes.
+
+## Model Selection
+
+- Choose subagent models by task complexity.
+- Use `gpt-5.1-codex-mini` for lightweight exploration, code search, narrow read-only analysis, or very small isolated edits.
+- Use `gpt-5.3-codex` or `gpt-5.2-codex` for standard implementation, ordinary debugging, localized test fixes, or bounded documentation work.
+- Use `gpt-5.4` for cross-cutting design, ambiguous debugging, high-risk refactors, critical validation, or tasks whose failure would significantly impact correctness.
+
+## Reasoning Effort
+
+- Use `low` or `medium` for simple tasks.
+- Use `medium` for normal engineering work.
+- Use `high` or `xhigh` for ambiguous, cross-module, or high-risk tasks.
+
+## Delegation Boundaries
+
+- Prefer delegating sidecar work that can run in parallel with the current local step.
+- Use explorer-style subagents for codebase search, fact gathering, and narrow read-only analysis.
+- Use worker-style subagents for bounded implementation, bug fixes, or verification with explicit ownership.
+- The main agent remains responsible for integration, conflict resolution, and final delivery.
 
 ## Hugging Face Downloads
 

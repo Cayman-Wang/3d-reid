@@ -52,6 +52,14 @@ python mvp-demo/scripts/recon_spin_points.py `
   --out_subdir recon/points_recon_spin
 ```
 
+当前脚本默认还会按 scene 类型自动选择 canonical 支撑阈值：
+
+- `GT`：固定 `1`
+- `predicted static`：优先 `3`，过小则回退到 `2`
+- `predicted circle`：优先 `4`，必要时再回退到 `3 / 2`
+
+这一步的目的不是追求更复杂的重建器，而是先把“跨时刻低支撑噪声”在轻量后端里压下去。
+
 完成 `gt` 几何后，评测入口仍走：
 
 ```powershell
@@ -66,6 +74,28 @@ python mvp-demo/scripts/run_iciscae_branch_eval.py `
 - `meta.json` 与 `points_index.csv` 成功写出
 - `build_node_tracklets.py --points_subdir recon/points_recon_spin_gt` 能直接跑通
 - 与 `recon/points_fused_gt` 相比，目标可见面覆盖更完整，侧后方区域补全更明显
+
+## 4.1 当前推荐诊断入口
+
+如果想先看 predicted recon 失败在什么地方，优先跑：
+
+```powershell
+python mvp-demo/scripts/analyze_spin_recon_quality.py `
+  --scene_dir mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_circle_yp_b
+```
+
+该脚本会输出：
+
+- `canonical_compare.png`
+- `counts_compare.png`
+- `summary.md`
+- `summary.json`
+
+重点先看三件事：
+
+- predicted 输入点数相对 GT 是明显偏多还是偏少
+- canonical 点云是否出现体积膨胀或漂移
+- 支撑过滤后保留下来的体素比例是否过低
 
 ## 5. 后续如何接入 3DGS
 
