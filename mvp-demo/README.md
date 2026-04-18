@@ -211,3 +211,54 @@ python scripts/analyze_iciscae_failure_modes.py \
 如果后续需要查看节点结构验证、数据契约、viewer 检查方法，请回到：
 
 - `research/handoffs/tri_camera_node_engineering_handoff_zh.md`
+
+## NeoVerse 并行演示后端（probe）
+
+该入口只用于并行探索展示，不替换当前主线，不改 benchmark 契约，也不接入 retrieval。
+
+### 1) 导出 NeoVerse 输入视频（固定 cam0）
+
+```bash
+python scripts/export_neoverse_probe_input.py \
+  --scene_dir data/nodes/node01/scenes/mj_node01_j10_spin_static_yp_a \
+  --cam_id cam0
+```
+
+默认输出：
+
+- `mvp-demo/output/neoverse_probe/mj_node01_j10_spin_static_yp_a/cam0/input/full_frame.mp4`
+- `mvp-demo/output/neoverse_probe/mj_node01_j10_spin_static_yp_a/cam0/input/object_crop.mp4`
+
+说明：
+
+- 输入帧固定使用 `cams/cam0/frames`。
+- `object_crop.mp4` 使用 `masks` 或 `masks_gt` 做目标中心稳定裁剪，默认 padding 为 20%。
+- 默认优先喂 `object_crop.mp4`，仅当裁剪明显破坏时序稳定性时再回退 `full_frame.mp4`。
+
+### 2) 运行 NeoVerse 推理并归档产物
+
+```bash
+python scripts/run_neoverse_probe.py \
+  --neoverse_python D:/miniconda3/envs/neoverse/python.exe \
+  --neoverse_repo third_party/NeoVerse \
+  --scene_dir data/nodes/node01/scenes/mj_node01_j10_spin_static_yp_a \
+  --cam_id cam0 \
+  --video_variant object_crop \
+  --trajectory orbit_left \
+  --angle 12 \
+  --orbit_radius 0.08 \
+  --vis_rendering
+```
+
+默认不启用 `--static_scene`（当前是固定相机 + 动态目标，不属于完全静态视频）。
+
+输出目录：
+
+- `mvp-demo/output/neoverse_probe/<scene_id>/cam0/run_<variant>/`
+
+最小对齐产物：
+
+- `input_video.mp4`
+- `output.mp4`
+- `vis_rendering/`（当启用 `--vis_rendering`）
+- `probe_meta.json`（记录 scene/cam/参数/命令/运行时长/输出路径）
