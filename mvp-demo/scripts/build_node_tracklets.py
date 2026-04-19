@@ -75,6 +75,18 @@ def _mask_bbox_xyxy(mask: np.ndarray) -> list[int] | None:
     return [int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1]
 
 
+def _points_meet_threshold(points_path: Path, min_points: int) -> bool:
+    try:
+        points = np.load(points_path, mmap_mode="r")
+    except Exception as exc:
+        raise SystemExit(f"Failed to load points file: {points_path}\nError: {exc!r}")
+    if points.ndim != 2:
+        return False
+    if points.shape[1] != 3:
+        return False
+    return int(points.shape[0]) >= int(min_points)
+
+
 def _read_frame_index(frame_times_csv: Path, cams: list[str]) -> list[tuple[int, dict[str, str]]]:
     rows: dict[int, dict[str, str]] = {}
     with frame_times_csv.open("r", encoding="utf-8", newline="") as f:
@@ -104,6 +116,8 @@ def main() -> None:
     ap.add_argument("--out", default="tracks/tracklets.json", type=str)
     ap.add_argument("--identity_id", default="", type=str)
     ap.add_argument("--min_timestamps", default=1, type=int)
+    ap.add_argument("--require_points", action="store_true")
+    ap.add_argument("--min_points", default=1, type=int)
     args = ap.parse_args()
 
     scene_dir = Path(args.scene_dir).resolve()
@@ -183,7 +197,12 @@ def main() -> None:
         points_rel: str | None = None
         points_path = scene_dir / str(args.points_subdir) / f"{stem}.npy"
         if points_path.exists():
+            if bool(args.require_points):
+                if not _points_meet_threshold(points_path, int(args.min_points)):
+                    continue
             points_rel = points_path.relative_to(scene_dir).as_posix()
+        if bool(args.require_points) and points_rel is None:
+            continue
 
         timestamps_us.append(ts_us)
         timestamp_stems.append(stem)

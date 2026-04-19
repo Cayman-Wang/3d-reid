@@ -262,3 +262,123 @@ python scripts/run_neoverse_probe.py \
 - `output.mp4`
 - `vis_rendering/`（当启用 `--vis_rendering`）
 - `probe_meta.json`（记录 scene/cam/参数/命令/运行时长/输出路径）
+
+## NeoVerse 三机联合重建（静态实验分支）
+
+该入口用于 node01 静态 spin 场景的实验线，不替换主线 `v3_clean` 结果。
+当前语义是“rig-anchored multiview geometry for retrieval”，不是全时序 dense 4D geometry。
+
+### 1) 准备三机联合输入 manifest
+
+```bash
+python scripts/prepare_neoverse_multiview_manifest.py \
+  --scene_dir data/nodes/node01/scenes/mj_node01_j10_spin_static_yp_a \
+  --num_sync_steps 27
+```
+
+输出：
+
+- `mvp-demo/output/neoverse_multiview/<scene_id>/input/manifest.json`
+
+说明：
+
+- manifest 会写入每个 view 的 `camera_K` 与 `camera_pose_c2w`（来自 `rig.json`）。
+- `mask_rel` 为可空元信息，不再是联合重建的硬前置条件。
+
+### 2) 运行三机联合 NeoVerse 重建
+
+```bash
+python scripts/run_neoverse_multiview_joint.py \
+  --manifest mvp-demo/output/neoverse_multiview/mj_node01_j10_spin_static_yp_a/input/manifest.json \
+  --neoverse_repo third_party/NeoVerse \
+  --device cuda \
+  --torch_dtype bfloat16
+```
+
+输出目录：
+
+- `mvp-demo/output/neoverse_multiview/<scene_id>/run_full_frame_joint/`
+
+最小产物：
+
+- `reconstruction_bundle.pt`
+- `probe_meta.json`
+- `pose_cluster_report.json`
+- `camera_prior_alignment.json`
+- `scene.glb`
+
+说明：
+
+- 联合重建固定使用 rig camera priors，内部 `cond_flags=[0,1,1]`，`use_motion=False`。
+- 当前 wrapper 会把 `rendered_cam2world` / `rendered_intrinsics` 直接锚定到 `rig.json`，并在 bundle 中同时保留 `predicted_camera_cam2world` / `predicted_camera_intrinsics`。
+- `pose_cluster_report.json` 当前统计的是 predicted camera poses 的中心聚类；`camera_prior_alignment.json` 负责对比 rig / predicted / rendered 三者差异。
+
+### 3) 导出 retrieval 可消费点云
+
+```bash
+python scripts/export_neoverse_multiview_points.py \
+  --bundle mvp-demo/output/neoverse_multiview/mj_node01_j10_spin_static_yp_a/run_full_frame_joint/reconstruction_bundle.pt \
+  --scene_dir data/nodes/node01/scenes/mj_node01_j10_spin_static_yp_a \
+  --neoverse_repo third_party/NeoVerse
+```
+
+输出目录：
+
+- `scene_dir/recon/points_neoverse_multiview/`
+
+附带：
+
+- `meta.json`
+- `points_index.csv`
+
+### 4) 静态实验分支预计算 + retrieval 评测
+
+先批量预计算两条静态场景几何：
+
+```bash
+python scripts/precompute_neoverse_multiview_static_geometry.py \
+  --manifest research/plans/tri_camera_node_3d_aware_reid/benchmarks/node01_neoverse_multiview_static_v1.json \
+  --neoverse_python D:/miniconda3/envs/neoverse/python.exe \
+  --neoverse_repo third_party/NeoVerse
+```
+
+再复用 retrieval runner：
+
+```bash
+python scripts/run_iciscae_branch_eval.py \
+  --manifest research/plans/tri_camera_node_3d_aware_reid/benchmarks/node01_neoverse_multiview_static_v1.json \
+  --branch rgb_neoverse_multiview_geometry
+```
+
+说明：
+
+- NeoVerse branch 配置 `require_points_per_timestamp=true` 且 `min_points_per_timestamp=32`，仅消费满足最小点数门槛的时间步，避免“RGB 全时序 + 空几何/极小几何”错位。
+- `precompute_neoverse_multiview_static_geometry.py --skip_if_points_exist` 会校验 `meta.json`、`points_index.csv`、source bundle、导出 filter 参数和 schema version；只有缓存完全匹配时才跳过。
+
+### 5) 从 bundle 做轻量渲染预览
+
+该脚本只做 Gaussian rasterization，不加载 diffusion / T5 / VAE / LoRA。
+
+```bash
+D:\ML\anaconda3\envs\neoverse\python.exe mvp-demo/scripts/render_neoverse_multiview_preview.py \
+  --bundle mvp-demo/output/neoverse_multiview/mj_node01_j10_spin_static_yp_a/run_full_frame_joint/reconstruction_bundle.pt \
+  --neoverse_repo third_party/NeoVerse \
+  --reconstructor_path third_party/NeoVerse/models/NeoVerse/reconstructor.ckpt \
+  --device cuda \
+  --torch_dtype float16 \
+  --preview_mode both \
+  --camera_source rendered
+```
+
+默认输出：
+
+- `mvp-demo/output/neoverse_multiview/<scene_id>/run_full_frame_joint/render_preview/original/`
+- `mvp-demo/output/neoverse_multiview/<scene_id>/run_full_frame_joint/render_preview/original_compare/`
+- `mvp-demo/output/neoverse_multiview/<scene_id>/run_full_frame_joint/render_preview/orbit/`
+- `mvp-demo/output/neoverse_multiview/<scene_id>/run_full_frame_joint/render_preview/preview_meta.json`
+
+说明：
+
+- `camera_source=rendered` 时优先复核 rig-anchored 输出。
+- `camera_source=predicted_camera` 时允许和 rig 结果产生偏移，用于诊断相机锚点是否真正生效。
+- 默认分辨率优先读取同目录 `probe_meta.json`，缺失时回退到 `280x168`。

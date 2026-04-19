@@ -107,6 +107,8 @@ def _resolve_branch_config(manifest: dict, branch: str) -> tuple[dict, list[str]
     cfg.setdefault("rgb_backend", "clip")
     cfg.setdefault("geo_backend", "none")
     cfg.setdefault("require_points", False)
+    cfg.setdefault("require_points_per_timestamp", False)
+    cfg.setdefault("min_points_per_timestamp", 1)
     cfg.setdefault(
         "points_subdir",
         "recon/points_rgb_only_unused" if str(cfg["geo_backend"]) == "none" else "recon/points_fused",
@@ -206,7 +208,12 @@ def main() -> None:
                 str(cfg["tracklets_rel"]),
                 "--min_timestamps",
                 str(manifest.get("defaults", {}).get("min_valid_timestamps", 5)),
-            ],
+            ]
+            + (
+                ["--require_points", "--min_points", str(cfg.get("min_points_per_timestamp", 1))]
+                if bool(cfg.get("require_points_per_timestamp"))
+                else []
+            ),
             cwd=repo_root,
         )
 

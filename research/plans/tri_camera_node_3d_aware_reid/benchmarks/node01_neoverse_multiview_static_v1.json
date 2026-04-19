@@ -1,0 +1,69 @@
+{
+  "benchmark_id": "node01_neoverse_multiview_static_v1",
+  "description": "Node01 static spin benchmark for tri-camera NeoVerse joint multiview geometry branch.",
+  "scope": {
+    "task": "single-node cross-scene track-level retrieval with NeoVerse multiview geometry",
+    "domain": "uav_aircraft",
+    "node_id": "node01",
+    "phase": "experimental_neoverse_multiview"
+  },
+  "defaults": {
+    "split_role": "both",
+    "mask_source": "gt",
+    "depth_source": "gt",
+    "mask_layout": "flat",
+    "min_valid_timestamps": 5,
+    "retrieval_flags": {
+      "exclude_same_track_id": true,
+      "exclude_same_scene": true
+    }
+  },
+  "experiments": [
+    "rgb_neoverse_multiview_geometry"
+  ],
+  "entries": [
+    {
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_static_yp_a",
+      "node_id": "node01",
+      "scene_id": "mj_node01_j10_spin_static_yp_a",
+      "identity_id": "j10",
+      "split_role": "both",
+      "mask_source": "gt",
+      "depth_source": "gt",
+      "mask_layout": "flat",
+      "min_valid_timestamps": 5
+    },
+    {
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_su34_spin_static_yp_a",
+      "node_id": "node01",
+      "scene_id": "mj_node01_su34_spin_static_yp_a",
+      "identity_id": "su34",
+      "split_role": "both",
+      "mask_source": "gt",
+      "depth_source": "gt",
+      "mask_layout": "flat",
+      "min_valid_timestamps": 5
+    }
+  ],
+  "branch_configs": {
+    "rgb_neoverse_multiview_geometry": {
+      "cams": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ],
+      "mask_subdir": "masks_gt",
+      "depth_subdir": "depth_gt",
+      "points_subdir": "recon/points_neoverse_multiview",
+      "tracklets_rel": "tracks_rgb_neoverse_multiview_geometry/tracklets.json",
+      "embeddings_subdir": "embeddings_rgb_neoverse_multiview_geometry",
+      "eval_subdir": "rgb_neoverse_multiview_geometry",
+      "rgb_backend": "clip",
+      "geo_backend": "open3d_fpfh",
+      "run_recon": false,
+      "require_points": true,
+      "require_points_per_timestamp": true,
+      "min_points_per_timestamp": 32
+    }
+  }
+}
