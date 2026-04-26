@@ -1,0 +1,65 @@
+{
+  "benchmark_id": "node01_neoverse_fused_4d_v1",
+  "description": "Node01 NeoVerse fused 4D points-by-timestamp retrieval benchmark (experimental bootstrap).",
+  "scope": {
+    "task": "single-node cross-scene track-level retrieval with NeoVerse fused 4D dynamic geometry",
+    "domain": "uav_aircraft",
+    "node_id": "node01",
+    "phase": "experimental_neoverse_fused_4d"
+  },
+  "defaults": {
+    "split_role": "both",
+    "mask_source": "gt",
+    "depth_source": "gt",
+    "mask_layout": "flat",
+    "min_valid_timestamps": 5,
+    "retrieval_flags": {
+      "exclude_same_track_id": true,
+      "exclude_same_scene": true
+    }
+  },
+  "experiments": [
+    "rgb_neoverse_fused_4d_geometry"
+  ],
+  "entries": [
+    {
+      "scene_dir": "mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_static_yp_a",
+      "node_id": "node01",
+      "scene_id": "mj_node01_j10_spin_static_yp_a",
+      "identity_id": "j10",
+      "split_role": "both",
+      "mask_source": "gt",
+      "depth_source": "gt",
+      "mask_layout": "flat",
+      "min_valid_timestamps": 5,
+      "stage_tag": "proof_of_pipeline"
+    }
+  ],
+  "branch_configs": {
+    "rgb_neoverse_fused_4d_geometry": {
+      "cams": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ],
+      "mask_subdir": "masks_gt",
+      "depth_subdir": "depth_gt",
+      "points_subdir": "../../../../../output/neoverse_fused/mj_node01_j10_spin_static_yp_a/points_by_timestamp",
+      "points_contract": "neoverse_points_by_timestamp_v1",
+      "tracklets_rel": "tracks/tracklets_points_by_timestamp_smoke.json",
+      "embeddings_subdir": "embeddings_points_by_timestamp_smoke",
+      "eval_subdir": "rgb_neoverse_fused_4d_geometry",
+      "rgb_backend": "hist",
+      "geo_backend": "radial_hist",
+      "run_recon": false,
+      "require_points": true,
+      "require_points_per_timestamp": true,
+      "min_points_per_timestamp": 32
+    }
+  },
+  "notes": [
+    "This manifest is experimental and does not represent ICISCAE final benchmark results.",
+    "Current entry set only verifies engineering closure on single-scene, single-identity smoke.",
+    "Current smoke backend is hist + radial_hist; it is a fallback path for interface verification rather than the final ReID configuration."
+  ]
+}

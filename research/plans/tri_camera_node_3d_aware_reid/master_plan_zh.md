@@ -1,8 +1,8 @@
 # tri_camera_node_3d_aware_reid 主计划（中文）
 
 - 创建日期：2026-03-15
-- 最近冻结：2026-03-23
-- 状态：ICISCAE 范围固定为 `node01 + UAV/aircraft + single-node cross-scene`，当前主线为 `v3_clean benchmark: j10 / uav1 / su34`，已完成 clean `6 scene` 采集与四条结果线
+- 最近冻结：2026-04-26
+- 状态：当前进入 `NeoVerse 三相机 4D 动态点云 -> points_by_timestamp -> tracklet -> embedding -> ReID` 正式化阶段；已完成 `node01/j10` 工程 smoke 闭环，但尚未完成多身份正式 benchmark 与指标评测
 
 ## 一、冻结结论
 
@@ -24,6 +24,12 @@
 当前阶段的主问题是：
 
 > 在不使用 MuJoCo GT 参与主检索计算的前提下，`RGB + depth + mask + rig + timestamps` 是否足以支持稳定的 3D-aware track retrieval。
+
+当前阶段的关键问题补充如下：
+
+- 当前尚无完整表面渲染链，`fused_scene.glb` 是静态汇总点云查看产物，不是 4D 回放文件。
+- 当前 `NeoVerse fused` 点云存在 3D 厚度偏厚问题，几何分布仍需继续收紧。
+- 当前 ReID 证据仍停留在单 scene 单身份 smoke，缺少多身份检索指标（Rank/mAP）作为正式结论。
 
 ### 2.1 为什么只做 `node01` 仍然是 Re-ID
 
@@ -57,18 +63,23 @@
 
 ## 四、当前方法收口
 
-当前主线只保留与正式 benchmark 直接相关的三条结果线：
+当前主线保留与正式 benchmark 直接相关的四条结果线：
 
 | 结果线 | 输入契约 | 当前口径 |
 | --- | --- | --- |
 | `RGB-only` | `frames + tracklets` | 当前第一优先级，作为正式基线 |
 | `RGB + predicted-depth geometry` | `frames + masks + predicted depth + rig` | 作为弱几何分支，验证预测深度本身是否带来增益 |
 | `RGB + fused geometry` | `frames + masks + predicted depth + rig + fused points` | 作为强几何分支，验证多相机融合后的几何收益 |
+| `RGB + NeoVerse 4D dynamic geometry` | `frames + tracklets + points_by_timestamp` | 新增实验线，验证 NeoVerse 动态几何能否提升跨 scene 检索稳定性 |
 
 固定说明如下：
 
 - RGB 主基线固定为 `CLIP`。
 - `hist` 和 `radial_hist` 只保留为 smoke fallback，不作为小论文主结果命名。
+- 旧 `RGB + fused geometry` 来自 `depth + mask` 的多相机反投影融合，几何目录通常是 `recon/points_fused`。
+- 新 `RGB + NeoVerse 4D dynamic geometry` 来自 `per-camera + backproject + fuse + dynamic constraint` 的外部融合方案，不是早期 joint multiview static bundle 导出路线；当前权威几何目录为 `mvp-demo/output/neoverse_fused/<scene_id>/points_by_timestamp/`，ReID 接入使用相对 `scene_dir` 的路径 `../../../../../output/neoverse_fused/<scene_id>/points_by_timestamp`。
+- 当前 NeoVerse fused 4D 与 spin 重建线的默认采集轨迹固定为高俯仰 `static_spin_yaw_pitch`：`yaw_start_deg=-45`、`yaw_end_deg=45`、`pitch_amp_deg=20`、`pitch_period=8`、`seconds=8`、`fps=30`。除消融外，后续新运行默认沿用该配置。
+- 当前本地笔记本更偏向“链路验证机”而不是“高质量重建机”；后续切换到高性能机器时，NeoVerse fused 4D 的优先优化方向固定为：先提输入分辨率，再看是否需要减小 `output_voxel_size_m`，而不是先继续收紧 trim 参数。
 - 当前工程里已经直接具备 `RGB-only` 与 `fused geometry` 的入口；`predicted-depth geometry` 继续沿同一数据契约补齐，不改变 benchmark 定义。
 - `YOLO 门控 + 3DGS` 相关脚本只保留为辅助 demo，不再参与当前主线里程碑。
 
@@ -85,8 +96,29 @@
 - 当前 `v3_clean` 的 `6` 条正式 scene 已全部落盘，`tracks/`、`embeddings/`、单 scene eval JSON 与全量 summary 已齐备。
 - 当前 `v3_clean` 四条结果线已完成：`rgb_only (mAP=0.5750, R@1=0.3333)`、`rgb_predicted_depth_geometry (0.4222, 0.1667)`、`rgb_fused_geometry (0.4833, 0.1667)`、`gt_upper_bound (0.8333, 0.6667)`。
 - clean 场景下移除 humanoid 后，geometry 两条分支仍未超过 `rgb_only`，说明当前主瓶颈仍更偏向 `SAM2/depth` 感知误差，而不只是场景遮挡。
+- `mj_node01_j10_spin_static_yp_a` 已导出 `81` 帧 `points_by_timestamp`，当前质量报告三路覆盖率约为 `0.718 / 0.629 / 0.684`。
+- `points_by_timestamp` 分支已跑通最小 smoke：`1` 条 tracklet，`embeddings_points_by_timestamp_smoke/tracks.npy` 形状为 `(1,161)`。
+- 当前 smoke 元数据为 `rgb_backend=hist`、`geo_backend=radial_hist`、`n_timestamps_total=81`、`n_timestamps_used=2`；它证明“链路可跑通”，但不代表“全时间戳特征聚合已完成”。
+- 上述结果证明“工程闭环已打通”，但不等价于“正式 ReID benchmark 已完成”；当前仍缺多 scene / 多身份检索统计。
+- 当前单帧逐时间戳查看下，动态点云厚度已基本可接受；下一阶段更突出的问题是点云还不够稠密，细节仍偏粗，这与本地只能稳定跑 `280x168` 有直接关系。
+- 已完成本机后处理增密消融：`2026-04-26_j10_yp20_dense_points_r01` 基于 `2026-04-26_j10_yp20_r02params_r01`，只把 `output_voxel_size_m` 从 `0.01` 改到 `0.005`，其余保持不变；结果 `fused_dynamic_points`、三路 coverage 和 `depth_support_ratio` 与基线一致，说明当前本机只改输出体素大小没有产生有效增密。
 
-### 5.3 为什么当前不再做人形
+### 5.3 切换高性能机器后的固定优化顺序
+
+后续切到高性能机器时，NeoVerse fused 4D 分支按以下顺序优化：
+
+1. 先提高 `per-camera bundle` 输入分辨率，优先尝试合法的 `14` 倍数尺寸：`336x336`、`448x448`、`560x336`。
+2. 分辨率提升阶段保持 `yp20_r02params` 的现有动态约束参数不变，确保结果可归因。
+3. 若分辨率提高后单帧点云仍偏稀疏，再单独把 `output_voxel_size_m` 从 `0.01` 收紧到 `0.005`，并视情况提高 `max_dynamic_points`。
+4. 当前单帧厚度已可接受时，不优先继续压 `depth_trim_radius_m`；该参数后续只做温和收紧，不作为首要优化轴。
+5. 若后续目标从“更密点云”升级为“连续表面”，则应单独新增表面重建或 Gaussian/mesh 导出，不把这一需求混入当前点云参数调优。
+
+补充结论：
+
+- `2026-04-26_j10_yp20_dense_points_r01` 已证明：在输入分辨率仍为 `280x168`、且不重跑 NeoVerse 源头重建的前提下，只做本机后处理的 `output_voxel_size_m 0.01 -> 0.005` 不足以带来实际点云增密收益。
+- 因此下一步仍应优先在高性能机器上提高合法输入分辨率，再判断是否需要继续调点云密度；不建议把当前本机 dense_points run 升级为默认结果。
+
+### 5.4 为什么当前不再做人形
 
 - 仓库中现成的人形目标只有 `ikun` 一类，无法自然支撑 `3 identities x 2 scenes` 的人形 benchmark。
 - 当前已有正式候选结果实际上更接近飞行目标域，而不是人形域。

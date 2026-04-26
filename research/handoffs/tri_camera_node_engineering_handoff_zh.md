@@ -48,6 +48,18 @@
 6. `mvp-demo/scripts/extract_node_track_embeddings.py`
 7. `mvp-demo/scripts/eval_node_track_retrieval.py`
 
+当前 NeoVerse fused 4D / spin 重建线的默认采集轨迹固定为：
+
+- `traj=static_spin_yaw_pitch`
+- `yaw_start_deg=-45`
+- `yaw_end_deg=45`
+- `pitch_amp_deg=20`
+- `pitch_period=8`
+- `seconds=8`
+- `fps=30`
+
+除专门做对照实验外，不再回退到旧的低俯仰版本。
+
 以下脚本仍保留在仓库中，但不再作为当前研究执行入口：
 
 - `mvp-demo/scripts/gated_capture_yolo.py`
@@ -297,7 +309,34 @@ MUJOCO_GL=glfw python scripts/mj_view_3cam_node.py
 MUJOCO_GL=osmesa python scripts/mj_capture_3cam_node.py --seconds 1 --fps 5 --width 320 --height 240
 ```
 
-## 7. 当前完成定义
+## 7. NeoVerse 4D 点云接入 ReID 实验分支
+
+新增实验分支如下：
+
+- 分支名：`rgb_neoverse_fused_4d_geometry`
+- 几何输入：`../../../../../output/neoverse_fused/<scene_id>/points_by_timestamp`
+- 输入契约：`index.csv + meta.json + *.npy`
+
+该分支是当前阶段的新增实验线，用于验证 `NeoVerse 三相机 4D 动态点云` 对检索的可用性。
+
+边界说明：
+
+- 它不替代旧主链：`RGB-only / predicted-depth / fused geometry / recon_spin`。
+- 它当前只代表工程闭环 proof-of-pipeline，不代表正式多身份 benchmark 结果。
+- `fused_scene.glb` 只用于静态查看，不作为 ReID 输入。
+- 当前权威点云产物位于 `mvp-demo/output/neoverse_fused/<scene_id>/points_by_timestamp/`；若后续需要简化调用，可单独新增同步脚本把它镜像到 `scene_dir/recon/points_by_timestamp`，但这不是当前既有契约。
+
+最小 smoke 验收（当前固定）：
+
+1. `points_by_timestamp/index.csv` 至少记录 `81` 个时间戳点云
+2. 可生成 `tracks/tracklets_points_by_timestamp_smoke.json`，且至少含 `1` 条 tracklet
+3. 可生成 `embeddings_points_by_timestamp_smoke/tracks.npy`
+4. `tracks.npy` 形状为 `(1,161)`，并且无 NaN
+5. 当前 smoke backend 与既有产物一致：`rgb_backend=hist`、`geo_backend=radial_hist`，且 `n_timestamps_used=2`
+
+注：若任一项失败，先回到覆盖率、动态约束和点云厚度诊断，不进入正式 ReID 对比结论。
+
+## 8. 当前完成定义
 
 进入当前主线下一阶段前，至少需要满足：
 
