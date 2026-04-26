@@ -37,7 +37,17 @@ MuJoCo 导出的 `masks_gt/`、`depth_gt/` 只用于排错和 upper-bound，不�
 
 ## 当前推荐命令链
 
-当前默认运行环境固定为 `conda` 环境 `mvp_demo`。未特别说明时，本目录中的主线脚本命令均默认在该环境中执行；涉及 MuJoCo scene 加载时，建议从 ASCII 工作目录运行。
+当前项目允许同时使用两个 `conda` 环境，但分工必须固定：
+
+- `mvp_demo`：默认主线环境，负责 MuJoCo 采集、图像侧 depth/mask、tracklet、embedding、benchmark 与大多数非 NeoVerse 脚本
+- `neoverse`：NeoVerse fused 4D 专用环境，负责 `run_neoverse_per_camera_bundle.py`、`export_neoverse_view_observations.py`、`backproject_neoverse_observations.py`、`fuse_neoverse_multiview_world_points.py`、`constrain_neoverse_multiview_dynamic.py`、`render_fused_world_preview.py`、`analyze_fused_multiview_quality.py`
+
+未特别说明时，本目录中的常规主线脚本命令仍默认在 `mvp_demo` 环境中执行；涉及 MuJoCo scene 加载时，建议从 ASCII 工作目录运行。若进入 NeoVerse fused 4D 链路，则应明确切到 `neoverse` 环境运行对应脚本，而不是混用解释器。
+
+推荐记忆方式：
+
+- 只要脚本名里不含 `neoverse`，大概率先用 `mvp_demo`
+- 只要进入 `NeoVerse fused 4D` 七步链，统一切到 `neoverse`
 
 先安装节点级管线依赖：
 
@@ -45,6 +55,12 @@ MuJoCo 导出的 `masks_gt/`、`depth_gt/` 只用于排错和 upper-bound，不�
 cd mvp-demo
 conda activate mvp_demo
 python -m pip install -r requirements_node_pipeline.txt
+```
+
+若要运行 NeoVerse fused 4D 链路，请切到：
+
+```bash
+conda activate neoverse
 ```
 
 如果是第一次使用 `uav1_v2 / su34` 的 clean 场景，先在本地生成 split meshes：
@@ -382,3 +398,4 @@ D:\ML\anaconda3\envs\neoverse\python.exe mvp-demo/scripts/render_neoverse_multiv
 - `camera_source=rendered` 时优先复核 rig-anchored 输出。
 - `camera_source=predicted_camera` 时允许和 rig 结果产生偏移，用于诊断相机锚点是否真正生效。
 - 默认分辨率优先读取同目录 `probe_meta.json`，缺失时回退到 `280x168`。
+
