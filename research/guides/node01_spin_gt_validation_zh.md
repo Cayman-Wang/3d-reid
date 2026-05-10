@@ -44,7 +44,7 @@ python mvp-demo/scripts/mj_capture_3cam_node.py `
   --mjcf mvp-demo/assets/scene/mujoco_3cam_node_parallel_j10.xml `
   --out_root mvp-demo/data/nodes `
   --node_id node01 `
-  --scene_id mj_node01_j10_spin_static_yp_a `
+  --scene_id mj_node01_j10_spin_static_yp20_a `
   --target_body target `
   --identity_id j10 `
   --traj static_spin_yaw_pitch `
@@ -56,9 +56,9 @@ python mvp-demo/scripts/mj_capture_3cam_node.py `
   --save_masks_gt `
   --mask_subdir masks_gt `
   --depth_subdir depth_gt `
-  --yaw_start_deg -60 `
-  --yaw_end_deg 60 `
-  --pitch_amp_deg 10 `
+  --yaw_start_deg -45 `
+  --yaw_end_deg 45 `
+  --pitch_amp_deg 20 `
   --pitch_period 8
 ```
 
@@ -66,14 +66,14 @@ python mvp-demo/scripts/mj_capture_3cam_node.py `
 
 ```powershell
 python mvp-demo/scripts/export_node_presentation_assets.py `
-  --scene_dir mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_static_yp_a `
+  --scene_dir mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_static_yp20_a `
   --mask_subdir masks_gt `
   --depth_subdir depth_gt
 ```
 
 ```powershell
 python mvp-demo/scripts/recon_fuse_depth_points.py `
-  --scene_dir mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_static_yp_a `
+  --scene_dir mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_static_yp20_a `
   --cams cam0,cam1,cam2 `
   --depth_subdir depth_gt `
   --mask_subdir masks_gt `
@@ -84,8 +84,8 @@ python mvp-demo/scripts/recon_fuse_depth_points.py `
 
 ```powershell
 python mvp-demo/scripts/validate_node_spin_scene.py `
-  --scene_dir mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_static_yp_a `
-  --scene_id mj_node01_j10_spin_static_yp_a
+  --scene_dir mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_static_yp20_a `
+  --scene_id mj_node01_j10_spin_static_yp20_a
 ```
 
 通过标准：
@@ -99,7 +99,7 @@ python mvp-demo/scripts/validate_node_spin_scene.py `
 - `presentation_assets/triview_video.mp4` 存在，且有至少 3 张 `overview_*.png`
 - `recon/points_fused_gt` 数量与时间戳对齐，空点云数为 `0`
 
-注意：仓库里当前已有的 `mj_node01_j10_spin_static_yp_a` 是 proxy 预验证样本；它会在这里因为 `mjcf_name_matches` 和 `capture_plan_matches` 失败，被明确拒绝为正式 `J10` 样本。
+注意：旧的 `mj_node01_j10_spin_static_yp_a` 只是早期 proxy/低俯仰样本；当前正式验证应以 `mj_node01_j10_spin_static_yp20_a` 及其冻结参数为准。
 
 ## 5. `static_spin` 通过后再采 `J10 circle`
 
@@ -123,9 +123,9 @@ python mvp-demo/scripts/mj_capture_3cam_node.py `
   --save_masks_gt `
   --mask_subdir masks_gt `
   --depth_subdir depth_gt `
-  --yaw_start_deg -60 `
-  --yaw_end_deg 60 `
-  --pitch_amp_deg 10 `
+  --yaw_start_deg -45 `
+  --yaw_end_deg 45 `
+  --pitch_amp_deg 20 `
   --pitch_period 8
 ```
 

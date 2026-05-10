@@ -76,8 +76,49 @@ def _load_manifest(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _resolve_manifest_path(repo_root: Path, path_text: str) -> Path:
+    path = Path(str(path_text))
+    if not path.is_absolute():
+        path = repo_root / path
+    return path.resolve()
+
+
+def _resolve_entry_scene_dir(repo_root: Path, scene_dir_text: str) -> Path:
+    path = Path(str(scene_dir_text))
+    if not path.is_absolute():
+        path = repo_root / path
+    return path.resolve()
+
+
+def _resolve_scene_subdir(scene_dir: Path, subdir_text: str) -> Path:
+    path = Path(str(subdir_text))
+    if path.is_absolute():
+        return path
+    return scene_dir / path
+
+
+def _format_cfg_value(value, context: dict[str, str], key: str):
+    if not isinstance(value, str):
+        return value
+    if "{" not in value:
+        return value
+    try:
+        return value.format_map(context)
+    except KeyError as exc:
+        raise SystemExit(f"Branch config field {key!r} references missing template key: {exc.args[0]!r}") from exc
+
+
+def _resolve_entry_cfg(cfg: dict, entry: dict, scene_id: str, scene_dir: Path, repo_root: Path) -> dict:
+    context = {str(k): str(v) for k, v in entry.items() if not isinstance(v, (dict, list))}
+    context.setdefault("scene_id", str(scene_id))
+    context.setdefault("scene_name", scene_dir.name)
+    context.setdefault("scene_dir", str(scene_dir))
+    context.setdefault("repo_root", str(repo_root))
+    return {key: _format_cfg_value(value, context, key) for key, value in cfg.items()}
+
+
 def _ensure_points_ready(scene_dir: Path, points_subdir: str, branch: str) -> None:
-    points_dir = scene_dir / str(points_subdir)
+    points_dir = _resolve_scene_subdir(scene_dir, str(points_subdir))
     if not points_dir.exists():
         raise SystemExit(
             f'Branch "{branch}" requires precomputed geometry, but points dir is missing: {points_dir}'
@@ -107,6 +148,8 @@ def _resolve_branch_config(manifest: dict, branch: str) -> tuple[dict, list[str]
     cfg.setdefault("rgb_backend", "clip")
     cfg.setdefault("geo_backend", "none")
     cfg.setdefault("require_points", False)
+    cfg.setdefault("require_points_per_timestamp", False)
+    cfg.setdefault("min_points_per_timestamp", 1)
     cfg.setdefault(
         "points_subdir",
         "recon/points_rgb_only_unused" if str(cfg["geo_backend"]) == "none" else "recon/points_fused",
@@ -134,9 +177,7 @@ def main() -> None:
     args = ap.parse_args()
 
     repo_root = _repo_root()
-    manifest_path = Path(str(args.manifest))
-    if not manifest_path.is_absolute():
-        manifest_path = repo_root / manifest_path
+    manifest_path = _resolve_manifest_path(repo_root, str(args.manifest))
     manifest = _load_manifest(manifest_path)
 
     benchmark_id = str(manifest["benchmark_id"])
@@ -146,13 +187,13 @@ def main() -> None:
 
     cfg, available_branches = _resolve_branch_config(manifest, str(args.branch))
     print(f"[cfg] branch={args.branch} available={available_branches}")
-    scene_items: list[tuple[str, Path]] = []
+    scene_items: list[tuple[str, Path, dict]] = []
     for entry in entries:
         scene_id = str(entry["scene_id"])
-        scene_dir = repo_root / str(entry["scene_dir"])
+        scene_dir = _resolve_entry_scene_dir(repo_root, str(entry["scene_dir"]))
         if not scene_dir.exists():
             raise SystemExit(f"Scene dir missing: {scene_dir}")
-        scene_items.append((scene_id, scene_dir))
+        scene_items.append((scene_id, scene_dir, dict(entry)))
 
     scripts_dir = repo_root / "mvp-demo" / "scripts"
     eval_root = repo_root / "mvp-demo" / "output" / "evals" / benchmark_id / str(cfg["eval_subdir"])
@@ -162,13 +203,18 @@ def main() -> None:
         "benchmark_id": benchmark_id,
         "branch": str(args.branch),
         "branch_config": cfg,
-        "scene_ids": [scene_id for scene_id, _ in scene_items],
+        "resolved_branch_configs": {
+            scene_id: _resolve_entry_cfg(cfg, entry, scene_id, scene_dir, repo_root)
+            for scene_id, scene_dir, entry in scene_items
+        },
+        "scene_ids": [scene_id for scene_id, _, _ in scene_items],
         "manifest": str(manifest_path),
     }
     (eval_root / "run_meta.json").write_text(json.dumps(run_meta, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
-    for scene_id, scene_dir in scene_items:
-        if bool(cfg.get("run_recon")):
+    for scene_id, scene_dir, entry in scene_items:
+        scene_cfg = _resolve_entry_cfg(cfg, entry, scene_id, scene_dir, repo_root)
+        if bool(scene_cfg.get("run_recon")):
             _run(
                 [
                     sys.executable,
@@ -176,19 +222,19 @@ def main() -> None:
                     "--scene_dir",
                     str(scene_dir),
                     "--cams",
-                    str(cfg["cams"]),
+                    str(scene_cfg["cams"]),
                     "--depth_subdir",
-                    str(cfg["depth_subdir"]),
+                    str(scene_cfg["depth_subdir"]),
                     "--mask_subdir",
-                    str(cfg["mask_subdir"]),
+                    str(scene_cfg["mask_subdir"]),
                     "--out_subdir",
-                    str(cfg["points_subdir"]),
+                    str(scene_cfg["points_subdir"]),
                 ],
                 cwd=repo_root,
             )
 
-        if bool(cfg.get("require_points")):
-            _ensure_points_ready(scene_dir, str(cfg["points_subdir"]), str(args.branch))
+        if bool(scene_cfg.get("require_points")):
+            _ensure_points_ready(scene_dir, str(scene_cfg["points_subdir"]), str(args.branch))
 
         _run(
             [
@@ -197,38 +243,60 @@ def main() -> None:
                 "--scene_dir",
                 str(scene_dir),
                 "--mask_subdir",
-                str(cfg["mask_subdir"]),
+                str(scene_cfg["mask_subdir"]),
                 "--depth_subdir",
-                str(cfg["depth_subdir"]),
+                str(scene_cfg["depth_subdir"]),
                 "--points_subdir",
-                str(cfg["points_subdir"]),
+                str(scene_cfg["points_subdir"]),
                 "--out",
-                str(cfg["tracklets_rel"]),
+                str(scene_cfg["tracklets_rel"]),
                 "--min_timestamps",
                 str(manifest.get("defaults", {}).get("min_valid_timestamps", 5)),
-            ],
+            ]
+            + (["--points_contract", str(scene_cfg["points_contract"])] if str(scene_cfg.get("points_contract", "")).strip() else [])
+            + (
+                ["--require_points", "--min_points", str(scene_cfg.get("min_points_per_timestamp", 1))]
+                if bool(scene_cfg.get("require_points_per_timestamp"))
+                else []
+            ),
             cwd=repo_root,
         )
 
-        _run(
-            [
-                sys.executable,
-                str(scripts_dir / "extract_node_track_embeddings.py"),
-                "--scene_dir",
-                str(scene_dir),
-                "--tracklets",
-                str(cfg["tracklets_rel"]),
-                "--out_dir",
-                str(cfg["embeddings_subdir"]),
-                "--rgb_backend",
-                str(cfg["rgb_backend"]),
-                "--geo_backend",
-                str(cfg["geo_backend"]),
-            ],
-            cwd=repo_root,
-        )
+        embed_cmd = [
+            sys.executable,
+            str(scripts_dir / "extract_node_track_embeddings.py"),
+            "--scene_dir",
+            str(scene_dir),
+            "--tracklets",
+            str(scene_cfg["tracklets_rel"]),
+            "--out_dir",
+            str(scene_cfg["embeddings_subdir"]),
+            "--rgb_backend",
+            str(scene_cfg["rgb_backend"]),
+            "--geo_backend",
+            str(scene_cfg["geo_backend"]),
+        ]
+        passthrough_keys = [
+            "max_timestamps_per_track",
+            "max_points_per_timestamp",
+            "seed",
+            "geo_bins",
+            "device",
+            "clip_model",
+            "clip_pretrained",
+            "rgb_weight",
+            "geo_weight",
+        ]
+        for key in passthrough_keys:
+            value = scene_cfg.get(key)
+            if value is None:
+                continue
+            embed_cmd.extend([f"--{key}", str(value)])
+        if bool(scene_cfg.get("apply_mask_to_rgb")):
+            embed_cmd.append("--apply_mask_to_rgb")
+        _run(embed_cmd, cwd=repo_root)
 
-    for scene_id, scene_dir in scene_items:
+    for scene_id, scene_dir, _ in scene_items:
         per_query_out = eval_root / f"{scene_id}.json"
         cmd = [
             sys.executable,
@@ -236,7 +304,7 @@ def main() -> None:
             "--query_scene_dir",
             str(scene_dir),
         ]
-        for _, gallery_scene_dir in scene_items:
+        for _, gallery_scene_dir, _ in scene_items:
             cmd.extend(["--gallery_scene_dir", str(gallery_scene_dir)])
         cmd.extend(
             [
@@ -257,9 +325,9 @@ def main() -> None:
         sys.executable,
         str(scripts_dir / "eval_node_track_retrieval.py"),
     ]
-    for _, scene_dir in scene_items:
+    for _, scene_dir, _ in scene_items:
         all_cmd.extend(["--query_scene_dir", str(scene_dir)])
-    for _, scene_dir in scene_items:
+    for _, scene_dir, _ in scene_items:
         all_cmd.extend(["--gallery_scene_dir", str(scene_dir)])
     all_cmd.extend(
         [

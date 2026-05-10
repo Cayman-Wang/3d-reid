@@ -185,6 +185,8 @@ def main() -> None:
     ap.add_argument("--device", default="auto", type=str, help="auto|cpu|cuda")
     ap.add_argument("--clip_model", default="ViT-B-32", type=str)
     ap.add_argument("--clip_pretrained", default="laion2b_s34b_b79k", type=str)
+    ap.add_argument("--rgb_weight", default=1.0, type=float)
+    ap.add_argument("--geo_weight", default=1.0, type=float)
     args = ap.parse_args()
 
     scene_dir = Path(args.scene_dir).resolve()
@@ -334,7 +336,9 @@ def main() -> None:
                                     geo_emb = _radial_hist_desc(pts, bins=int(args.geo_bins))
                 geo_emb = l2norm(geo_emb)
 
-            fused = np.concatenate([rgb_track, geo_emb], axis=0) if geo_emb.size else rgb_track
+            rgb_part = rgb_track.astype(np.float32) * float(args.rgb_weight)
+            geo_part = geo_emb.astype(np.float32) * float(args.geo_weight)
+            fused = np.concatenate([rgb_part, geo_part], axis=0) if geo_part.size else rgb_part
             per_timestamp_embs.append(l2norm(fused.astype(np.float32)))
             used_timestamp_stems.append(stem)
 
@@ -354,6 +358,10 @@ def main() -> None:
                 "used_timestamp_stems": used_timestamp_stems,
                 "rgb_backend": rgb_backend,
                 "geo_backend": geo_backend,
+                "rgb_weight": float(args.rgb_weight),
+                "geo_weight": float(args.geo_weight),
+                "max_timestamps_per_track": int(args.max_timestamps_per_track),
+                "max_points_per_timestamp": int(args.max_points_per_timestamp),
                 "dim": int(emb.shape[0]),
             }
         )

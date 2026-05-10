@@ -50,6 +50,8 @@ tmp/
 # Local cloned external repos (all third-party code lives outside this repo)
 mvp-demo/third_party/
 参考工作/repos/
+third_party/gsplat_pypi/
+third_party/dggt/
 
 # Backup of nested git repository
 mvp-demo/.git_bak/
