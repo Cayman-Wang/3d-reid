@@ -16,6 +16,20 @@ def _load_json(path: Path) -> dict[str, Any]:
         raise SystemExit(f"Failed to read json: {path}\nError: {e!r}")
 
 
+def _resolve_scene_path(scene_dir: Path, path_text: str) -> Path:
+    path = Path(str(path_text))
+    if path.is_absolute():
+        return path
+    return scene_dir / path
+
+
+def _track_ref(scene_dir: Path, path: Path) -> str:
+    try:
+        return path.relative_to(scene_dir).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def _read_image(path: Path, flags: int):
     import cv2  # type: ignore
 
@@ -113,6 +127,7 @@ def main() -> None:
     ap.add_argument("--mask_subdir", default="masks", type=str)
     ap.add_argument("--depth_subdir", default="depth", type=str)
     ap.add_argument("--points_subdir", default="recon/points_fused", type=str)
+    ap.add_argument("--points_contract", default="", type=str)
     ap.add_argument("--out", default="tracks/tracklets.json", type=str)
     ap.add_argument("--identity_id", default="", type=str)
     ap.add_argument("--min_timestamps", default=1, type=int)
@@ -123,6 +138,21 @@ def main() -> None:
     scene_dir = Path(args.scene_dir).resolve()
     if not scene_dir.exists():
         raise SystemExit(f"--scene_dir not found: {scene_dir}")
+    points_root = _resolve_scene_path(scene_dir, str(args.points_subdir))
+    points_contract = str(args.points_contract).strip()
+    if points_contract:
+        meta_path = points_root / "meta.json"
+        if not meta_path.exists():
+            raise SystemExit(
+                f"Points contract validation failed: meta.json not found at {meta_path}; expected contract={points_contract!r}"
+            )
+        meta = _load_json(meta_path)
+        actual_contract = str(meta.get("schema_version", ""))
+        if actual_contract != points_contract:
+            raise SystemExit(
+                "Points contract validation failed: "
+                f"{meta_path} has schema_version={actual_contract!r}; expected contract={points_contract!r}"
+            )
 
     cams = [c.strip() for c in str(args.cams).split(",") if c.strip()]
     if not cams:
@@ -186,21 +216,21 @@ def main() -> None:
 
             per_cam_bboxes[cam_id] = bbox
             per_cam_paths[cam_id] = (
-                frame_path.relative_to(scene_dir).as_posix(),
-                mask_path.relative_to(scene_dir).as_posix(),
-                depth_path.relative_to(scene_dir).as_posix(),
+                _track_ref(scene_dir, frame_path),
+                _track_ref(scene_dir, mask_path),
+                _track_ref(scene_dir, depth_path),
             )
 
         if not valid:
             continue
 
         points_rel: str | None = None
-        points_path = scene_dir / str(args.points_subdir) / f"{stem}.npy"
+        points_path = points_root / f"{stem}.npy"
         if points_path.exists():
             if bool(args.require_points):
                 if not _points_meet_threshold(points_path, int(args.min_points)):
                     continue
-            points_rel = points_path.relative_to(scene_dir).as_posix()
+            points_rel = _track_ref(scene_dir, points_path)
         if bool(args.require_points) and points_rel is None:
             continue
 

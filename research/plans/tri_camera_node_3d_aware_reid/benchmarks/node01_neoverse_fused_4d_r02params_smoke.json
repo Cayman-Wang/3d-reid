@@ -1,0 +1,42 @@
+{
+  "benchmark_id": "node01_neoverse_fused_4d_r02params_smoke",
+  "description": "Single-scene smoke manifest for node01 NeoVerse fused 4D points_by_timestamp + CLIP RGB crop + FPFH geometry.",
+  "defaults": {
+    "min_valid_timestamps": 5
+  },
+  "entries": [
+    {
+      "scene_dir": "D:/node01_spin_runtime_ascii/mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_static_yp20_a",
+      "node_id": "node01",
+      "scene_id": "mj_node01_j10_spin_static_yp20_a",
+      "identity_id": "j10"
+    }
+  ],
+  "branch_configs": {
+    "rgb_neoverse_fused_4d_clip_fpfh_r02params_smoke": {
+      "cams": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ],
+      "mask_subdir": "masks_gt",
+      "depth_subdir": "depth_gt",
+      "points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/2026-04-26_j10_yp20_r02params_r01/mj_node01_j10_spin_static_yp20_a/points_by_timestamp",
+      "points_contract": "neoverse_points_by_timestamp_v1",
+      "tracklets_rel": "tracks/tracklets_neoverse_fused_4d_clip_fpfh_r02params_smoke.json",
+      "embeddings_subdir": "embeddings_neoverse_fused_4d_clip_fpfh_r02params_smoke",
+      "eval_subdir": "rgb_neoverse_fused_4d_clip_fpfh_r02params_smoke",
+      "rgb_backend": "clip",
+      "geo_backend": "open3d_fpfh",
+      "run_recon": false,
+      "require_points": true,
+      "require_points_per_timestamp": true,
+      "min_points_per_timestamp": 32,
+      "max_timestamps_per_track": 30,
+      "max_points_per_timestamp": 5000,
+      "rgb_weight": 1.0,
+      "geo_weight": 0.35,
+      "apply_mask_to_rgb": false
+    }
+  }
+}

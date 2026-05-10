@@ -1,0 +1,134 @@
+{
+  "benchmark_id": "node01_neoverse_fused_4d_eval_matrix_v1",
+  "description": "Node01 spin-scene evaluation matrix for RGB-only versus NeoVerse fused 4D dynamic geometry. The RGB-only branch is runnable now; the NeoVerse 4D branch becomes runnable as each scene gets points_by_timestamp.",
+  "scope": {
+    "task": "single-node cross-scene track-level retrieval with NeoVerse fused 4D dynamic geometry",
+    "domain": "uav_aircraft",
+    "node_id": "node01",
+    "phase": "neoverse_fused_4d_eval_matrix_bootstrap"
+  },
+  "defaults": {
+    "split_role": "both",
+    "mask_source": "gt",
+    "depth_source": "gt",
+    "mask_layout": "flat",
+    "min_valid_timestamps": 5,
+    "retrieval_flags": {
+      "exclude_same_track_id": true,
+      "exclude_same_scene": true
+    }
+  },
+  "experiments": [
+    "rgb_only_clip_gtmask_eval_v1",
+    "rgb_neoverse_fused_4d_clip_fpfh_eval_v1"
+  ],
+  "entries": [
+    {
+      "scene_dir": "D:/node01_spin_runtime_ascii/mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_static_yp20_a",
+      "node_id": "node01",
+      "scene_id": "mj_node01_j10_spin_static_yp20_a",
+      "identity_id": "j10",
+      "split_role": "both",
+      "neoverse_points_status": "ready",
+      "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/2026-04-26_j10_yp20_r02params_r01/mj_node01_j10_spin_static_yp20_a/points_by_timestamp"
+    },
+    {
+      "scene_dir": "D:/node01_spin_runtime_ascii/mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_circle_yp_b",
+      "node_id": "node01",
+      "scene_id": "mj_node01_j10_spin_circle_yp_b",
+      "identity_id": "j10",
+      "split_role": "both",
+      "neoverse_points_status": "missing",
+      "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_fused_4d_eval_matrix_v1/mj_node01_j10_spin_circle_yp_b/points_by_timestamp"
+    },
+    {
+      "scene_dir": "D:/node01_spin_runtime_ascii/mvp-demo/data/nodes/node01/scenes/mj_node01_uav1_spin_static_yp_a",
+      "node_id": "node01",
+      "scene_id": "mj_node01_uav1_spin_static_yp_a",
+      "identity_id": "uav1",
+      "split_role": "both",
+      "neoverse_points_status": "missing",
+      "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_fused_4d_eval_matrix_v1/mj_node01_uav1_spin_static_yp_a/points_by_timestamp"
+    },
+    {
+      "scene_dir": "D:/node01_spin_runtime_ascii/mvp-demo/data/nodes/node01/scenes/mj_node01_uav1_spin_circle_yp_b",
+      "node_id": "node01",
+      "scene_id": "mj_node01_uav1_spin_circle_yp_b",
+      "identity_id": "uav1",
+      "split_role": "both",
+      "neoverse_points_status": "missing",
+      "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_fused_4d_eval_matrix_v1/mj_node01_uav1_spin_circle_yp_b/points_by_timestamp"
+    },
+    {
+      "scene_dir": "D:/node01_spin_runtime_ascii/mvp-demo/data/nodes/node01/scenes/mj_node01_su34_spin_static_yp_a",
+      "node_id": "node01",
+      "scene_id": "mj_node01_su34_spin_static_yp_a",
+      "identity_id": "su34",
+      "split_role": "both",
+      "neoverse_points_status": "missing",
+      "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_fused_4d_eval_matrix_v1/mj_node01_su34_spin_static_yp_a/points_by_timestamp"
+    },
+    {
+      "scene_dir": "D:/node01_spin_runtime_ascii/mvp-demo/data/nodes/node01/scenes/mj_node01_su34_spin_circle_yp_b",
+      "node_id": "node01",
+      "scene_id": "mj_node01_su34_spin_circle_yp_b",
+      "identity_id": "su34",
+      "split_role": "both",
+      "neoverse_points_status": "missing",
+      "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_fused_4d_eval_matrix_v1/mj_node01_su34_spin_circle_yp_b/points_by_timestamp"
+    }
+  ],
+  "branch_configs": {
+    "rgb_only_clip_gtmask_eval_v1": {
+      "cams": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ],
+      "mask_subdir": "masks_gt",
+      "depth_subdir": "depth_gt",
+      "tracklets_rel": "tracks/tracklets_neoverse_fused_4d_eval_matrix_rgb_only_v1.json",
+      "embeddings_subdir": "embeddings_neoverse_fused_4d_eval_matrix_rgb_only_v1",
+      "eval_subdir": "rgb_only_clip_gtmask_eval_v1",
+      "rgb_backend": "clip",
+      "geo_backend": "none",
+      "run_recon": false,
+      "max_timestamps_per_track": 30,
+      "max_points_per_timestamp": 5000,
+      "rgb_weight": 1.0,
+      "geo_weight": 0.35,
+      "apply_mask_to_rgb": false
+    },
+    "rgb_neoverse_fused_4d_clip_fpfh_eval_v1": {
+      "cams": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ],
+      "mask_subdir": "masks_gt",
+      "depth_subdir": "depth_gt",
+      "points_subdir": "{neoverse_points_subdir}",
+      "points_contract": "neoverse_points_by_timestamp_v1",
+      "tracklets_rel": "tracks/tracklets_neoverse_fused_4d_eval_matrix_clip_fpfh_v1.json",
+      "embeddings_subdir": "embeddings_neoverse_fused_4d_eval_matrix_clip_fpfh_v1",
+      "eval_subdir": "rgb_neoverse_fused_4d_clip_fpfh_eval_v1",
+      "rgb_backend": "clip",
+      "geo_backend": "open3d_fpfh",
+      "run_recon": false,
+      "require_points": true,
+      "require_points_per_timestamp": true,
+      "min_points_per_timestamp": 32,
+      "max_timestamps_per_track": 30,
+      "max_points_per_timestamp": 5000,
+      "rgb_weight": 1.0,
+      "geo_weight": 0.35,
+      "apply_mask_to_rgb": false
+    }
+  },
+  "notes": [
+    "This manifest intentionally uses masks_gt/depth_gt for the spin eval bootstrap so RGB-only and NeoVerse 4D geometry branches share the same crop/bbox source.",
+    "Only mj_node01_j10_spin_static_yp20_a currently has ready points_by_timestamp under the stable r02params run.",
+    "Do not run rgb_neoverse_fused_4d_clip_fpfh_eval_v1 across all entries until the missing neoverse_points_subdir directories exist and pass the neoverse_points_by_timestamp_v1 contract.",
+    "The RGB-only branch is runnable now and establishes the multi-scene retrieval/eval surface with metric_queries > 0."
+  ]
+}
