@@ -1,6 +1,6 @@
 {
   "benchmark_id": "node01_neoverse_fused_4d_eval_matrix_v1",
-  "description": "Node01 spin-scene evaluation matrix for RGB-only versus NeoVerse fused 4D dynamic geometry. The RGB-only branch is runnable now; the NeoVerse 4D branch becomes runnable as each scene gets points_by_timestamp.",
+  "description": "Node01 spin-scene evaluation matrix for RGB-only versus NeoVerse fused 4D dynamic geometry. All 6 entries now have ready points_by_timestamp and both evaluation branches are runnable.",
   "scope": {
     "task": "single-node cross-scene track-level retrieval with NeoVerse fused 4D dynamic geometry",
     "domain": "uav_aircraft",
@@ -38,7 +38,7 @@
       "scene_id": "mj_node01_j10_spin_circle_yp_b",
       "identity_id": "j10",
       "split_role": "both",
-      "neoverse_points_status": "missing",
+      "neoverse_points_status": "ready",
       "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_fused_4d_eval_matrix_v1/mj_node01_j10_spin_circle_yp_b/points_by_timestamp"
     },
     {
@@ -47,7 +47,7 @@
       "scene_id": "mj_node01_uav1_spin_static_yp_a",
       "identity_id": "uav1",
       "split_role": "both",
-      "neoverse_points_status": "missing",
+      "neoverse_points_status": "ready",
       "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_fused_4d_eval_matrix_v1/mj_node01_uav1_spin_static_yp_a/points_by_timestamp"
     },
     {
@@ -56,7 +56,7 @@
       "scene_id": "mj_node01_uav1_spin_circle_yp_b",
       "identity_id": "uav1",
       "split_role": "both",
-      "neoverse_points_status": "missing",
+      "neoverse_points_status": "ready",
       "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_fused_4d_eval_matrix_v1/mj_node01_uav1_spin_circle_yp_b/points_by_timestamp"
     },
     {
@@ -65,7 +65,7 @@
       "scene_id": "mj_node01_su34_spin_static_yp_a",
       "identity_id": "su34",
       "split_role": "both",
-      "neoverse_points_status": "missing",
+      "neoverse_points_status": "ready",
       "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_fused_4d_eval_matrix_v1/mj_node01_su34_spin_static_yp_a/points_by_timestamp"
     },
     {
@@ -74,7 +74,7 @@
       "scene_id": "mj_node01_su34_spin_circle_yp_b",
       "identity_id": "su34",
       "split_role": "both",
-      "neoverse_points_status": "missing",
+      "neoverse_points_status": "ready",
       "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_fused_4d_eval_matrix_v1/mj_node01_su34_spin_circle_yp_b/points_by_timestamp"
     }
   ],
@@ -127,8 +127,9 @@
   },
   "notes": [
     "This manifest intentionally uses masks_gt/depth_gt for the spin eval bootstrap so RGB-only and NeoVerse 4D geometry branches share the same crop/bbox source.",
-    "Only mj_node01_j10_spin_static_yp20_a currently has ready points_by_timestamp under the stable r02params run.",
-    "Do not run rgb_neoverse_fused_4d_clip_fpfh_eval_v1 across all entries until the missing neoverse_points_subdir directories exist and pass the neoverse_points_by_timestamp_v1 contract.",
-    "The RGB-only branch is runnable now and establishes the multi-scene retrieval/eval surface with metric_queries > 0."
+    "All 6 entries are now ready for rgb_neoverse_fused_4d_clip_fpfh_eval_v1. The j10 static scene reuses the stable 2026-04-26_j10_yp20_r02params_r01 run, while the other 5 scenes write points_by_timestamp under node01_neoverse_fused_4d_eval_matrix_v1.",
+    "Each ready points_by_timestamp directory has schema_version=neoverse_points_by_timestamp_v1, index.csv with 81 rows, and 81 matching *.npy files.",
+    "Current node01 3 identities x 2 scenes bootstrap results are metric_queries=6, mAP=1.0, recall_at_1=1.0, recall_at_5=1.0 for both RGB-only and RGB+NeoVerse 4D geometry branches.",
+    "Current conclusion is integration and evaluability, not metric gain: under the shared masks_gt/depth_gt bootstrap, RGB-only and RGB+NeoVerse 4D geometry are tied on this matrix."
   ]
 }

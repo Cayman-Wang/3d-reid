@@ -10,8 +10,8 @@
 
 当前口径必须区分两件事：
 
-- 已完成：工程 smoke 闭环（链路可跑通）
-- 未完成：多 scene / 多身份的正式 3D-ReID benchmark 与 Rank/mAP 主结果
+- 已完成：`node01` 单节点 `3 identities x 2 scenes` 的工程闭环与可评测矩阵 bootstrap；`RGB-only` 与 `RGB + NeoVerse 4D geometry` 两条分支都已得到 `metric_queries=6`
+- 未完成：cross-node benchmark；当前 `node01` bootstrap 已有 Rank/mAP，但尚未观察到几何分支带来稳定增益
 
 当前默认采集轨迹也已冻结：
 
@@ -35,6 +35,39 @@
 - 只要进入 NeoVerse fused 4D 七步链或其预览/分析脚本，就应显式切到 `neoverse`
 - 当前本机实践已经证明这两个环境都可用，因此后续文档与命令应继续按此分工记录，而不是要求单环境统一承载所有脚本
 
+### 运行注意事项（当前机器）
+
+当前这台 Windows 机器有两个已经复现过的稳定坑，后续默认按下面的规避方式执行：
+
+1. 不要优先用 `conda run -n ... python ...` 包 NeoVerse fused 4D 脚本。
+   原因：当前控制台会出现 `UnicodeEncodeError: 'gbk' codec can't encode character ...`，脚本可能已经执行但 `conda` 在打印 stdout 时崩掉，容易误判步骤是否成功。
+   当前机器默认改成直接调用环境内解释器：
+
+```powershell
+D:\ML\anaconda3\envs\neoverse\python.exe ...
+D:\ML\anaconda3\envs\mvp_demo\python.exe ...
+```
+
+2. `export_neoverse_view_observations.py` 在本机不要用 `float16`。
+   原因：当前会触发：
+
+```text
+"projection_ewa_3dgs_fused_fwd_kernel" not implemented for 'Half'
+```
+
+   直接后果是 `observations/index.csv` 为空，下游会继续报 `No observations found ...`。
+   当前机器固定写成：
+
+```powershell
+--torch_dtype float32
+```
+
+补充说明：
+
+- `run_neoverse_per_camera_bundle.py` 当前仍可沿用默认 `float16`
+- 但 `export_neoverse_view_observations.py` 必须显式切到 `float32`
+- 若 `observations_report.json` 中 `num_rows = 0`，优先先检查是否误用了 `float16`
+
 ## 1. 当前链路
 
 当前建议的脚本链分两段：
@@ -53,6 +86,47 @@
 - `scripts/export_neoverse_multiview_points.py`
 
 其中 `prepare_neoverse_multiview_manifest.py` 与 `export_neoverse_multiview_points.py` 更偏向历史 multiview/static 分支辅助脚本，不属于当前 fused 4D 主线入口。
+
+### 1.1 当前机器推荐执行口径
+
+在当前机器上，推荐把 NeoVerse fused 4D 主链固定为以下口径：
+
+- `run_neoverse_per_camera_bundle.py`：
+  - `width = 280`
+  - `height = 168`
+  - `resize_mode = resize`
+  - `input_variant = object_crop`
+  - `crop_padding = 0.25`
+  - `crop_mask_source = auto`
+  - `num_frames = 81`
+- `export_neoverse_view_observations.py`：
+  - `torch_dtype = float32`
+  - `camera_source = rendered`
+- `backproject_neoverse_observations.py`：
+  - `fg_alpha_thresh = 0.01`
+  - `bg_alpha_thresh = 0.02`
+  - `fg_voxel_size_m = 0.005`
+  - `bg_voxel_size_m = 0.02`
+  - `mask_dilate_px = 3`
+- `fuse_neoverse_multiview_world_points.py`：
+  - `bg_voxel_size_m = 0.02`
+  - `dynamic_voxel_size_m = 0.01`
+  - `min_bg_cam_support = 2`
+  - `dynamic_track_radius_m = 0.40`
+  - `dynamic_merge_radius_m = 0.08`
+  - `dynamic_min_component_points = 12`
+- `constrain_neoverse_multiview_dynamic.py`：
+  - `hull_voxel_size_m = 0.02`
+  - `output_voxel_size_m = 0.01`
+  - `roi_padding_m = 0.12`
+  - `min_mask_cam_support = 2`
+  - `point_support_radius_m = 0.03`
+  - `depth_trim_radius_m = 0.04`
+  - `min_trimmed_points = 40`
+  - `scale_guard_ratio = 0.25`
+  - `min_depth_mask_pixels = 24`
+  - `depth_support_source = aligned_fg_points`
+  - `max_roi_voxels = 400000`
 
 ## 2. 输出契约（当前冻结）
 
@@ -107,6 +181,35 @@ python scripts/extract_node_track_embeddings.py \
 - `tracks_meta.json` 当前记录 `rgb_backend=hist`、`geo_backend=radial_hist`
 - `tracks_meta.json` 当前记录 `n_timestamps_total=81`、`n_timestamps_used=2`
 - 这组 smoke 只证明“接口可跑通”，不证明“全时间戳特征聚合已完成”
+
+## 3.1 Node01 eval matrix（当前阶段正式验收）
+
+在 smoke 之外，当前已完成 `node01` 单节点 `3 identities x 2 scenes` 的正式 bootstrap 矩阵验收：
+
+- `manifest`：`research/plans/tri_camera_node_3d_aware_reid/benchmarks/node01_neoverse_fused_4d_eval_matrix_v1.json`
+- `6` 个 `scene` 的 `points_by_timestamp` 都满足：
+  - `meta.json.schema_version = neoverse_points_by_timestamp_v1`
+  - `index.csv = 81 rows`
+  - `*.npy = 81`
+- `rgb_only_clip_gtmask_eval_v1`：
+  - `metric_queries = 6`
+  - `mAP = 1.0`
+  - `recall_at_1 = 1.0`
+  - `recall_at_5 = 1.0`
+  - 每个 `scene` 的 `tracks.npy` 形状为 `(1, 512)`
+- `rgb_neoverse_fused_4d_clip_fpfh_eval_v1`：
+  - `metric_queries = 6`
+  - `mAP = 1.0`
+  - `recall_at_1 = 1.0`
+  - `recall_at_5 = 1.0`
+  - 每个 `scene` 的 `tracks.npy` 形状为 `(1, 545)`
+  - `tracks_meta.json` 记录 `rgb_backend=clip`、`geo_backend=open3d_fpfh`、`rgb_weight=1.0`、`geo_weight=0.35`
+
+当前阶段结论必须保守表述：
+
+- 已完成接入与可评测对比
+- 当前 `masks_gt/depth_gt` bootstrap 下，`RGB-only` 与 `RGB + NeoVerse 4D geometry` 持平
+- 不能写成几何分支已经带来指标提升
 
 ## 4. 预览与可视化解释
 
