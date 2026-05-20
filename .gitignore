@@ -52,6 +52,7 @@ mvp-demo/third_party/
 参考工作/repos/
 third_party/gsplat_pypi/
 third_party/dggt/
+third_party/Track4World/
 
 # Backup of nested git repository
 mvp-demo/.git_bak/

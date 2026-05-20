@@ -37,53 +37,49 @@ Git history may not be available in this folder; use a simple convention going f
 - Commit messages: `docs: ...`, `notes: ...`, `papers: ...` (imperative, <72 chars).
 - PRs: explain the change, link relevant papers/issues, and include screenshots for diagram changes; keep notebooks' outputs minimal to reduce diff noise.
 
-## Subagent Delegation (Repository-Specific, Token-First)
+## Subagent Delegation (Repository-Specific, Token-Aware)
 
-**仓库级策略覆盖**：本策略在全局基线基础上，补充 `research/`、`mvp-demo/`、benchmark 结果的特定触发条件
+**仓库级策略覆盖**：本策略在全局默认基础上，补充 `research/`、`mvp-demo/`、benchmark 结果的特定触发条件。全局默认偏积极，但本仓库仍强调文件边界和输出约束。
 
-**核心原则**：主 agent 保持高模负责拆解与拍板，subagent 只接窄任务、低/中模优先、高模仅保留高风险例外
+**核心原则**：主 agent 负责拆解、拍板、审核和最终答复；subagent 用于可拆分、低上下文、能减少主 agent 重复工作的任务。只要任务可清晰拆分、可并行推进、不会阻塞主路径，就可以优先考虑委派。
 
-**默认策略**（成本门控）：
-- 默认不启用 subagent
-- 若主 agent 通过 1-2 次精确搜索/读取即可完成：不委派
-- 优先在以下情况启用，包括但不限于：
-  - 单目录内但跨多个文件/输出的只读检索、来源追踪、差异汇总任务（交给 1 个轻量 explorer）
-  - 需要追踪 benchmark 结果字段在多个文件中的来源（交给 1 个轻量 explorer）
-  - 需要对 `research/` 计划文档与 `mvp-demo/` 实现进行双侧核对（交给 1-2 个轻量 explorer，由主 agent 汇总）
-  - 边界清晰且非微小的单脚本修改、单文档章节更新、隔离验证（交给 1 个中等 worker）
+**默认策略**：
+- 文档阅读、跨文件检索、路径定位、来源归因、差异汇总、旁路验证、隔离测试、边界清晰的小实现，都可以主动委派。
+- 若主 agent 通过 1-2 次精确搜索/读取即可完成，或委派不会明显节省 token / 时间，则可直接由主 agent 完成。
+- 主 agent 不把最终方案拍板、跨模块取舍、冲突裁决、用户最终答复交给 subagent。
 
-**多代理并行条件**（严格成本判断）：
+**多代理并行条件**：
 - 允许 2 个及以上 subagent，必须满足：
   - 独立流：任务可分割为两个或多个互不依赖的检索、核对、实现或验证流（例如 `research/` vs `mvp-demo/`、`research/` vs benchmark、`mvp-demo/` vs benchmark）
   - 低上下文：每个 subagent 只接收最小必要文件列表
-  - 明确节省高模工作量：避免高模重复搜索/核对带来的 token 消耗
+  - 明确节省主 agent 工作量：避免重复搜索、核对和验证
 
 **禁止场景**：
 - 单点概念问答、一步检查、小重命名
-- 主 agent 通过 1-2 次精确搜索/读取即可完成的任务
+- 主 agent 明显可以在极少量读取内完成的任务
 - 需要主 agent 立即拿到结果才能继续的关键路径任务
 
-**本仓库判例**（优先用例，稳定省 token）：
+**本仓库判例**：
 - `research/` 内多计划文档检索或比对 → 1 个轻量 explorer
 - `mvp-demo/` 内多脚本/多输出文件的参数追踪或来源归因 → 1 个轻量 explorer
 - `research/` vs `mvp-demo/` 双侧核对 → 1-2 个轻量 explorer，由主 agent 汇总
-- 单脚本修改、单文档章节更新（非微小且边界清晰）→ 1 个中等 worker（独占文件范围）
-- 跨理论方案与脚本实现的复杂不一致排障 → 高模例外（必要时才启用）
+- 单脚本修改、单文档章节更新（边界清晰）→ 1 个中等 worker（独占文件范围）
+- 跨理论方案与脚本实现的复杂不一致排障 → 高模例外（必要时才用）
 
 ## Model Selection (Repository-Specific)
 
-**主 agent**：保持高模，负责任务拆解、跨模块判断、最终答复
+**主 agent**：保持高模，负责任务拆解、跨模块判断、最终审核和最终答复。
 
-**角色与模型口径**（与全局保持一致）：
-- explorer：只读检索/归因 → `gpt-5.4-mini`
-- worker：局部实现/局部验证 → `gpt-5.3-codex` 或 `gpt-5.2`
-- 高风险例外：复杂排障/独立复核 → `gpt-5.4`（必要时才用）
+**角色与模型口径**：
+- `explorer`：优先用于只读检索、文档阅读、路径定位、参数追踪、来源归因、差异汇总 → `gpt-5.4-mini`
+- `worker`：优先用于局部实现、局部验证、独立文档更新、隔离验证 → `gpt-5.3-codex` 或 `gpt-5.2`
+- 高风险例外：复杂排障、独立复核、跨模块验证 → `gpt-5.4`（必要时才用）
 
 ## Reasoning Effort (Repository-Optimized)
 
 **基于任务类型的默认设置**：
-- 轻量检索（搜索文件、定位参数）：`low`
-- 普通局部实现（修改单脚本、更新文档）：`medium`
+- 轻量检索、文档阅读、路径定位：`low`
+- 普通局部实现、局部验证：`medium`
 - 跨模块复杂问题（research 理论 vs demo 实现不一致）：`high` 或 `xhigh`
 
 ## Delegation Boundaries (Repository-Specific)
