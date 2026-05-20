@@ -2,6 +2,8 @@
 
 更新时间：2026-03-16
 
+> 状态说明（2026-05-18）：本文档是 2026-03-16 阶段的 baseline 与相关工作整理，适用于早期 `CLIP / RGB-depth / point-cloud geometry` 方案归档。当前项目已经推进到 `NeoVerse 4D points_by_timestamp -> CLIP + FPFH -> ReID`，并开始规划 learned point encoder、4D motion rerank、object gallery 和端到端 4D-aware ReID。最新补强方案与组会汇报口径见 `参考工作/3d_4d_reid_end_to_end_strengthening_plan_zh.md`。因此本文档不再作为当前唯一方案口径，后续引用时应优先以新文档为准。
+
 本文档面向当前仓库的主线任务整理相关工作，不按传统“行人重识别”口径泛泛综述，而是按你当前已经冻结的研究目标来筛选：
 
 - 任务口径：`single-node, cross-scene, track-level 3D-aware retrieval`
