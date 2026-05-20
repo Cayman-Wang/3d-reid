@@ -133,6 +133,7 @@ def main() -> None:
     ap.add_argument("--min_timestamps", default=1, type=int)
     ap.add_argument("--require_points", action="store_true")
     ap.add_argument("--min_points", default=1, type=int)
+    ap.add_argument("--allow_missing_depth", action="store_true")
     args = ap.parse_args()
 
     scene_dir = Path(args.scene_dir).resolve()
@@ -205,7 +206,10 @@ def main() -> None:
             frame_path = scene_dir / frame_rel
             mask_path = _resolve_mask_path(scene_dir, cam_id, str(args.mask_subdir), stem)
             depth_path = scene_dir / "cams" / cam_id / str(args.depth_subdir) / f"{stem}.npy"
-            if not frame_path.exists() or mask_path is None or not depth_path.exists():
+            if not frame_path.exists() or mask_path is None:
+                valid = False
+                break
+            if (not depth_path.exists()) and (not bool(args.allow_missing_depth)):
                 valid = False
                 break
 
@@ -218,7 +222,7 @@ def main() -> None:
             per_cam_paths[cam_id] = (
                 _track_ref(scene_dir, frame_path),
                 _track_ref(scene_dir, mask_path),
-                _track_ref(scene_dir, depth_path),
+                _track_ref(scene_dir, depth_path) if depth_path.exists() else "",
             )
 
         if not valid:

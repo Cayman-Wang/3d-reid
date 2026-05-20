@@ -203,6 +203,10 @@ def main() -> None:
         raise SystemExit(f"Missing --scene_dir: {scene_dir}")
 
     scene_id = scene_dir.name
+    cams = [str(c.strip()) for c in str(args.cams).split(",") if c.strip()]
+    if not cams:
+        raise SystemExit("--cams is empty")
+    allowed_cams = set(cams)
     bg_voxel_size_m = (
         float(args.bg_voxel_size_m)
         if args.bg_voxel_size_m is not None
@@ -237,12 +241,12 @@ def main() -> None:
         raise SystemExit(f"Missing bg points index: {bg_index_path}")
     if not fg_index_path.exists():
         raise SystemExit(f"Missing fg points index: {fg_index_path}")
-    bg_rows = _read_index(bg_index_path)
-    fg_rows = _read_index(fg_index_path)
+    bg_rows = [row for row in _read_index(bg_index_path) if str(row.get("cam_id", "")).strip() in allowed_cams]
+    fg_rows = [row for row in _read_index(fg_index_path) if str(row.get("cam_id", "")).strip() in allowed_cams]
     if not bg_rows:
-        raise SystemExit(f"No rows in bg points index: {bg_index_path}")
+        raise SystemExit(f"No rows in bg points index for cams={cams}: {bg_index_path}")
     if not fg_rows:
-        raise SystemExit(f"No rows in fg points index: {fg_index_path}")
+        raise SystemExit(f"No rows in fg points index for cams={cams}: {fg_index_path}")
 
     def _row_key(row: dict[str, str]) -> tuple[str, int, str]:
         return (str(row["cam_id"]), int(float(row["logical_t_idx"])), str(row["scene_stem"]))
@@ -459,7 +463,7 @@ def main() -> None:
         "points_root_mode": "dual_source" if str(bg_points_root) != str(fg_points_root) else "single_source",
         "background_source_branch": str(args.background_source_branch),
         "dynamic_source_branch": str(args.dynamic_source_branch),
-        "cams": [str(c.strip()) for c in str(args.cams).split(",") if c.strip()],
+        "cams": cams,
         "voxel_size_m": None if args.voxel_size_m is None else float(args.voxel_size_m),
         "bg_voxel_size_m": float(bg_voxel_size_m),
         "dynamic_voxel_size_m": float(dynamic_voxel_size_m),

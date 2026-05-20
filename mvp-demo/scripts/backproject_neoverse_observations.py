@@ -249,12 +249,17 @@ def _reduce_points_with_attrs(
     return pts, alp, rgb
 
 
-def _mask_paths(scene_dir: Path, cam_id: str, scene_stem: str) -> list[Path]:
-    candidates = [
-        scene_dir / "cams" / cam_id / "masks_gt" / f"{scene_stem}.png",
-        scene_dir / "cams" / cam_id / "masks" / f"{scene_stem}.png",
-    ]
-    return [path for path in candidates if path.exists()]
+def _resolve_mask_path(scene_dir: Path, cam_id: str, scene_stem: str, mask_subdir: str) -> tuple[Path | None, str | None]:
+    requested = str(mask_subdir).strip()
+    if not requested:
+        raise SystemExit("--mask_subdir is empty")
+    requested_norm = requested.lower()
+    candidates = ["masks_gt", "masks"] if requested_norm == "auto" else [requested]
+    for subdir in candidates:
+        candidate = scene_dir / "cams" / cam_id / subdir / f"{scene_stem}.png"
+        if candidate.exists():
+            return candidate, subdir
+    return None, None
 
 
 def main() -> None:
@@ -269,6 +274,7 @@ def main() -> None:
     ap.add_argument("--fg_voxel_size_m", default=None, type=float)
     ap.add_argument("--bg_voxel_size_m", default=None, type=float)
     ap.add_argument("--mask_dilate_px", default=3, type=int)
+    ap.add_argument("--mask_subdir", default="auto", type=str)
     ap.add_argument("--max_points_per_view", default=50000, type=int)
     ap.add_argument("--camera_source", default="rendered", choices=["rendered"], type=str)
     ap.add_argument("--out_root", default="mvp-demo/output/neoverse_fused", type=str)
@@ -365,9 +371,11 @@ def main() -> None:
         if depth.shape != alpha.shape:
             raise SystemExit(f"Depth/alpha shape mismatch: depth={depth.shape} alpha={alpha.shape} path={depth_path}")
 
-        mask_paths = _mask_paths(scene_dir, cam_id, scene_stem)
-        if not mask_paths:
-            raise SystemExit(f"Missing masks_gt/masks for {cam_id} {scene_stem}")
+        mask_path, resolved_mask_subdir = _resolve_mask_path(scene_dir, cam_id, scene_stem, str(args.mask_subdir))
+        if mask_path is None:
+            raise SystemExit(
+                f"Missing mask for {cam_id} {scene_stem} under requested mask_subdir={args.mask_subdir!r}"
+            )
 
         row_width_raw = str(row.get("width") or "").strip()
         row_height_raw = str(row.get("height") or "").strip()
@@ -382,7 +390,7 @@ def main() -> None:
         target_w = int(float(row_width_raw))
         target_h = int(float(row_height_raw))
         mask_u8 = _prepare_mask(
-            _read_gray(mask_paths[0]),
+            _read_gray(mask_path),
             target_width=target_w,
             target_height=target_h,
             resize_mode=row_resize_mode,
@@ -499,13 +507,14 @@ def main() -> None:
                 "fg_points": int(pts_fg_world.shape[0]),
                 "bg_path": bg_path.relative_to(points_root).as_posix(),
                 "fg_path": fg_path.relative_to(points_root).as_posix(),
+                "mask_subdir": str(resolved_mask_subdir or args.mask_subdir),
             }
         )
 
     with (points_root / "points_index.csv").open("w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(
             f,
-            fieldnames=["cam_id", "scene_stem", "logical_t_idx", "bg_points", "fg_points", "bg_path", "fg_path"],
+            fieldnames=["cam_id", "scene_stem", "logical_t_idx", "bg_points", "fg_points", "bg_path", "fg_path", "mask_subdir"],
         )
         writer.writeheader()
         for row in index_rows:
@@ -529,6 +538,7 @@ def main() -> None:
         "fg_voxel_size_m": float(fg_voxel_size_m),
         "bg_voxel_size_m": float(bg_voxel_size_m),
         "mask_dilate_px": int(mask_dilate_px),
+        "mask_subdir": str(args.mask_subdir),
         "max_points_per_view": int(args.max_points_per_view),
         "num_rows": len(index_rows),
         "num_skipped": skipped,

@@ -80,15 +80,18 @@ def _save_npy(path: Path, points_xyz: np.ndarray) -> None:
     np.save(path, np.asarray(points_xyz, dtype=np.float32))
 
 
-def _mask_path(scene_dir: Path, cam_id: str, scene_stem: str) -> Path:
-    candidates = [
-        scene_dir / "cams" / cam_id / "masks_gt" / f"{scene_stem}.png",
-        scene_dir / "cams" / cam_id / "masks" / f"{scene_stem}.png",
-    ]
-    for path in candidates:
+def _mask_path(scene_dir: Path, cam_id: str, scene_stem: str, mask_subdir: str) -> tuple[Path, str]:
+    requested = str(mask_subdir).strip()
+    if not requested:
+        raise SystemExit("--mask_subdir is empty")
+    candidates = ["masks_gt", "masks"] if requested.lower() == "auto" else [requested]
+    checked: list[str] = []
+    for subdir in candidates:
+        path = scene_dir / "cams" / cam_id / subdir / f"{scene_stem}.png"
+        checked.append(path.as_posix())
         if path.exists():
-            return path
-    raise SystemExit(f"Missing mask for {cam_id}/{scene_stem}; checked: {[p.as_posix() for p in candidates]}")
+            return path, subdir
+    raise SystemExit(f"Missing mask for {cam_id}/{scene_stem}; checked: {checked}")
 
 
 def _load_fg_points_by_key(points_root: Path) -> dict[tuple[str, int, str], Path]:
@@ -642,6 +645,27 @@ def _depth_stats_for_observation(
     return float(np.median(depth[valid])), depth_mask_pixels
 
 
+def _scene_depth_median_for_mask(scene_dir: Path, cam_id: str, scene_stem: str, mask_u8: np.ndarray) -> float | None:
+    depth_path = scene_dir / "cams" / cam_id / "depth_gt" / f"{scene_stem}.npy"
+    if not depth_path.exists():
+        return None
+    depth = _read_npy(depth_path)
+    if depth.ndim == 3 and depth.shape[-1] == 1:
+        depth = depth[..., 0]
+    if depth.ndim != 2:
+        raise SystemExit(f"Unsupported scene depth shape for {cam_id}/{scene_stem}: {depth.shape}")
+    mask = np.asarray(mask_u8 > 0, dtype=bool)
+    if mask.shape != depth.shape:
+        raise SystemExit(
+            f"Scene depth/mask shape mismatch for {cam_id}/{scene_stem}: depth={depth.shape}, mask={mask.shape}"
+        )
+    values = depth[mask]
+    values = values[np.isfinite(values) & (values > 0)]
+    if values.size == 0:
+        return None
+    return float(np.median(values))
+
+
 def _attempt_constraint(
     base_roi_min: np.ndarray,
     base_roi_max: np.ndarray,
@@ -829,6 +853,7 @@ def main() -> None:
     ap.add_argument("--hull_voxel_size_m", default=0.02, type=float)
     ap.add_argument("--output_voxel_size_m", default=0.01, type=float)
     ap.add_argument("--roi_padding_m", default=0.12, type=float)
+    ap.add_argument("--mask_subdir", default="auto", type=str)
     ap.add_argument("--min_mask_cam_support", default=2, type=int)
     ap.add_argument("--point_support_radius_m", default=0.03, type=float)
     ap.add_argument("--depth_trim_radius_m", default=0.06, type=float)
@@ -836,6 +861,12 @@ def main() -> None:
     ap.add_argument("--scale_guard_ratio", default=0.25, type=float)
     ap.add_argument("--min_depth_mask_pixels", default=24, type=int)
     ap.add_argument("--depth_support_source", default="aligned_fg_points", choices=["aligned_fg_points"], type=str)
+    ap.add_argument(
+        "--anchor_depth_source",
+        default="scene_depth_gt_then_multiview",
+        choices=["scene_depth_gt_then_multiview", "multiview_rays_only"],
+        type=str,
+    )
     ap.add_argument(
         "--depth_support_mode",
         default="aligned_fg_points",
@@ -852,8 +883,9 @@ def main() -> None:
 
     scene_id = scene_dir.name
     cams = [c.strip() for c in str(args.cams).split(",") if c.strip()]
-    if cams != ["cam0", "cam1", "cam2"]:
-        raise SystemExit(f"This first version only supports cams=['cam0','cam1','cam2']. Got: {cams}")
+    if not cams:
+        raise SystemExit("--cams is empty")
+    uses_scene_depth_gt = str(args.anchor_depth_source) == "scene_depth_gt_then_multiview"
 
     fg_points_root = _resolve_scene_points_root(str(args.fg_points_root), scene_id, repo)
     if not fg_points_root.exists():
@@ -883,6 +915,7 @@ def main() -> None:
     points_meta, observations_root, legacy_frame_contract_assumed = _load_points_contract(fg_points_root, repo)
     observation_rows = _load_observation_rows(observations_root, cams)
     mask_dilate_px = int(points_meta.get("mask_dilate_px", 0))
+    resolved_mask_subdirs_used: set[str] = set()
 
     padding_schedule = _ordered_unique_floats([float(args.roi_padding_m), 0.20, 0.32])
     voxel_schedule = _ordered_unique_floats([float(args.hull_voxel_size_m), 0.03, 0.04])
@@ -906,11 +939,18 @@ def main() -> None:
         roi_source = "mask_anchor_world_slice"
 
         for cam_id in cams:
-            mask_u8 = _read_gray(_mask_path(scene_dir, cam_id, scene_stem))
+            mask_path, resolved_mask_subdir = _mask_path(scene_dir, cam_id, scene_stem, str(args.mask_subdir))
+            resolved_mask_subdirs_used.add(str(resolved_mask_subdir))
+            mask_u8 = _read_gray(mask_path)
             bbox = _mask_bbox(mask_u8)
             if bbox is None:
                 raise SystemExit(f"Empty mask for {cam_id}/{scene_stem}")
             bboxes_by_cam[cam_id] = bbox
+            scene_depth_median = (
+                _scene_depth_median_for_mask(scene_dir, cam_id, scene_stem, mask_u8)
+                if uses_scene_depth_gt
+                else None
+            )
 
             key = (cam_id, logical_t_idx, scene_stem)
             observation_row = observation_rows.get(key)
@@ -928,6 +968,8 @@ def main() -> None:
             )
             depth_local_median_by_cam[cam_id] = local_depth_median
             depth_mask_pixels_by_cam[cam_id] = int(depth_mask_pixels)
+            if scene_depth_median is not None:
+                anchor_depths[cam_id] = scene_depth_median
 
             u, v = _bbox_center_xy(bbox)
             origin, direction = _camera_ray_world(
@@ -1246,9 +1288,9 @@ def main() -> None:
             "mask_anchor_world": anchor_world_list,
             "anchor_ray_error_per_cam": frame_info["anchor_ray_error_per_cam"],
             "anchor_ray_error_mean": frame_info["anchor_ray_error_mean"],
-            "anchor_depth_cam0": anchor_depths["cam0"],
-            "anchor_depth_cam1": anchor_depths["cam1"],
-            "anchor_depth_cam2": anchor_depths["cam2"],
+            "anchor_depth_cam0": anchor_depths.get("cam0"),
+            "anchor_depth_cam1": anchor_depths.get("cam1"),
+            "anchor_depth_cam2": anchor_depths.get("cam2"),
             "depth_local_median": depth_local_median_by_cam,
             "depth_mask_pixels": depth_mask_pixels_by_cam,
             "depth_scale_raw": depth_scale_raw_by_cam,
@@ -1303,9 +1345,9 @@ def main() -> None:
         updated_row["constraint_mask_anchor_world"] = anchor_world_list
         updated_row["constraint_anchor_ray_error_mean"] = frame_info["anchor_ray_error_mean"]
         updated_row["constraint_anchor_ray_error_per_cam"] = frame_info["anchor_ray_error_per_cam"]
-        updated_row["constraint_anchor_depth_cam0"] = anchor_depths["cam0"]
-        updated_row["constraint_anchor_depth_cam1"] = anchor_depths["cam1"]
-        updated_row["constraint_anchor_depth_cam2"] = anchor_depths["cam2"]
+        updated_row["constraint_anchor_depth_cam0"] = anchor_depths.get("cam0")
+        updated_row["constraint_anchor_depth_cam1"] = anchor_depths.get("cam1")
+        updated_row["constraint_anchor_depth_cam2"] = anchor_depths.get("cam2")
         updated_row["constraint_depth_local_median"] = depth_local_median_by_cam
         updated_row["constraint_depth_mask_pixels"] = depth_mask_pixels_by_cam
         updated_row["constraint_depth_scale_raw"] = depth_scale_raw_by_cam
@@ -1481,6 +1523,10 @@ def main() -> None:
         "point_coordinate_frame": str(points_meta.get("point_coordinate_frame") or "neoverse_render_world"),
         "point_frame_source": str(points_meta.get("point_frame_source") or "observation_render_c2w"),
         "render_depth_unit": str(points_meta.get("render_depth_unit") or "neoverse_local_metric_like"),
+        "uses_scene_depth_gt": bool(uses_scene_depth_gt),
+        "anchor_depth_source": str(args.anchor_depth_source),
+        "mask_subdir": str(args.mask_subdir),
+        "resolved_mask_subdirs_used": sorted(resolved_mask_subdirs_used),
         "depth_support_source": str(args.depth_support_source),
         "params": {
             "hull_voxel_size_m": float(args.hull_voxel_size_m),
@@ -1525,6 +1571,11 @@ def main() -> None:
         "scene_id": scene_id,
         "scene_dir": scene_dir.as_posix(),
         "points_root": points_by_timestamp_dir.as_posix(),
+        "cams": cams,
+        "render_depth_unit": str(points_meta.get("render_depth_unit") or "neoverse_local_metric_like"),
+        "uses_scene_depth_gt": bool(uses_scene_depth_gt),
+        "anchor_depth_source": str(args.anchor_depth_source),
+        "mask_subdir": str(args.mask_subdir),
         "num_timestamps": int(len(retrieval_index_rows)),
         "source_fused_root": scene_fused_root.as_posix(),
         "index_csv": retrieval_index_path.as_posix(),
@@ -1549,6 +1600,9 @@ def main() -> None:
         "trim_zero_support_frames": int(trim_zero_support_frames),
         "per_camera_scale_stats": per_camera_scale_stats,
         "mean_fg_in_roi_after_align": mean_fg_in_roi_after_align,
+        "uses_scene_depth_gt": bool(uses_scene_depth_gt),
+        "anchor_depth_source": str(args.anchor_depth_source),
+        "mask_subdir": str(args.mask_subdir),
         "params": dict(meta_payload["params"]),
     }
     dynamic_meta = dict(fusion_meta.get("dynamic", {}))

@@ -149,6 +149,7 @@ def _resolve_branch_config(manifest: dict, branch: str) -> tuple[dict, list[str]
     cfg.setdefault("geo_backend", "none")
     cfg.setdefault("require_points", False)
     cfg.setdefault("require_points_per_timestamp", False)
+    cfg.setdefault("allow_missing_depth", False)
     cfg.setdefault("min_points_per_timestamp", 1)
     cfg.setdefault(
         "points_subdir",
@@ -242,6 +243,8 @@ def main() -> None:
                 str(scripts_dir / "build_node_tracklets.py"),
                 "--scene_dir",
                 str(scene_dir),
+                "--cams",
+                str(scene_cfg["cams"]),
                 "--mask_subdir",
                 str(scene_cfg["mask_subdir"]),
                 "--depth_subdir",
@@ -254,6 +257,7 @@ def main() -> None:
                 str(manifest.get("defaults", {}).get("min_valid_timestamps", 5)),
             ]
             + (["--points_contract", str(scene_cfg["points_contract"])] if str(scene_cfg.get("points_contract", "")).strip() else [])
+            + (["--allow_missing_depth"] if bool(scene_cfg.get("allow_missing_depth")) else [])
             + (
                 ["--require_points", "--min_points", str(scene_cfg.get("min_points_per_timestamp", 1))]
                 if bool(scene_cfg.get("require_points_per_timestamp"))

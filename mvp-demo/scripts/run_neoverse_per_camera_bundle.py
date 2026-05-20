@@ -40,7 +40,7 @@ def main() -> None:
     ap.add_argument("--resize_mode", choices=["center_crop", "resize"], default="center_crop", type=str)
     ap.add_argument("--input_variant", choices=["full_frame", "object_crop"], default="full_frame", type=str)
     ap.add_argument("--crop_padding", default=0.25, type=float)
-    ap.add_argument("--crop_mask_source", choices=["auto", "masks_gt", "masks"], default="auto", type=str)
+    ap.add_argument("--crop_mask_source", default="auto", type=str)
     ap.add_argument("--out_root", default="mvp-demo/output/neoverse_fused", type=str)
     ap.add_argument("--overwrite", action="store_true")
     args = ap.parse_args()

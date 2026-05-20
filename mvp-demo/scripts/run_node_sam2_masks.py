@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import gc
+import json
 from pathlib import Path
 
 import numpy as np
@@ -25,6 +27,43 @@ def _parse_camera_boxes(values: list[str]) -> dict[str, np.ndarray]:
             raise SystemExit(f'Invalid --camera_box value: {value!r}. Camera id is empty.')
         boxes[cam_id] = _parse_box(box_text)
     return boxes
+
+
+def _load_camera_boxes_json(path: Path) -> dict[str, dict[str, object]]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        raise SystemExit(f"Failed to read --camera_boxes_json: {path}\nError: {exc!r}")
+
+    raw_items = payload
+    if isinstance(payload, dict) and isinstance(payload.get("detections"), list):
+        raw_items = payload.get("detections")
+    elif isinstance(payload, dict):
+        raw_items = list(payload.values())
+    if not isinstance(raw_items, list):
+        raise SystemExit(f"Unsupported --camera_boxes_json payload in {path}; expected list or {{'detections': [...]}}")
+
+    result: dict[str, dict[str, object]] = {}
+    for item in raw_items:
+        if not isinstance(item, dict):
+            raise SystemExit(f"Invalid camera box item in {path}: {item!r}")
+        cam_id = str(item.get("cam_id") or "").strip()
+        if not cam_id:
+            raise SystemExit(f"camera_boxes_json item missing cam_id: {item!r}")
+        bbox = item.get("bbox_xyxy")
+        if not isinstance(bbox, list) or len(bbox) != 4:
+            raise SystemExit(f"camera_boxes_json item has invalid bbox_xyxy for {cam_id}: {bbox!r}")
+        init_frame = item.get("init_frame", 0)
+        try:
+            init_frame_i = int(init_frame)
+        except Exception as exc:
+            raise SystemExit(f"camera_boxes_json item has invalid init_frame for {cam_id}: {init_frame!r}") from exc
+        result[cam_id] = {
+            "bbox_xyxy": np.asarray([float(v) for v in bbox], dtype=np.float32),
+            "init_frame": init_frame_i,
+            "frame_stem": str(item.get("frame_stem") or ""),
+        }
+    return result
 
 
 def _sorted_frames(images_dir: Path) -> list[Path]:
@@ -77,6 +116,7 @@ def main() -> None:
     ap.add_argument("--frames_subdir", default="frames", type=str)
     ap.add_argument("--masks_subdir", default="masks", type=str)
     ap.add_argument("--camera_box", action="append", default=[], type=str, help='Repeat: "cam0=x1,y1,x2,y2"')
+    ap.add_argument("--camera_boxes_json", default="", type=str)
     ap.add_argument("--obj_id", default=0, type=int)
     ap.add_argument("--init_frame", default=0, type=int)
     ap.add_argument("--checkpoint", required=True, type=str)
@@ -98,10 +138,25 @@ def main() -> None:
     if not cams:
         raise SystemExit("--cams is empty")
 
-    boxes = _parse_camera_boxes(list(args.camera_box))
-    missing = [c for c in cams if c not in boxes]
-    if missing:
-        raise SystemExit(f"Missing --camera_box for cameras: {missing}")
+    camera_boxes_json = str(args.camera_boxes_json).strip()
+    if camera_boxes_json:
+        boxes_meta = _load_camera_boxes_json(Path(camera_boxes_json).expanduser().resolve())
+        missing = [c for c in cams if c not in boxes_meta]
+        if missing:
+            raise SystemExit(f"Missing camera boxes in --camera_boxes_json for cameras: {missing}")
+    else:
+        boxes = _parse_camera_boxes(list(args.camera_box))
+        missing = [c for c in cams if c not in boxes]
+        if missing:
+            raise SystemExit(f"Missing --camera_box for cameras: {missing}")
+        boxes_meta = {
+            cam_id: {
+                "bbox_xyxy": boxes[cam_id],
+                "init_frame": int(args.init_frame),
+                "frame_stem": "",
+            }
+            for cam_id in cams
+        }
 
     ckpt = Path(args.checkpoint).expanduser().resolve()
     if not ckpt.exists():
@@ -164,36 +219,52 @@ def main() -> None:
             frames = _sorted_frames(images_dir)
             if not frames:
                 raise SystemExit(f"no frames found for {cam_id}: {images_dir}")
-            if not (0 <= int(args.init_frame) < len(frames)):
-                raise SystemExit(f"--init_frame out of range for {cam_id}: {args.init_frame} (frames={len(frames)})")
+            init_frame = int(boxes_meta[cam_id]["init_frame"])
+            if not (0 <= init_frame < len(frames)):
+                raise SystemExit(f"init_frame out of range for {cam_id}: {init_frame} (frames={len(frames)})")
+            frame_stem = str(boxes_meta[cam_id].get("frame_stem") or "")
+            if frame_stem and frames[init_frame].stem != frame_stem:
+                raise SystemExit(
+                    f"camera_boxes_json frame_stem mismatch for {cam_id}: "
+                    f"init_frame={init_frame} -> {frames[init_frame].stem}, expected {frame_stem}"
+                )
 
             out_root.mkdir(parents=True, exist_ok=True)
             state = predictor.init_state(str(images_dir))
             predictor.add_new_points_or_box(
                 state,
-                box=boxes[cam_id],
-                frame_idx=int(args.init_frame),
+                box=np.asarray(boxes_meta[cam_id]["bbox_xyxy"], dtype=np.float32),
+                frame_idx=init_frame,
                 obj_id=int(args.obj_id),
             )
 
-            for frame_idx, object_ids, masks in predictor.propagate_in_video(state):
-                frame_idx = int(frame_idx)
-                if not (0 <= frame_idx < len(frames)):
-                    continue
-                stem = frames[frame_idx].stem
-                for oi, oid in enumerate(object_ids):
-                    obj_dir = out_root / f"obj_{int(oid):03d}"
-                    obj_dir.mkdir(parents=True, exist_ok=True)
-                    out_path = obj_dir / f"{stem}.png"
-                    if out_path.exists() and not args.overwrite:
+            for reverse in (True, False):
+                for frame_idx, object_ids, masks in predictor.propagate_in_video(
+                    state,
+                    start_frame_idx=init_frame,
+                    reverse=reverse,
+                ):
+                    frame_idx = int(frame_idx)
+                    if not (0 <= frame_idx < len(frames)):
                         continue
-                    mask_i = masks[oi]
-                    if getattr(mask_i, "ndim", None) == 3 and mask_i.shape[0] == 1:
-                        mask_i = mask_i[0]
-                    mask_u8 = (mask_i > 0).to(torch.uint8).cpu().numpy() * 255
-                    _write_png_u8(out_path, mask_u8)
+                    stem = frames[frame_idx].stem
+                    for oi, oid in enumerate(object_ids):
+                        obj_dir = out_root / f"obj_{int(oid):03d}"
+                        obj_dir.mkdir(parents=True, exist_ok=True)
+                        out_path = obj_dir / f"{stem}.png"
+                        if out_path.exists() and not args.overwrite:
+                            continue
+                        mask_i = masks[oi]
+                        if getattr(mask_i, "ndim", None) == 3 and mask_i.shape[0] == 1:
+                            mask_i = mask_i[0]
+                        mask_u8 = (mask_i > 0).to(torch.uint8).cpu().numpy() * 255
+                        _write_png_u8(out_path, mask_u8)
 
             print(f"[node-sam2] cam={cam_id} frames={len(frames)} out_dir={out_root}")
+            del state
+            gc.collect()
+            if device.startswith("cuda") and torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
 
 if __name__ == "__main__":

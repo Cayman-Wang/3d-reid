@@ -97,10 +97,9 @@ def resolve_scene_mask_path(
     scene_stem: str,
     mask_source: str = "auto",
 ) -> tuple[Path | None, str | None]:
-    source = str(mask_source).strip().lower()
-    if source not in {"auto", "masks_gt", "masks"}:
-        raise SystemExit(f"Unsupported mask_source: {mask_source}; expected one of ['auto', 'masks_gt', 'masks']")
-    ordered_sources = ["masks_gt", "masks"] if source == "auto" else [source]
+    source_text = str(mask_source).strip()
+    source = source_text.lower()
+    ordered_sources = ["masks_gt", "masks"] if source == "auto" else [source_text]
     for source_name in ordered_sources:
         candidate = scene_dir / "cams" / cam_id / source_name / f"{scene_stem}.png"
         if candidate.exists():
@@ -406,11 +405,10 @@ def build_views_from_scene(
             f"Unsupported input_variant: {input_variant}; expected one of ['full_frame', 'object_crop']"
         )
 
-    crop_mask_source_norm = str(crop_mask_source).strip().lower()
-    if crop_mask_source_norm not in {"auto", "masks_gt", "masks"}:
-        raise SystemExit(
-            f"Unsupported crop_mask_source: {crop_mask_source}; expected one of ['auto', 'masks_gt', 'masks']"
-        )
+    crop_mask_source_text = str(crop_mask_source).strip()
+    if not crop_mask_source_text:
+        raise SystemExit("--crop_mask_source is empty")
+    crop_mask_source_norm = crop_mask_source_text.lower()
 
     views_meta: list[dict[str, Any]] = []
     tensors = []
@@ -426,7 +424,7 @@ def build_views_from_scene(
             scene_dir=scene_dir,
             cam_id=cam_id,
             scene_stem=scene_stem,
-            mask_source=crop_mask_source_norm,
+            mask_source=crop_mask_source_text,
         )
         mask_rel = None if mask_path is None else mask_path.relative_to(scene_dir).as_posix()
         working_img = img
@@ -503,7 +501,7 @@ def build_views_from_scene(
         "frame_sampling_rule": frame_sampling_rule,
         "input_variant_requested": input_variant_norm,
         "crop_padding": float(crop_padding),
-        "crop_mask_source": crop_mask_source_norm,
+        "crop_mask_source": crop_mask_source_text,
     }
     return views, views_meta, sampling_meta
 
