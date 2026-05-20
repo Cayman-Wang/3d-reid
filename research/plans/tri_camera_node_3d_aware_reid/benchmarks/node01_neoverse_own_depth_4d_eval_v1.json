@@ -1,0 +1,113 @@
+{
+  "benchmark_id": "node01_neoverse_own_depth_4d_eval_v1",
+  "description": "Node01 NeoVerse own-depth 4D geometry evaluation. This first version keeps masks_gt and rig.json, removes scene depth_gt anchoring, and reuses existing observations plus points_per_view without rerunning the NeoVerse reconstructor.",
+  "scope": {
+    "task": "single-node cross-scene track-level retrieval with NeoVerse own-depth 4D geometry",
+    "domain": "uav_aircraft",
+    "node_id": "node01",
+    "phase": "neoverse_own_depth_4d_bootstrap"
+  },
+  "defaults": {
+    "split_role": "both",
+    "mask_source": "gt",
+    "depth_source": "neoverse_observation_depth",
+    "mask_layout": "flat",
+    "min_valid_timestamps": 5,
+    "retrieval_flags": {
+      "exclude_same_track_id": true,
+      "exclude_same_scene": true
+    }
+  },
+  "experiments": [
+    "rgb_neoverse_own_depth_4d_clip_fpfh_eval_v1"
+  ],
+  "entries": [
+    {
+      "scene_dir": "D:/node01_spin_runtime_ascii/mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_static_yp20_a",
+      "node_id": "node01",
+      "scene_id": "mj_node01_j10_spin_static_yp20_a",
+      "identity_id": "j10",
+      "split_role": "both",
+      "neoverse_source_run_root": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/2026-04-26_j10_yp20_r02params_r01",
+      "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_own_depth_4d_eval_v1/mj_node01_j10_spin_static_yp20_a/points_by_timestamp"
+    },
+    {
+      "scene_dir": "D:/node01_spin_runtime_ascii/mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_circle_yp_b",
+      "node_id": "node01",
+      "scene_id": "mj_node01_j10_spin_circle_yp_b",
+      "identity_id": "j10",
+      "split_role": "both",
+      "neoverse_source_run_root": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_fused_4d_eval_matrix_v1",
+      "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_own_depth_4d_eval_v1/mj_node01_j10_spin_circle_yp_b/points_by_timestamp"
+    },
+    {
+      "scene_dir": "D:/node01_spin_runtime_ascii/mvp-demo/data/nodes/node01/scenes/mj_node01_uav1_spin_static_yp_a",
+      "node_id": "node01",
+      "scene_id": "mj_node01_uav1_spin_static_yp_a",
+      "identity_id": "uav1",
+      "split_role": "both",
+      "neoverse_source_run_root": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_fused_4d_eval_matrix_v1",
+      "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_own_depth_4d_eval_v1/mj_node01_uav1_spin_static_yp_a/points_by_timestamp"
+    },
+    {
+      "scene_dir": "D:/node01_spin_runtime_ascii/mvp-demo/data/nodes/node01/scenes/mj_node01_uav1_spin_circle_yp_b",
+      "node_id": "node01",
+      "scene_id": "mj_node01_uav1_spin_circle_yp_b",
+      "identity_id": "uav1",
+      "split_role": "both",
+      "neoverse_source_run_root": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_fused_4d_eval_matrix_v1",
+      "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_own_depth_4d_eval_v1/mj_node01_uav1_spin_circle_yp_b/points_by_timestamp"
+    },
+    {
+      "scene_dir": "D:/node01_spin_runtime_ascii/mvp-demo/data/nodes/node01/scenes/mj_node01_su34_spin_static_yp_a",
+      "node_id": "node01",
+      "scene_id": "mj_node01_su34_spin_static_yp_a",
+      "identity_id": "su34",
+      "split_role": "both",
+      "neoverse_source_run_root": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_fused_4d_eval_matrix_v1",
+      "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_own_depth_4d_eval_v1/mj_node01_su34_spin_static_yp_a/points_by_timestamp"
+    },
+    {
+      "scene_dir": "D:/node01_spin_runtime_ascii/mvp-demo/data/nodes/node01/scenes/mj_node01_su34_spin_circle_yp_b",
+      "node_id": "node01",
+      "scene_id": "mj_node01_su34_spin_circle_yp_b",
+      "identity_id": "su34",
+      "split_role": "both",
+      "neoverse_source_run_root": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_fused_4d_eval_matrix_v1",
+      "neoverse_points_subdir": "D:/node01_spin_runtime_ascii/mvp-demo/output/neoverse_fused_runs/node01_neoverse_own_depth_4d_eval_v1/mj_node01_su34_spin_circle_yp_b/points_by_timestamp"
+    }
+  ],
+  "branch_configs": {
+    "rgb_neoverse_own_depth_4d_clip_fpfh_eval_v1": {
+      "cams": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ],
+      "mask_subdir": "masks_gt",
+      "depth_subdir": "__unused_no_depth_gt__",
+      "allow_missing_depth": true,
+      "points_subdir": "{neoverse_points_subdir}",
+      "points_contract": "neoverse_points_by_timestamp_v1",
+      "tracklets_rel": "tracks/tracklets_neoverse_own_depth_4d_clip_fpfh_v1.json",
+      "embeddings_subdir": "embeddings_neoverse_own_depth_4d_clip_fpfh_v1",
+      "eval_subdir": "rgb_neoverse_own_depth_4d_clip_fpfh_eval_v1",
+      "rgb_backend": "clip",
+      "geo_backend": "open3d_fpfh",
+      "run_recon": false,
+      "require_points": true,
+      "require_points_per_timestamp": true,
+      "min_points_per_timestamp": 32,
+      "max_timestamps_per_track": 30,
+      "max_points_per_timestamp": 5000,
+      "rgb_weight": 1.0,
+      "geo_weight": 0.35,
+      "apply_mask_to_rgb": false
+    }
+  },
+  "notes": [
+    "This first version still uses masks_gt and rig.json. It removes scene depth_gt anchoring only; it should not be described as fully no-ground-truth.",
+    "NeoVerse own-depth already exists in observations/<cam>/depth/*.npy and has already been used by backproject_neoverse_observations.py to form points_per_view.",
+    "All new points_by_timestamp outputs must be written under node01_neoverse_own_depth_4d_eval_v1 and must not overwrite the stable 2026-04-26_j10_yp20_r02params_r01 run, the current eval matrix, the current view ablation, or any existing preview directory."
+  ]
+}

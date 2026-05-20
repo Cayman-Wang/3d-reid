@@ -211,6 +211,48 @@ python scripts/extract_node_track_embeddings.py \
 - 当前 `masks_gt/depth_gt` bootstrap 下，`RGB-only` 与 `RGB + NeoVerse 4D geometry` 持平
 - 不能写成几何分支已经带来指标提升
 
+## 3.2 Node01 view-count ablation（单相机 vs 三相机）
+
+当前已补充 `node01_neoverse_fused_4d_view_ablation_v1`，用于比较 `cam0/cam1/cam2` 单相机与既有三相机 baseline 的视角数量差异。
+
+边界必须写清：
+
+- 这是 view-count ablation，不替代三相机主线。
+- 单相机 NeoVerse 几何只用于对照，不作为最终系统目标。
+- 单相机几何从已有 `per_camera / observations / points_per_view` 派生，不重跑 `run_neoverse_per_camera_bundle.py`。
+- 当前主线仍是三相机节点级 3D-aware track retrieval，后续再扩展到 cross-node。
+
+新增 manifest：
+
+- `research/plans/tri_camera_node_3d_aware_reid/benchmarks/node01_neoverse_fused_4d_view_ablation_v1.json`
+
+单相机几何输出根目录：
+
+- `D:\node01_spin_runtime_ascii\mvp-demo\output\neoverse_fused_runs\node01_neoverse_fused_4d_view_ablation_v1\<cam>\<scene_id>\points_by_timestamp`
+
+每个 `cam/scene` 均满足：
+
+- `meta.json.schema_version = neoverse_points_by_timestamp_v1`
+- `index.csv = 81 rows`
+- `*.npy = 81`
+
+单相机 branch 结果：
+
+| branch | metric_queries | mAP | R@1 | R@5 | embedding |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `rgb_only_clip_gtmask_cam0_eval_v1` | 6 | 1.0 | 1.0 | 1.0 | `(1,512)` |
+| `rgb_only_clip_gtmask_cam1_eval_v1` | 6 | 1.0 | 1.0 | 1.0 | `(1,512)` |
+| `rgb_only_clip_gtmask_cam2_eval_v1` | 6 | 1.0 | 1.0 | 1.0 | `(1,512)` |
+| `rgb_neoverse_single_cam0_4d_clip_fpfh_eval_v1` | 6 | 1.0 | 1.0 | 1.0 | `(1,545)` |
+| `rgb_neoverse_single_cam1_4d_clip_fpfh_eval_v1` | 6 | 1.0 | 1.0 | 1.0 | `(1,545)` |
+| `rgb_neoverse_single_cam2_4d_clip_fpfh_eval_v1` | 6 | 1.0 | 1.0 | 1.0 | `(1,545)` |
+
+当前阶段结论必须保守：
+
+- 单相机与三相机在当前 `node01` GT-mask bootstrap 下均达到满分。
+- 这说明当前 bootstrap 难度不足以体现视角数量差异。
+- 不得把本结果写成“三相机已经带来提升”。
+
 ## 4. 预览与可视化解释
 
 当前建议按以下分工看结果：

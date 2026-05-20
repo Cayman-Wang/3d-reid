@@ -60,6 +60,35 @@
   - `rgb_weight=1.0`
   - `geo_weight=0.35`
 
+## 4.1 View-count ablation 追加结果
+
+已新增 `node01_neoverse_fused_4d_view_ablation_v1`，用于比较单相机 `cam0/cam1/cam2` 与既有三相机 baseline 的视角数量差异。该实验只做对照，不替代三相机主线。
+
+关键边界：
+
+- 单相机 NeoVerse 几何从已有 `per_camera / observations / points_per_view` 派生。
+- 没有重跑 `run_neoverse_per_camera_bundle.py`。
+- 单相机 `fuse` 使用 `--cams <cam> --min_bg_cam_support 1`。
+- 单相机 `dynamic constraint` 使用 `--cams <cam> --min_mask_cam_support 1`。
+- 所有新几何产物写入 `D:\node01_spin_runtime_ascii\mvp-demo\output\neoverse_fused_runs\node01_neoverse_fused_4d_view_ablation_v1\<cam>\<scene_id>\points_by_timestamp`，没有覆盖当前三相机 eval matrix 或既有 preview。
+
+单相机 branch 结果如下：
+
+| branch | metric_queries | mAP | Rank-1 | Rank-5 | embedding |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `rgb_only_clip_gtmask_cam0_eval_v1` | 6 | 1.0 | 1.0 | 1.0 | `(1,512)` |
+| `rgb_only_clip_gtmask_cam1_eval_v1` | 6 | 1.0 | 1.0 | 1.0 | `(1,512)` |
+| `rgb_only_clip_gtmask_cam2_eval_v1` | 6 | 1.0 | 1.0 | 1.0 | `(1,512)` |
+| `rgb_neoverse_single_cam0_4d_clip_fpfh_eval_v1` | 6 | 1.0 | 1.0 | 1.0 | `(1,545)` |
+| `rgb_neoverse_single_cam1_4d_clip_fpfh_eval_v1` | 6 | 1.0 | 1.0 | 1.0 | `(1,545)` |
+| `rgb_neoverse_single_cam2_4d_clip_fpfh_eval_v1` | 6 | 1.0 | 1.0 | 1.0 | `(1,545)` |
+
+因此本次追加实验的口径是：
+
+- 单相机与三相机都已可评测。
+- 当前 `node01` GT-mask bootstrap 难度不足以体现视角数量差异。
+- 不写成三相机已有提升，仍把三相机作为最终系统主线。
+
 ## 5. 组会展示口径
 
 建议组会里把两栏图解释为：
@@ -107,7 +136,7 @@ D:\ML\anaconda3\envs\neoverse\python.exe ...
 
 ## 7. 下一阶段路线
 
-当前阶段不再优先继续调 preview，也不再把重点放在“补齐 node01 点云”。下一步应切到 `node02 / cross-node smoke`：
+当前阶段不再优先继续调 preview，也不再把重点放在“补齐 node01 点云”。view-count ablation 已补齐后，下一步应切到 `node02 / cross-node smoke`：
 
 1. 先复刻 `j10 / uav1 / su34`，每个 `identity` 至少补 `1 scene` 做 `node02` 冒烟闭环。
 2. 在 `node01 + node02` 上形成最小跨节点矩阵：`3 identities x 2 nodes x 2 scenes`
