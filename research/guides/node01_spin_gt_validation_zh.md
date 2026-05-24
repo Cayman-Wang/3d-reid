@@ -1,6 +1,6 @@
 # Node01 Spin GT 验证执行指南
 
-适用范围：`node01_recon_spin_v1` 的 GT 验证阶段。  
+适用范围：`node01_recon_spin_v1` 的 GT 验证阶段。
 目标：先完成真实 `J10` 两条 spin scene 的采集/导出/`points_fused_gt` 验证，再决定是否扩到 `uav1` / `su34`，最后才进入 `points_recon_spin_*`。
 
 ## 0. 先搭建外部 ASCII runtime

@@ -398,4 +398,3 @@ D:\ML\anaconda3\envs\neoverse\python.exe mvp-demo/scripts/render_neoverse_multiv
 - `camera_source=rendered` 时优先复核 rig-anchored 输出。
 - `camera_source=predicted_camera` 时允许和 rig 结果产生偏移，用于诊断相机锚点是否真正生效。
 - 默认分辨率优先读取同目录 `probe_meta.json`，缺失时回退到 `280x168`。
-
