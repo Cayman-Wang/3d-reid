@@ -10,22 +10,29 @@
 
 ## 当前主线
 
-当前正式主线固定为：
+当前 M8 正式主线固定为：
 
-- `MuJoCo`
-- `node01`
-- `UAV/aircraft`
-- `single-node, cross-scene, track-level retrieval`
+- `MuJoCo` clean UAV/aircraft 三相机节点级 track-level 3D/4D-aware retrieval
+- `NeoVerse fused 4D points_by_timestamp -> tracklet -> embedding -> ReID`
+- `node01` 单节点 `3 identities x 2 scenes` NeoVerse fused 4D 可评测矩阵已闭环
+- 下一步并行推进 `node02 / cross-node smoke` 与 ReID 表征补强 prototype
 
-当前激活 benchmark 为 `iciscae_node01_uav_v3_clean`，身份集合固定为：
+当前 4D 几何主输入契约为：
+
+- `points_by_timestamp/index.csv`
+- `points_by_timestamp/meta.json`
+- `points_by_timestamp/*.npy`
+- `meta.json.schema_version = neoverse_points_by_timestamp_v1`
+
+当前已闭环的 `node01` NeoVerse fused 4D matrix 身份集合为：
 
 - `j10`
 - `uav1`
 - `su34`
 
-历史 `iciscae_node01_uav_v1 / v2` 结果只保留为归档，不再作为当前主线。
+`iciscae_node01_uav_v3_clean` 以及历史 `iciscae_node01_uav_v1 / v2` 结果只保留为 ICISCAE/历史保底线，不再作为当前 M8 NeoVerse 4D 主入口。
 
-主链路只消费：
+节点侧基础数据仍消费：
 
 - `cams/cam*/frames/`
 - `cams/cam*/masks/`
@@ -33,7 +40,7 @@
 - `calib/rig.json`
 - `frame_times.csv`
 
-MuJoCo 导出的 `masks_gt/`、`depth_gt/` 只用于排错和 upper-bound，不进入正式小论文主结果。
+当前 `node01_neoverse_fused_4d_eval_matrix_v1` bootstrap 使用 `masks_gt/depth_gt` 隔离几何接入问题。该矩阵只能写成 NeoVerse 4D geometry 已接入并可评测，且当前与 RGB-only 持平；不能写成 geometry、三相机或 own-depth 已带来 Rank/mAP 提升。
 
 ## 当前推荐命令链
 
@@ -233,7 +240,34 @@ $PYTHON mvp-demo/scripts/extract_node_track_embeddings.py \
 
 ## 当前推荐 benchmark 入口
 
-`v3_clean` 结果线建议显式传入 manifest：
+当前 M8 NeoVerse fused 4D 主入口建议显式传入 manifest：
+
+```bash
+python scripts/run_iciscae_branch_eval.py \
+  --manifest research/plans/tri_camera_node_3d_aware_reid/benchmarks/node01_neoverse_fused_4d_eval_matrix_v1.json \
+  --branch rgb_only_clip_gtmask_eval_v1
+```
+
+NeoVerse 4D geometry 对照分支：
+
+```bash
+python scripts/run_iciscae_branch_eval.py \
+  --manifest research/plans/tri_camera_node_3d_aware_reid/benchmarks/node01_neoverse_fused_4d_eval_matrix_v1.json \
+  --branch rgb_neoverse_fused_4d_clip_fpfh_eval_v1
+```
+
+当前两个正式对照 branch 为：
+
+- `rgb_only_clip_gtmask_eval_v1`
+- `rgb_neoverse_fused_4d_clip_fpfh_eval_v1`
+
+当前 `node01` 结果口径：
+
+- `metric_queries = 6`
+- 两个 branch 都是 `mAP = 1.0`、`Rank-1 = 1.0`、`Rank-5 = 1.0`
+- 结论是接入并可评测，不能写成 NeoVerse 4D geometry 已经带来指标提升
+
+历史/保底 `iciscae_node01_uav_v3_clean` 入口保留如下，不作为当前 M8 主入口：
 
 ```bash
 python scripts/run_iciscae_branch_eval.py \
@@ -241,24 +275,10 @@ python scripts/run_iciscae_branch_eval.py \
   --branch rgb_only
 ```
 
-全部 branch 跑完后，统一结果与失败分析可一起生成：
+历史结果线全部 branch 跑完后，统一结果与失败分析可一起生成：
 
 ```bash
 python scripts/summarize_iciscae_branch_comparison.py \
-  --benchmark_id iciscae_node01_uav_v3_clean
-```
-
-该命令当前会同时输出：
-
-- `output/evals/iciscae_node01_uav_v3_clean/branch_comparison_summary.json`
-- `output/evals/iciscae_node01_uav_v3_clean/branch_comparison_summary.md`
-- `output/evals/iciscae_node01_uav_v3_clean/query_failure_analysis.json`
-- `output/evals/iciscae_node01_uav_v3_clean/query_failure_analysis.md`
-
-如果只想单独重跑逐 query 失败分析，也可以直接执行：
-
-```bash
-python scripts/analyze_iciscae_failure_modes.py \
   --benchmark_id iciscae_node01_uav_v3_clean
 ```
 
@@ -327,7 +347,7 @@ python scripts/run_neoverse_probe.py \
 
 ## NeoVerse 三机联合重建（静态实验分支）
 
-该入口用于 node01 静态 spin 场景的实验线，不替换主线 `v3_clean` 结果。
+该入口用于 node01 静态 spin 场景的实验线，不替换 M8 NeoVerse fused 4D 主线。
 当前语义是“rig-anchored multiview geometry for retrieval”，不是全时序 dense 4D geometry。
 
 ### 1) 准备三机联合输入 manifest

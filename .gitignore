@@ -45,6 +45,7 @@ mvp-demo/data/nodes/
 mvp-demo/output/
 mvp-demo/runs/
 mvp-demo/tmp/
+local/
 tmp/
 
 # Local cloned external repos. Only NeoVerse is tracked as a submodule.
@@ -60,6 +61,22 @@ third_party/Track4World/
 mvp-demo/.git_bak/
 
 # Large local assets
+assets/models/aircraft_raw/**
+assets/models/aircraft_normalized/**
+!assets/
+!assets/README.md
+!assets/models/
+!assets/models/aircraft_raw/
+!assets/models/aircraft_raw/.gitkeep
+!assets/models/aircraft_normalized/
+!assets/models/aircraft_normalized/.gitkeep
+assets/scenes/raw/**
+assets/scenes/normalized/**
+!assets/scenes/
+!assets/scenes/raw/
+!assets/scenes/raw/.gitkeep
+!assets/scenes/normalized/
+!assets/scenes/normalized/.gitkeep
 mvp-demo/assets/models/
 mvp-demo/assets/**/point_cloud/
 mvp-demo/assets/scene/tiyuzhongxin/input.ply
