@@ -1,0 +1,184 @@
+{
+  "layout_id": "node_tri_cam_parallel_v1",
+  "description": "Default node-local tri-camera rig with parallel optical axes.",
+  "node_frame": "node",
+  "world_frame": "node",
+  "coordinate_convention": {
+    "camera": "CV camera convention: x right, y down, z forward",
+    "extrinsic": "T_node_from_cam maps camera-frame points into the node frame"
+  },
+  "source": {
+    "extracted_from": "D:/node01_spin_runtime_ascii/mvp-demo/data/nodes/node01/scenes/mj_node01_j10_spin_static_yp20_a/calib/rig.json",
+    "verified_matching_rig_count": 9
+  },
+  "usage": {
+    "purpose": "Default camera-node layout template for MuJoCo, EmbodiedCity, AirSim, CARLA, and future synthetic data exporters.",
+    "runtime_authority": "Each scene's scene_dir/calib/rig.json remains the authoritative runtime calibration file."
+  },
+  "cameras": {
+    "cam0": {
+      "image_size": [
+        1280,
+        720
+      ],
+      "K": [
+        [
+          623.5382907247958,
+          0.0,
+          640.0
+        ],
+        [
+          0.0,
+          623.5382907247958,
+          360.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "distortion_model": "none",
+      "dist": [],
+      "T_node_from_cam": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.44999998807907104
+        ],
+        [
+          0.0,
+          -2.220446049250313e-16,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          -1.0,
+          -2.220446049250313e-16,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "default_camera_name": "node01_cam0",
+      "fovy_deg": 60.0
+    },
+    "cam1": {
+      "image_size": [
+        1280,
+        720
+      ],
+      "K": [
+        [
+          623.5382907247958,
+          0.0,
+          640.0
+        ],
+        [
+          0.0,
+          623.5382907247958,
+          360.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "distortion_model": "none",
+      "dist": [],
+      "T_node_from_cam": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.22499999403953552
+        ],
+        [
+          0.0,
+          -2.220446049250313e-16,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          -1.0,
+          -2.220446049250313e-16,
+          0.38971102237701416
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "default_camera_name": "node01_cam1",
+      "fovy_deg": 60.0
+    },
+    "cam2": {
+      "image_size": [
+        1280,
+        720
+      ],
+      "K": [
+        [
+          623.5382907247958,
+          0.0,
+          640.0
+        ],
+        [
+          0.0,
+          623.5382907247958,
+          360.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "distortion_model": "none",
+      "dist": [],
+      "T_node_from_cam": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.22499999403953552
+        ],
+        [
+          0.0,
+          -2.220446049250313e-16,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          -1.0,
+          -2.220446049250313e-16,
+          -0.38971102237701416
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "default_camera_name": "node01_cam2",
+      "fovy_deg": 60.0
+    }
+  },
+  "notes": [
+    "The three cameras share the same intrinsics and image size.",
+    "The three cameras have parallel optical axes in the node frame.",
+    "Do not overwrite this layout for non-parallel, different-FOV, or cross-node rigs; create a new layout_id instead."
+  ]
+}

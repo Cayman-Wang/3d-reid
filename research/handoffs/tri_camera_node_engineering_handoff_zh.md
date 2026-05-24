@@ -94,7 +94,33 @@
 
 其中 `dji_mavic` 只保留为 `v1` 历史身份与结果复现，不再作为当前主线目标；当前主线不再默认使用任何 humanoid 场景。
 
-## 4. 数据契约
+## 4. 默认相机节点布局
+
+当前 node01 的三相机节点布局已固化为仓库根目录下的默认模板：
+
+```text
+configs/camera_rigs/node_tri_cam_parallel_v1.json
+```
+
+该模板用于 MuJoCo、EmbodiedCity、AirSim、CARLA 等仿真入口复用同一套节点内相机布局。它不是运行时唯一真值；每个 scene 的最终权威标定仍然是：
+
+```text
+<scene_dir>/calib/rig.json
+```
+
+当前已核查的 9 份 `calib/rig.json` 中，`cam0/cam1/cam2` 的内参、图像尺寸、FOV、畸变设置与 `T_node_from_cam` 完全一致。默认布局为 CV camera convention：`x right, y down, z forward`，`T_node_from_cam` 表示从相机坐标系到节点坐标系的变换。
+
+节点内相机相对位置为：
+
+```text
+cam0: [ 0.45,   0.0,  0.0      ]
+cam1: [-0.225,  0.0,  0.389711 ]
+cam2: [-0.225,  0.0, -0.389711 ]
+```
+
+三路相机共享同一套内参，图像尺寸为 `1280 x 720`，`fovy_deg=60.0`，并且光轴平行。后续如设计非平行光轴、不同 FOV、真实相机标定或跨节点布局，应新增新的 `layout_id`，不要覆盖 `node_tri_cam_parallel_v1`。
+
+## 5. 数据契约
 
 每个正式 scene 目录应满足：
 
@@ -127,7 +153,7 @@ mvp-demo/data/nodes/<node_id>/scenes/<scene_id>/
 - 正式 benchmark 只接受平铺 mask：`cams/cam*/masks/<ts>.png`。
 - `obj_000/<ts>.png` 只允许作为中间产物，不直接进入正式 benchmark。
 
-## 5. 最小 smoke run
+## 6. 最小 smoke run
 
 先进入目录并安装节点级依赖（默认环境：`mvp_demo`）：
 
@@ -137,7 +163,7 @@ conda activate mvp_demo
 python -m pip install -r requirements_node_pipeline.txt
 ```
 
-### 5.1 采集一个正式风格 scene
+### 6.1 采集一个正式风格 scene
 
 ```bash
 python scripts/mj_capture_3cam_node.py \
@@ -157,7 +183,7 @@ python scripts/mj_capture_3cam_node.py \
 - `calib/rig.json` 存在
 - `capture_meta.json` 与 `frame_times.csv` 存在
 
-### 5.2 补预测深度和预测 masks
+### 6.2 补预测深度和预测 masks
 
 ```bash
 python scripts/run_node_depth_anything_v2.py \
@@ -174,7 +200,7 @@ python scripts/run_node_sam2_masks.py \
   --camera_box cam2=x1,y1,x2,y2
 ```
 
-### 5.3 构建 tracklet 与 embedding
+### 6.3 构建 tracklet 与 embedding
 
 ```bash
 python scripts/build_node_tracklets.py \
@@ -254,7 +280,7 @@ python scripts/extract_node_track_embeddings.py \
   --geo_backend open3d_fpfh
 ```
 
-### 5.4 做一次 retrieval
+### 6.4 做一次 retrieval
 
 ```bash
 python scripts/eval_node_track_retrieval.py \
@@ -286,9 +312,9 @@ python scripts/summarize_iciscae_branch_comparison.py --benchmark_id iciscae_nod
 python scripts/analyze_iciscae_failure_modes.py --benchmark_id iciscae_node01_uav_v3_clean
 ```
 
-## 6. 节点结构验证
+## 7. 节点结构验证
 
-### 6.1 静态检查
+### 7.1 静态检查
 
 打开 `mvp-demo/assets/mujoco_3cam_node_parallel.xml`，确认：
 
@@ -297,19 +323,19 @@ python scripts/analyze_iciscae_failure_modes.py --benchmark_id iciscae_node01_ua
 - 三个相机 `xyaxes` 一致
 - 三相机位置构成小圈，直径不超过 `1m`
 
-### 6.2 viewer 检查
+### 7.2 viewer 检查
 
 ```bash
 MUJOCO_GL=glfw python scripts/mj_view_3cam_node.py
 ```
 
-### 6.3 离屏采集检查
+### 7.3 离屏采集检查
 
 ```bash
 MUJOCO_GL=osmesa python scripts/mj_capture_3cam_node.py --seconds 1 --fps 5 --width 320 --height 240
 ```
 
-## 7. NeoVerse 4D 点云接入 ReID 实验分支
+## 8. NeoVerse 4D 点云接入 ReID 实验分支
 
 新增实验分支如下：
 
@@ -336,7 +362,7 @@ MUJOCO_GL=osmesa python scripts/mj_capture_3cam_node.py --seconds 1 --fps 5 --wi
 
 注：若任一项失败，先回到覆盖率、动态约束和点云厚度诊断，不进入正式 ReID 对比结论。
 
-## 8. 当前完成定义
+## 9. 当前完成定义
 
 进入当前主线下一阶段前，至少需要满足：
 
