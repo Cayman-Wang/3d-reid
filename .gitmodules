@@ -1,0 +1,4 @@
+[submodule "third_party/NeoVerse"]
+	path = third_party/NeoVerse
+	url = https://github.com/Cayman-Wang/NeoVerse.git
+	branch = main

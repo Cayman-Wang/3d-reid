@@ -47,9 +47,11 @@ mvp-demo/runs/
 mvp-demo/tmp/
 tmp/
 
-# Local cloned external repos (all third-party code lives outside this repo)
+# Local cloned external repos. Only NeoVerse is tracked as a submodule.
 mvp-demo/third_party/
 参考工作/repos/
+third_party/*
+!third_party/NeoVerse/
 third_party/gsplat_pypi/
 third_party/dggt/
 third_party/Track4World/
