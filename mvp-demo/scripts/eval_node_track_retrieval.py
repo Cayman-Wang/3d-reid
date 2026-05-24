@@ -156,6 +156,7 @@ def main() -> None:
     payload = {"summary": summary, "results": all_results}
     if args.out:
         out_path = Path(args.out).resolve()
+        out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"Wrote: {out_path}")
 

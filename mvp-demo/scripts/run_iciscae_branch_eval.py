@@ -76,22 +76,45 @@ def _load_manifest(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def _resolve_manifest_path(repo_root: Path, path_text: str) -> Path:
-    path = Path(str(path_text))
+def _windows_runtime_root() -> str:
+    return "D:/node01_spin_runtime_ascii"
+
+
+def _is_windows_runtime_path(path_text: str) -> bool:
+    text = str(path_text).replace("\\", "/")
+    win_root = _windows_runtime_root()
+    return text.lower().startswith(win_root.lower() + "/")
+
+
+def _linux_runtime_root(repo_root: Path) -> Path:
+    value = os.environ.get("REID_NODE01_RUNTIME_ROOT", "").strip()
+    if value:
+        return Path(value).expanduser().resolve()
+    return repo_root
+
+
+def _resolve_path_text(repo_root: Path, path_text: str) -> Path:
+    text = str(path_text).replace("\\", "/")
+    win_root = _windows_runtime_root()
+    if _is_windows_runtime_path(text):
+        suffix = text[len(win_root) + 1 :]
+        return (_linux_runtime_root(repo_root) / suffix).resolve()
+    path = Path(text)
     if not path.is_absolute():
         path = repo_root / path
     return path.resolve()
+
+
+def _resolve_manifest_path(repo_root: Path, path_text: str) -> Path:
+    return _resolve_path_text(repo_root, path_text)
 
 
 def _resolve_entry_scene_dir(repo_root: Path, scene_dir_text: str) -> Path:
-    path = Path(str(scene_dir_text))
-    if not path.is_absolute():
-        path = repo_root / path
-    return path.resolve()
+    return _resolve_path_text(repo_root, scene_dir_text)
 
 
 def _resolve_scene_subdir(scene_dir: Path, subdir_text: str) -> Path:
-    path = Path(str(subdir_text))
+    path = _resolve_path_text(scene_dir, subdir_text)
     if path.is_absolute():
         return path
     return scene_dir / path
@@ -114,7 +137,18 @@ def _resolve_entry_cfg(cfg: dict, entry: dict, scene_id: str, scene_dir: Path, r
     context.setdefault("scene_name", scene_dir.name)
     context.setdefault("scene_dir", str(scene_dir))
     context.setdefault("repo_root", str(repo_root))
-    return {key: _format_cfg_value(value, context, key) for key, value in cfg.items()}
+    resolved = {key: _format_cfg_value(value, context, key) for key, value in cfg.items()}
+
+    for key in ("points_subdir", "neoverse_points_subdir"):
+        value = resolved.get(key)
+        if isinstance(value, str) and value.strip():
+            if _is_windows_runtime_path(value):
+                resolved[key] = _resolve_path_text(repo_root, value).as_posix()
+
+    linux_rgb_backend = os.environ.get("REID_LINUX_RGB_BACKEND", "").strip()
+    if linux_rgb_backend:
+        resolved["rgb_backend"] = linux_rgb_backend
+    return resolved
 
 
 def _ensure_points_ready(scene_dir: Path, points_subdir: str, branch: str) -> None:

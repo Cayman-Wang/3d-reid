@@ -37,31 +37,31 @@ MuJoCo 导出的 `masks_gt/`、`depth_gt/` 只用于排错和 upper-bound，不�
 
 ## 当前推荐命令链
 
-当前项目允许同时使用两个 `conda` 环境，但分工必须固定：
-
-- `mvp_demo`：默认主线环境，负责 MuJoCo 采集、图像侧 depth/mask、tracklet、embedding、benchmark 与大多数非 NeoVerse 脚本
-- `neoverse`：NeoVerse fused 4D 专用环境，负责 `run_neoverse_per_camera_bundle.py`、`export_neoverse_view_observations.py`、`backproject_neoverse_observations.py`、`fuse_neoverse_multiview_world_points.py`、`constrain_neoverse_multiview_dynamic.py`、`render_fused_world_preview.py`、`analyze_fused_multiview_quality.py`
-
-未特别说明时，本目录中的常规主线脚本命令仍默认在 `mvp_demo` 环境中执行；涉及 MuJoCo scene 加载时，建议从 ASCII 工作目录运行。若进入 NeoVerse fused 4D 链路，则应明确切到 `neoverse` 环境运行对应脚本，而不是混用解释器。
-
-推荐记忆方式：
-
-- 只要脚本名里不含 `neoverse`，大概率先用 `mvp_demo`
-- 只要进入 `NeoVerse fused 4D` 七步链，统一切到 `neoverse`
-
-先安装节点级管线依赖：
-
-```bash
-cd mvp-demo
-conda activate mvp_demo
-python -m pip install -r requirements_node_pipeline.txt
-```
-
-若要运行 NeoVerse fused 4D 链路，请切到：
+当前 Linux 适配阶段统一使用本机 `neoverse` 环境推进，不再依赖尚未补齐的 `mvp_demo` 环境。该环境当前覆盖 MuJoCo、OpenCV、PyTorch、Pillow、Open3D、Transformers 与 NeoVerse 基础依赖。
 
 ```bash
 conda activate neoverse
 ```
+
+若从仓库根目录直接调用，可显式使用环境解释器：
+
+```bash
+/home/grasp/miniconda3/envs/neoverse/bin/python mvp-demo/scripts/mj_capture_3cam_node.py --help
+```
+
+当前 `neoverse` 环境暂未安装 `open_clip`，Linux smoke 优先使用直方图 RGB 表征：
+
+```bash
+export REID_LINUX_RGB_BACKEND=hist
+```
+
+若要复用历史 Windows manifest 中的 `D:/node01_spin_runtime_ascii/...` 路径，在 Linux 上设置运行时根目录映射：
+
+```bash
+export REID_NODE01_RUNTIME_ROOT=/home/grasp/data/3d-reid
+```
+
+说明：映射只影响以 `D:/node01_spin_runtime_ascii/` 开头的历史绝对路径；普通相对路径仍按仓库根目录或 scene 目录解析。
 
 如果是第一次使用 `uav1_v2 / su34` 的 clean 场景，先在本地生成 split meshes：
 
@@ -174,6 +174,7 @@ python scripts/eval_node_track_retrieval.py \
 - `assets/scene/mujoco_3cam_node_parallel_j10.xml`
 - `assets/scene/mujoco_uav1_3cam_node_parallel_v2.xml`
 - `assets/scene/mujoco_su34_3cam_node_parallel.xml`
+- `assets/scene/mujoco_3cam_node_parallel_proxy.xml`（Linux smoke 优先入口，不依赖外部模型资源）
 
 历史归档场景：
 
@@ -184,6 +185,51 @@ python scripts/eval_node_track_retrieval.py \
 
 - `assets/scene/` 根目录只保留当前 clean 主线场景。
 - 所有 `mujoco_humanoid_*.xml` 已归档到 `assets/scene/legacy/`，不再作为当前推荐入口。
+- 当前 Linux 迁移 smoke 先使用 proxy 场景；J10/UAV1/SU34 真实模型场景需要补齐 `mvp-demo/assets/models/` 资源后再验证。
+
+## Linux smoke（neoverse 环境）
+
+从仓库根目录执行：
+
+```bash
+export PYTHON=/home/grasp/miniconda3/envs/neoverse/bin/python
+export MUJOCO_GL=egl
+
+$PYTHON mvp-demo/scripts/mj_capture_3cam_node.py \
+  --mjcf mvp-demo/assets/scene/mujoco_3cam_node_parallel_proxy.xml \
+  --node_id node01 \
+  --scene_id linux_proxy_smoke \
+  --identity_id proxy \
+  --seconds 0.2 \
+  --fps 5 \
+  --save_depth \
+  --save_masks_gt
+
+$PYTHON mvp-demo/scripts/build_node_tracklets.py \
+  --scene_dir mvp-demo/data/nodes/node01/scenes/linux_proxy_smoke \
+  --mask_subdir masks_gt \
+  --depth_subdir depth_gt \
+  --min_timestamps 1
+
+$PYTHON mvp-demo/scripts/extract_node_track_embeddings.py \
+  --scene_dir mvp-demo/data/nodes/node01/scenes/linux_proxy_smoke \
+  --rgb_backend hist \
+  --geo_backend none
+```
+
+几何 smoke 可在已有 depth/mask 的 scene 上继续执行：
+
+```bash
+$PYTHON mvp-demo/scripts/recon_fuse_depth_points.py \
+  --scene_dir mvp-demo/data/nodes/node01/scenes/linux_proxy_smoke \
+  --depth_subdir depth_gt \
+  --mask_subdir masks_gt
+
+$PYTHON mvp-demo/scripts/extract_node_track_embeddings.py \
+  --scene_dir mvp-demo/data/nodes/node01/scenes/linux_proxy_smoke \
+  --rgb_backend hist \
+  --geo_backend open3d_fpfh
+```
 
 ## 当前推荐 benchmark 入口
 
@@ -255,7 +301,7 @@ python scripts/export_neoverse_probe_input.py \
 
 ```bash
 python scripts/run_neoverse_probe.py \
-  --neoverse_python D:/miniconda3/envs/neoverse/python.exe \
+  --neoverse_python /home/grasp/miniconda3/envs/neoverse/bin/python \
   --neoverse_repo third_party/NeoVerse \
   --scene_dir data/nodes/node01/scenes/mj_node01_j10_spin_static_yp_a \
   --cam_id cam0 \
@@ -354,7 +400,7 @@ python scripts/export_neoverse_multiview_points.py \
 ```bash
 python scripts/precompute_neoverse_multiview_static_geometry.py \
   --manifest research/plans/tri_camera_node_3d_aware_reid/benchmarks/node01_neoverse_multiview_static_v1.json \
-  --neoverse_python D:/miniconda3/envs/neoverse/python.exe \
+  --neoverse_python /home/grasp/miniconda3/envs/neoverse/bin/python \
   --neoverse_repo third_party/NeoVerse
 ```
 
@@ -376,7 +422,7 @@ python scripts/run_iciscae_branch_eval.py \
 该脚本只做 Gaussian rasterization，不加载 diffusion / T5 / VAE / LoRA。
 
 ```bash
-D:\ML\anaconda3\envs\neoverse\python.exe mvp-demo/scripts/render_neoverse_multiview_preview.py \
+/home/grasp/miniconda3/envs/neoverse/bin/python mvp-demo/scripts/render_neoverse_multiview_preview.py \
   --bundle mvp-demo/output/neoverse_multiview/mj_node01_j10_spin_static_yp_a/run_full_frame_joint/reconstruction_bundle.pt \
   --neoverse_repo third_party/NeoVerse \
   --reconstructor_path third_party/NeoVerse/models/NeoVerse/reconstructor.ckpt \

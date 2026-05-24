@@ -20,6 +20,29 @@ def _load_json(path: Path) -> dict[str, Any]:
         raise SystemExit(f"Failed to read json: {path}\nError: {exc!r}")
 
 
+def _windows_runtime_root() -> str:
+    return "D:/node01_spin_runtime_ascii"
+
+
+def _linux_runtime_root(repo_root: Path) -> Path:
+    value = os.environ.get("REID_NODE01_RUNTIME_ROOT", "").strip()
+    if value:
+        return Path(value).expanduser().resolve()
+    return repo_root
+
+
+def _resolve_path_text(repo_root: Path, path_text: str) -> Path:
+    text = str(path_text).replace("\\", "/")
+    win_root = _windows_runtime_root()
+    if text.lower().startswith(win_root.lower() + "/"):
+        suffix = text[len(win_root) + 1 :]
+        return (_linux_runtime_root(repo_root) / suffix).resolve()
+    path = Path(text)
+    if not path.is_absolute():
+        path = repo_root / path
+    return path.resolve()
+
+
 def _run(cmd: list[str], cwd: Path) -> None:
     printable = " ".join(f'"{x}"' if " " in x else x for x in cmd)
     print(f"[run] {printable}")
@@ -125,10 +148,7 @@ def main() -> None:
     repo_root = _repo_root()
     scripts_dir = repo_root / "mvp-demo" / "scripts"
 
-    manifest_path = Path(str(args.manifest))
-    if not manifest_path.is_absolute():
-        manifest_path = repo_root / manifest_path
-    manifest_path = manifest_path.resolve()
+    manifest_path = _resolve_path_text(repo_root, str(args.manifest))
     if not manifest_path.exists():
         raise SystemExit(f"Missing manifest: {manifest_path}")
 
@@ -149,7 +169,7 @@ def main() -> None:
         raise SystemExit(f"Missing --neoverse_python: {neoverse_python}")
 
     for entry in entries:
-        scene_dir = repo_root / str(entry["scene_dir"])
+        scene_dir = _resolve_path_text(repo_root, str(entry["scene_dir"]))
         scene_id = str(entry["scene_id"])
         bundle_path = (
             repo_root
