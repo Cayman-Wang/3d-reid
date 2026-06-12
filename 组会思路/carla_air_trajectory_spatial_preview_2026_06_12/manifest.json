@@ -1,0 +1,309 @@
+{
+  "schema_version": "carla_air_trajectory_spatial_preview_manifest_v2",
+  "generated_at": "2026-06-12T17:44:18+08:00",
+  "created_by": "tools/carla_air/export_trajectory_spatial_preview.py",
+  "presentation_only": true,
+  "manual_qc_only": true,
+  "not_formal_dataset_input": true,
+  "not_annotation_evidence": true,
+  "not_mask_evidence": true,
+  "not_bbox_evidence": true,
+  "not_geometry_evidence": true,
+  "not_benchmark_evidence": true,
+  "view_mode_cli": "both",
+  "view_modes": [
+    "2d",
+    "3d_static",
+    "3d_interactive"
+  ],
+  "z_scale_default": 1.0,
+  "z_scale_is_true_metric": true,
+  "three_js_vendor": {
+    "source_path": "/home/grasp/data/3d-reid/tools/carla_air/vendor/three.min.js",
+    "output_path": "/home/grasp/data/3d-reid/\u7ec4\u4f1a\u601d\u8def/carla_air_trajectory_spatial_preview_2026_06_12/vendor/three.min.js",
+    "relative_path": "vendor/three.min.js",
+    "version": "0.148.0",
+    "sha256": "46e52aa6eafe21fcd5dd9827ee1333b22734c6af4b899b00fb6b2f8cfbc33df3",
+    "size_bytes": 608313
+  },
+  "map_scale_mode": "local",
+  "map_extent_available": false,
+  "runtime_map_extent": {
+    "available": false,
+    "attempted": false,
+    "reason": "not_requested"
+  },
+  "inputs": {
+    "trajectory_config": {
+      "path": "/home/grasp/data/3d-reid/configs/carla_air/trajectories/town10hd_coverage_first_v1.json",
+      "sha256": "4a1e2f9917e516438f15efe7284adc50eda2f99907bfd0e80705fbccfa14af51",
+      "schema_version": "carla_air_drone_coverage_trajectory_config_v1",
+      "map": "Town10HD"
+    },
+    "node_config": {
+      "path": "/home/grasp/data/3d-reid/local/carla_air/camera_nodes/Town10HD_ground_to_air_nodes_v1.json",
+      "sha256": "6ec402a0a0061b34380d11bbca2279e32d2afa2641e39c89a02625422280c604",
+      "schema_version": "carla_air_ground_to_air_camera_nodes_v1",
+      "map": "Town10HD",
+      "carla_map_name": "Carla/Maps/Town10HD"
+    }
+  },
+  "trajectory_count": 2,
+  "node_count": 5,
+  "selected_trajectory_ids": [
+    "traj_cov_01_all_nodes_sweep_return",
+    "traj_cov_02_all_nodes_reverse_s_curve"
+  ],
+  "trajectories": [
+    {
+      "trajectory_id": "traj_cov_01_all_nodes_sweep_return",
+      "waypoint_source": "waypoints_carla",
+      "waypoint_count": 15,
+      "path_length_m": 245.908378,
+      "duration_seconds": 32.0,
+      "recommended_nodes": [
+        "node01",
+        "node02",
+        "node03",
+        "node04",
+        "node05"
+      ],
+      "target_nodes": [
+        "node01",
+        "node02",
+        "node03",
+        "node04",
+        "node05"
+      ],
+      "bounds": {
+        "min_x": -126.252176,
+        "max_x": -44.089182,
+        "min_y": 121.114311,
+        "max_y": 175.395472,
+        "min_z": 18.365879,
+        "max_z": 24.996255,
+        "width_m": 82.162994,
+        "depth_m": 54.281161,
+        "height_m": 6.630376
+      },
+      "z_range_m": [
+        18.365879,
+        24.996255
+      ]
+    },
+    {
+      "trajectory_id": "traj_cov_02_all_nodes_reverse_s_curve",
+      "waypoint_source": "waypoints_carla",
+      "waypoint_count": 15,
+      "path_length_m": 238.683517,
+      "duration_seconds": 34.0,
+      "recommended_nodes": [
+        "node05",
+        "node04",
+        "node03",
+        "node02",
+        "node01"
+      ],
+      "target_nodes": [
+        "node05",
+        "node04",
+        "node03",
+        "node02",
+        "node01"
+      ],
+      "bounds": {
+        "min_x": -122.947026,
+        "max_x": -46.657135,
+        "min_y": 125.013716,
+        "max_y": 174.754674,
+        "min_z": 17.957605,
+        "max_z": 24.524639,
+        "width_m": 76.289891,
+        "depth_m": 49.740958,
+        "height_m": 6.567034
+      },
+      "z_range_m": [
+        17.957605,
+        24.524639
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "node_id": "node01",
+      "anchor_transform": {
+        "x": -91.684293,
+        "y": 190.147432,
+        "z": 10.604683,
+        "pitch": -0.649358,
+        "yaw": 237.727757,
+        "roll": -1e-06
+      },
+      "camera_count": 3,
+      "camera_order": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ]
+    },
+    {
+      "node_id": "node02",
+      "anchor_transform": {
+        "x": -89.196893,
+        "y": 170.597229,
+        "z": 11.500478,
+        "pitch": -2.689358,
+        "yaw": -188.392243,
+        "roll": -1e-06
+      },
+      "camera_count": 3,
+      "camera_order": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ]
+    },
+    {
+      "node_id": "node03",
+      "anchor_transform": {
+        "x": -82.551532,
+        "y": 158.592182,
+        "z": 10.93297,
+        "pitch": -2.689358,
+        "yaw": 256.447757,
+        "roll": -1e-06
+      },
+      "camera_count": 3,
+      "camera_order": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ]
+    },
+    {
+      "node_id": "node04",
+      "anchor_transform": {
+        "x": -70.022914,
+        "y": 164.042089,
+        "z": 10.736606,
+        "pitch": -2.689358,
+        "yaw": 310.327757,
+        "roll": -1e-06
+      },
+      "camera_count": 3,
+      "camera_order": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ]
+    },
+    {
+      "node_id": "node05",
+      "anchor_transform": {
+        "x": -81.249597,
+        "y": 106.70699,
+        "z": 11.24237,
+        "pitch": -8.089358,
+        "yaw": 117.007757,
+        "roll": -1e-06
+      },
+      "camera_count": 3,
+      "camera_order": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ]
+    }
+  ],
+  "local_roi": {
+    "bounds": {
+      "min_x": -126.252176,
+      "max_x": -44.089182,
+      "min_y": 106.70699,
+      "max_y": 190.147432,
+      "min_z": 10.604683,
+      "max_z": 24.996255,
+      "width_m": 82.162994,
+      "depth_m": 83.440442,
+      "height_m": 14.391572
+    },
+    "padded_view_bounds": {
+      "min_x": -136.265029,
+      "max_x": -34.076329,
+      "min_y": 96.694137,
+      "max_y": 200.160285,
+      "min_z": 8.0142,
+      "max_z": 27.586738,
+      "width_m": 102.1887,
+      "depth_m": 103.466148,
+      "height_m": 19.572538
+    },
+    "covers_all_selected_trajectory_waypoints_and_node_anchors": true,
+    "scale_bar_m": 20.0
+  },
+  "output_groups": {
+    "2d": {
+      "svg": "/home/grasp/data/3d-reid/\u7ec4\u4f1a\u601d\u8def/carla_air_trajectory_spatial_preview_2026_06_12/trajectory_spatial_preview.svg",
+      "png": "/home/grasp/data/3d-reid/\u7ec4\u4f1a\u601d\u8def/carla_air_trajectory_spatial_preview_2026_06_12/trajectory_spatial_preview.png",
+      "html": "/home/grasp/data/3d-reid/\u7ec4\u4f1a\u601d\u8def/carla_air_trajectory_spatial_preview_2026_06_12/trajectory_spatial_preview.html"
+    },
+    "3d_static": {
+      "svg": "/home/grasp/data/3d-reid/\u7ec4\u4f1a\u601d\u8def/carla_air_trajectory_spatial_preview_2026_06_12/trajectory_spatial_preview_3d.svg",
+      "png": "/home/grasp/data/3d-reid/\u7ec4\u4f1a\u601d\u8def/carla_air_trajectory_spatial_preview_2026_06_12/trajectory_spatial_preview_3d.png"
+    },
+    "3d_interactive": {
+      "html": "/home/grasp/data/3d-reid/\u7ec4\u4f1a\u601d\u8def/carla_air_trajectory_spatial_preview_2026_06_12/trajectory_spatial_preview_3d.html",
+      "three_js_vendor": "/home/grasp/data/3d-reid/\u7ec4\u4f1a\u601d\u8def/carla_air_trajectory_spatial_preview_2026_06_12/vendor/three.min.js"
+    }
+  },
+  "outputs": {
+    "svg": {
+      "path": "/home/grasp/data/3d-reid/\u7ec4\u4f1a\u601d\u8def/carla_air_trajectory_spatial_preview_2026_06_12/trajectory_spatial_preview.svg",
+      "size_bytes": 17052,
+      "view_mode": "2d"
+    },
+    "png": {
+      "path": "/home/grasp/data/3d-reid/\u7ec4\u4f1a\u601d\u8def/carla_air_trajectory_spatial_preview_2026_06_12/trajectory_spatial_preview.png",
+      "size_bytes": 50431,
+      "view_mode": "2d"
+    },
+    "html": {
+      "path": "/home/grasp/data/3d-reid/\u7ec4\u4f1a\u601d\u8def/carla_air_trajectory_spatial_preview_2026_06_12/trajectory_spatial_preview.html",
+      "size_bytes": 18640,
+      "view_mode": "2d"
+    },
+    "static_3d_svg": {
+      "path": "/home/grasp/data/3d-reid/\u7ec4\u4f1a\u601d\u8def/carla_air_trajectory_spatial_preview_2026_06_12/trajectory_spatial_preview_3d.svg",
+      "size_bytes": 12152,
+      "view_mode": "3d_static"
+    },
+    "static_3d_png": {
+      "path": "/home/grasp/data/3d-reid/\u7ec4\u4f1a\u601d\u8def/carla_air_trajectory_spatial_preview_2026_06_12/trajectory_spatial_preview_3d.png",
+      "size_bytes": 49593,
+      "view_mode": "3d_static"
+    },
+    "interactive_3d_html": {
+      "path": "/home/grasp/data/3d-reid/\u7ec4\u4f1a\u601d\u8def/carla_air_trajectory_spatial_preview_2026_06_12/trajectory_spatial_preview_3d.html",
+      "size_bytes": 13554,
+      "view_mode": "3d_interactive"
+    },
+    "three_js_vendor": {
+      "source_path": "/home/grasp/data/3d-reid/tools/carla_air/vendor/three.min.js",
+      "output_path": "/home/grasp/data/3d-reid/\u7ec4\u4f1a\u601d\u8def/carla_air_trajectory_spatial_preview_2026_06_12/vendor/three.min.js",
+      "relative_path": "vendor/three.min.js",
+      "version": "0.148.0",
+      "sha256": "46e52aa6eafe21fcd5dd9827ee1333b22734c6af4b899b00fb6b2f8cfbc33df3",
+      "size_bytes": 608313
+    },
+    "manifest": {
+      "path": "/home/grasp/data/3d-reid/\u7ec4\u4f1a\u601d\u8def/carla_air_trajectory_spatial_preview_2026_06_12/manifest.json",
+      "size_bytes": 9610
+    }
+  },
+  "notes": [
+    "Offline spatial preview for presentation, manual QC, and waypoint tuning only.",
+    "Polyline rendering matches the current runner's piecewise-linear waypoint interpolation semantics.",
+    "3D static and interactive views are spatial QC aids; z-scale is recorded whenever it differs from 1.0.",
+    "Do not use these assets as training input, annotation, mask, bbox, geometry, or benchmark evidence."
+  ]
+}

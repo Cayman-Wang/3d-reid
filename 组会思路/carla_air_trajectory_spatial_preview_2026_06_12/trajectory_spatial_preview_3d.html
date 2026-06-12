@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARLA-Air trajectory spatial preview 3D</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#f7f6f1;color:#20252b}
+.toolbar{position:sticky;top:0;z-index:2;display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:#20252b;color:#fff}
+.toolbar label{font-size:13px;white-space:nowrap}.toolbar input[type=range]{width:128px;vertical-align:middle}.toolbar .metric{color:#d8dde3}
+.viewer{height:calc(100vh - 56px);min-height:560px;position:relative}.viewer canvas{display:block;width:100%;height:100%;touch-action:none}
+.caption{position:absolute;left:14px;bottom:12px;padding:8px 10px;background:rgba(255,255,255,.88);border:1px solid #d4dae2;font-size:12px;line-height:1.45;max-width:min(560px,calc(100% - 28px))}
+.caption strong{font-weight:700}.error{padding:18px;color:#9b1c31}
+@media (max-width:720px){.viewer{height:calc(100vh - 112px);min-height:420px}.toolbar{gap:10px}.caption{font-size:11px}}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <label><input type="checkbox" data-layer="trajectories" checked> trajectories</label>
+  <label><input type="checkbox" data-layer="waypoints" checked> waypoints</label>
+  <label><input type="checkbox" data-layer="nodes" checked> camera nodes</label>
+  <label><input type="checkbox" data-layer="roi" checked> ROI</label>
+  <label><input type="checkbox" data-layer="grid" checked> meter grid</label>
+  <label>Z scale <input id="zScale" type="range" min="0.25" max="5" step="0.05"><span id="zScaleValue" class="metric"></span></label>
+  <span class="metric">drag rotate | wheel zoom</span>
+</div>
+<div class="viewer">
+  <canvas id="scene"></canvas>
+  <div class="caption" id="caption"></div>
+</div>
+<script src="./vendor/three.min.js"></script>
+<script>
+const DATA = {"map_name":"Town10HD","z_scale_default":1.0,"center":{"x":-85.170679,"y":148.42721086808965,"z":10.604682737213107},"bounds":{"min_x":-126.252176,"max_x":-44.089182,"min_y":106.70698982168356,"max_y":190.14743191449574,"min_z":10.604682737213107,"max_z":24.996255},"bounds_summary":{"min_x":-126.252176,"max_x":-44.089182,"min_y":106.70699,"max_y":190.147432,"min_z":10.604683,"max_z":24.996255,"width_m":82.162994,"depth_m":83.440442,"height_m":14.391572},"trajectories":[{"trajectory_id":"traj_cov_01_all_nodes_sweep_return","color":"#1f77b4","path_length_m":245.90837765115216,"waypoints":[{"x":-109.771884,"y":157.309535,"z":22.554154},{"x":-105.029337,"y":172.128703,"z":19.106552},{"x":-108.040112,"y":171.423904,"z":20.41813},{"x":-111.009919,"y":172.285155,"z":18.365879},{"x":-126.252176,"y":175.395472,"z":22.484697},{"x":-107.809782,"y":149.118373,"z":24.540711},{"x":-92.113273,"y":121.114311,"z":23.564739},{"x":-86.335348,"y":137.217876,"z":18.402078},{"x":-70.914989,"y":141.111292,"z":19.961598},{"x":-56.024594,"y":146.698983,"z":19.374868},{"x":-44.089182,"y":136.271862,"z":23.373169},{"x":-71.474897,"y":137.442222,"z":24.996255},{"x":-98.738715,"y":140.276183,"z":23.402263},{"x":-89.986359,"y":127.340827,"z":19.506172},{"x":-88.056273,"y":132.240694,"z":20.691904}]},{"trajectory_id":"traj_cov_02_all_nodes_reverse_s_curve","color":"#d62728","path_length_m":238.68351657450123,"waypoints":[{"x":-96.765476,"y":136.363834,"z":22.007223},{"x":-90.315157,"y":125.013716,"z":17.957605},{"x":-73.663322,"y":138.460352,"z":20.291628},{"x":-55.624538,"y":149.97981,"z":19.075374},{"x":-46.657135,"y":139.97261,"z":23.013482},{"x":-68.803295,"y":132.697267,"z":24.524639},{"x":-91.058818,"y":125.763676,"z":22.899114},{"x":-87.861288,"y":139.103627,"z":18.502078},{"x":-98.301859,"y":156.833585,"z":20.202184},{"x":-108.410839,"y":174.754674,"z":18.987452},{"x":-122.947026,"y":172.956736,"z":22.693424},{"x":-115.592936,"y":168.173953,"z":23.578088},{"x":-109.606268,"y":161.761664,"z":21.935995},{"x":-102.844763,"y":173.503873,"z":18.534564},{"x":-95.281195,"y":156.335037,"z":20.200207}]}],"nodes":[{"node_id":"node01","x":-91.68429264526057,"y":190.14743191449574,"z":10.604682737213107,"yaw":237.72775680541994},{"node_id":"node02","x":-89.1968933096542,"y":170.59722898121265,"z":11.50047836060887,"yaw":-188.39224319458012},{"node_id":"node03","x":-82.55153168824422,"y":158.59218199806608,"z":10.93296989975909,"yaw":256.44775680541994},{"node_id":"node04","x":-70.022913907788,"y":164.04208878463334,"z":10.736605982564921,"yaw":310.32775680542005},{"node_id":"node05","x":-81.24959725469321,"y":106.70698982168356,"z":11.242370467204198,"yaw":117.00775680541994}]};
+if (!window.THREE) {
+  throw new Error("Three.js vendor did not load from ./vendor/three.min.js");
+}
+
+const canvas = document.getElementById("scene");
+const renderer = new THREE.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.setClearColor(0xf7f6f1, 1);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xf7f6f1);
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 10000);
+
+const center = DATA.center;
+const bounds = DATA.bounds;
+const summary = DATA.bounds_summary;
+function toScene(point) {
+  return new THREE.Vector3(point.x - center.x, point.z - center.z, point.y - center.y);
+}
+function niceLength(raw) {
+  if (raw <= 0) return 1;
+  const exponent = Math.floor(Math.log10(raw));
+  const base = Math.pow(10, exponent);
+  const fraction = raw / base;
+  const nice = fraction <= 1.5 ? 1 : fraction <= 3 ? 2 : fraction <= 7 ? 5 : 10;
+  return nice * base;
+}
+function addLine(group, a, b, material) {
+  const geometry = new THREE.BufferGeometry().setFromPoints([a, b]);
+  const line = new THREE.Line(geometry, material);
+  group.add(line);
+  return line;
+}
+
+const root = new THREE.Group();
+const zRoot = new THREE.Group();
+const gridGroup = new THREE.Group();
+const trajectoryGroup = new THREE.Group();
+const waypointGroup = new THREE.Group();
+const nodeGroup = new THREE.Group();
+const roiGroup = new THREE.Group();
+const axisGroup = new THREE.Group();
+root.add(gridGroup);
+zRoot.add(trajectoryGroup, waypointGroup, nodeGroup, roiGroup, axisGroup);
+root.add(zRoot);
+scene.add(root);
+
+const widthM = Math.max(summary.width_m, 1);
+const depthM = Math.max(summary.depth_m, 1);
+const heightM = Math.max(summary.height_m, 1);
+const extent = Math.max(widthM, depthM, heightM * 3, 10);
+const gridMaterial = new THREE.LineBasicMaterial({color: 0xd8dde3});
+const spacing = niceLength(Math.max(widthM, depthM) / 5);
+for (let x = Math.floor(bounds.min_x / spacing) * spacing; x <= bounds.max_x + 1e-9; x += spacing) {
+  addLine(gridGroup, toScene({x, y: bounds.min_y, z: bounds.min_z}), toScene({x, y: bounds.max_y, z: bounds.min_z}), gridMaterial);
+}
+for (let y = Math.floor(bounds.min_y / spacing) * spacing; y <= bounds.max_y + 1e-9; y += spacing) {
+  addLine(gridGroup, toScene({x: bounds.min_x, y, z: bounds.min_z}), toScene({x: bounds.max_x, y, z: bounds.min_z}), gridMaterial);
+}
+
+const axisLen = niceLength(Math.min(widthM, depthM) * 0.25);
+const origin = toScene({x: bounds.min_x, y: bounds.min_y, z: bounds.min_z});
+addLine(axisGroup, origin, toScene({x: bounds.min_x + axisLen, y: bounds.min_y, z: bounds.min_z}), new THREE.LineBasicMaterial({color: 0xb23a48}));
+addLine(axisGroup, origin, toScene({x: bounds.min_x, y: bounds.min_y + axisLen, z: bounds.min_z}), new THREE.LineBasicMaterial({color: 0x2f7d4f}));
+addLine(axisGroup, origin, toScene({x: bounds.min_x, y: bounds.min_y, z: bounds.min_z + axisLen}), new THREE.LineBasicMaterial({color: 0x2f5fb3}));
+
+const waypointRadius = Math.max(extent * 0.008, 0.35);
+const nodeRadius = Math.max(extent * 0.012, 0.55);
+for (const trajectory of DATA.trajectories) {
+  const color = new THREE.Color(trajectory.color);
+  const points = trajectory.waypoints.map(toScene);
+  const geometry = new THREE.BufferGeometry().setFromPoints(points);
+  trajectoryGroup.add(new THREE.Line(geometry, new THREE.LineBasicMaterial({color, linewidth: 4})));
+  const waypointMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
+  const waypointEdge = new THREE.MeshBasicMaterial({color});
+  for (const point of points) {
+    const sphere = new THREE.Mesh(new THREE.SphereGeometry(waypointRadius, 16, 12), waypointMaterial);
+    sphere.position.copy(point);
+    waypointGroup.add(sphere);
+    const ring = new THREE.Mesh(new THREE.SphereGeometry(waypointRadius * 1.08, 16, 12), waypointEdge);
+    ring.position.copy(point);
+    ring.scale.set(1, 1, 1);
+    waypointGroup.add(ring);
+  }
+}
+
+for (const node of DATA.nodes) {
+  const position = toScene(node);
+  const marker = new THREE.Mesh(
+    new THREE.SphereGeometry(nodeRadius, 18, 14),
+    new THREE.MeshBasicMaterial({color: 0xf7f9fb})
+  );
+  marker.position.copy(position);
+  nodeGroup.add(marker);
+  const yaw = node.yaw * Math.PI / 180;
+  const direction = new THREE.Vector3(Math.cos(yaw), 0, Math.sin(yaw)).normalize();
+  const arrow = new THREE.ArrowHelper(direction, position, Math.max(extent * 0.075, 6), 0x20252b, Math.max(extent * 0.018, 1.4), Math.max(extent * 0.012, 0.9));
+  nodeGroup.add(arrow);
+}
+
+const boxWidth = bounds.max_x - bounds.min_x;
+const boxHeight = bounds.max_z - bounds.min_z;
+const boxDepth = bounds.max_y - bounds.min_y;
+const boxGeometry = new THREE.BoxGeometry(boxWidth, Math.max(boxHeight, 0.01), boxDepth);
+const roiMesh = new THREE.Mesh(
+  boxGeometry,
+  new THREE.MeshBasicMaterial({color: 0x8c98a8, transparent: true, opacity: 0.055, depthWrite: false})
+);
+roiMesh.position.set((bounds.min_x + bounds.max_x) / 2 - center.x, boxHeight / 2, (bounds.min_y + bounds.max_y) / 2 - center.y);
+roiGroup.add(roiMesh);
+const roiEdges = new THREE.LineSegments(new THREE.EdgesGeometry(boxGeometry), new THREE.LineBasicMaterial({color: 0x8c98a8}));
+roiEdges.position.copy(roiMesh.position);
+roiGroup.add(roiEdges);
+
+const hemi = new THREE.HemisphereLight(0xffffff, 0xd8dde3, 0.8);
+scene.add(hemi);
+root.traverse((object) => {
+  if (object.isLine || object.isLineSegments || object.isMesh) {
+    object.frustumCulled = false;
+  }
+});
+
+const layerGroups = {
+  trajectories: trajectoryGroup,
+  waypoints: waypointGroup,
+  nodes: nodeGroup,
+  roi: roiGroup,
+  grid: gridGroup
+};
+document.querySelectorAll("[data-layer]").forEach((input) => {
+  input.addEventListener("change", () => {
+    layerGroups[input.dataset.layer].visible = input.checked;
+    render();
+  });
+});
+
+let theta = Math.PI * 0.78;
+let phi = Math.PI * 0.34;
+let radius = extent * 1.85;
+let zScale = DATA.z_scale_default || 1;
+const zInput = document.getElementById("zScale");
+const zLabel = document.getElementById("zScaleValue");
+zInput.value = String(zScale);
+function setZScale(value) {
+  zScale = Math.max(0.25, Math.min(5, Number(value) || 1));
+  zRoot.scale.y = zScale;
+  zLabel.textContent = " " + zScale.toFixed(2) + "x";
+  updateCamera();
+}
+zInput.addEventListener("input", () => setZScale(zInput.value));
+
+function updateCamera() {
+  const target = new THREE.Vector3(0, heightM * zScale * 0.32, 0);
+  const sinPhi = Math.sin(phi);
+  camera.position.set(
+    target.x + radius * sinPhi * Math.cos(theta),
+    target.y + radius * Math.cos(phi),
+    target.z + radius * sinPhi * Math.sin(theta)
+  );
+  camera.lookAt(target);
+  render();
+}
+
+let dragging = false;
+let lastX = 0;
+let lastY = 0;
+canvas.addEventListener("pointerdown", (event) => {
+  dragging = true;
+  lastX = event.clientX;
+  lastY = event.clientY;
+  canvas.setPointerCapture(event.pointerId);
+});
+canvas.addEventListener("pointermove", (event) => {
+  if (!dragging) return;
+  const dx = event.clientX - lastX;
+  const dy = event.clientY - lastY;
+  lastX = event.clientX;
+  lastY = event.clientY;
+  theta -= dx * 0.008;
+  phi = Math.max(0.12, Math.min(Math.PI - 0.12, phi + dy * 0.008));
+  updateCamera();
+});
+canvas.addEventListener("pointerup", () => { dragging = false; });
+canvas.addEventListener("pointercancel", () => { dragging = false; });
+canvas.addEventListener("wheel", (event) => {
+  event.preventDefault();
+  radius *= Math.exp(event.deltaY * 0.001);
+  radius = Math.max(extent * 0.45, Math.min(extent * 8, radius));
+  updateCamera();
+}, {passive: false});
+
+function resize() {
+  const parent = canvas.parentElement;
+  const width = Math.max(320, parent.clientWidth);
+  const height = Math.max(320, parent.clientHeight);
+  renderer.setSize(width, height, false);
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  render();
+}
+let renderCount = 0;
+function render() {
+  renderCount += 1;
+  window.__trajectoryPreviewRenderCount = renderCount;
+  camera.updateMatrixWorld();
+  scene.updateMatrixWorld(true);
+  renderer.render(scene, camera);
+}
+window.addEventListener("resize", resize);
+window.addEventListener("load", () => {
+  resize();
+  window.__trajectoryPreviewRender();
+});
+
+document.getElementById("caption").innerHTML =
+  "<strong>" + DATA.map_name + "</strong> | ROI " +
+  summary.width_m.toFixed(1) + " x " + summary.depth_m.toFixed(1) + " x " + summary.height_m.toFixed(1) +
+  " m | default z-scale=" + DATA.z_scale_default.toFixed(2) +
+  " | presentation/manual QC only; not annotation, mask, bbox, geometry, or benchmark evidence.";
+window.__trajectoryPreviewDebug = {
+  scene,
+  camera,
+  renderer,
+  groups: {trajectoryGroup, waypointGroup, nodeGroup, roiGroup, gridGroup, axisGroup},
+  root,
+  zRoot
+};
+window.__trajectoryPreviewRender = render;
+setZScale(zScale);
+resize();
+window.__trajectoryPreviewRender();
+requestAnimationFrame(render);
+setTimeout(render, 0);
+setTimeout(render, 120);
+renderer.setAnimationLoop(render);
+</script>
+</body>
+</html>
