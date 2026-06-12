@@ -1,0 +1,1966 @@
+{
+  "schema_version": "carla_air_drone_coverage_trajectory_config_v1",
+  "map": "Town10HD",
+  "identity_id": "default_airsim_drone",
+  "generated_at": "2026-05-25T16:57:45+08:00",
+  "source_node_config": "/home/grasp/data/3d-reid/local/carla_air/camera_nodes/Town10HD_ground_to_air_nodes_v1.json",
+  "coverage_defaults": {
+    "distance_bands_m": [
+      20.0,
+      32.0,
+      48.0
+    ],
+    "altitude_bands_m": [
+      18.0,
+      21.0,
+      24.0
+    ],
+    "altitude_jitter_m": 0.8,
+    "jitter_radius_m": 2.0,
+    "bridge_lift_m": 1.4,
+    "bridge_lateral_m": 2.0,
+    "seed_base": 20260525
+  },
+  "notes": [
+    "Coverage-first trajectories are generated from saved node anchors and optical-axis distance bands.",
+    "Node optical axes are projected to the horizontal plane, while altitude bands keep the default drone in an air target height range.",
+    "The waypoints field is kept as a compatibility alias for the existing runner.",
+    "The pose_schedule is a relative-to-path smoke profile, not a formal flight controller."
+  ],
+  "trajectories": [
+    {
+      "trajectory_id": "traj_cov_01_all_nodes_sweep_return",
+      "description": "Coverage-first sweep across node01-node05 with a return bridge around node03.",
+      "recommended_nodes": [
+        "node01",
+        "node02",
+        "node03",
+        "node04",
+        "node05"
+      ],
+      "target_nodes": [
+        "node01",
+        "node02",
+        "node03",
+        "node04",
+        "node05"
+      ],
+      "expected_visible_nodes": [
+        "node01",
+        "node02",
+        "node03",
+        "node04",
+        "node05"
+      ],
+      "coverage_strategy": "node_optical_axis_bands_all_nodes_sweep_return",
+      "seed": 20260929,
+      "distance_bands_m": [
+        22.0,
+        38.0
+      ],
+      "altitude_bands_m": [
+        19.0,
+        23.0
+      ],
+      "altitude_jitter_m": 0.7,
+      "jitter_radius_m": 2.4,
+      "return_to_node": "node03",
+      "pose_profile": "west_corridor",
+      "duration_seconds": 32.0,
+      "nominal_speed_mps": 5.5,
+      "pose_schedule": {
+        "mode": "relative_to_path",
+        "duration_seconds": 32.0,
+        "control_points": [
+          {
+            "t_frac": 0.0,
+            "pitch_deg": -2.0,
+            "roll_deg": 0.0,
+            "yaw_offset_deg": -10.0
+          },
+          {
+            "t_frac": 0.34,
+            "pitch_deg": -5.5,
+            "roll_deg": 4.0,
+            "yaw_offset_deg": 12.0
+          },
+          {
+            "t_frac": 0.68,
+            "pitch_deg": -3.0,
+            "roll_deg": -4.5,
+            "yaw_offset_deg": -8.0
+          },
+          {
+            "t_frac": 1.0,
+            "pitch_deg": -4.5,
+            "roll_deg": 2.0,
+            "yaw_offset_deg": 0.0
+          }
+        ]
+      },
+      "coverage_samples": [
+        {
+          "kind": "band",
+          "node_id": "node01",
+          "band_index": 0,
+          "distance_m": 38.0,
+          "altitude_m": 23.0,
+          "point": {
+            "x": -109.771884,
+            "y": 157.309535,
+            "z": 22.554154
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node01",
+          "band_index": 1,
+          "distance_m": 22.0,
+          "altitude_m": 19.0,
+          "point": {
+            "x": -105.029337,
+            "y": 172.128703,
+            "z": 19.106552
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node02",
+          "band_index": 0,
+          "distance_m": 22.0,
+          "altitude_m": 19.0,
+          "point": {
+            "x": -111.009919,
+            "y": 172.285155,
+            "z": 18.365879
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node02",
+          "band_index": 1,
+          "distance_m": 38.0,
+          "altitude_m": 23.0,
+          "point": {
+            "x": -126.252176,
+            "y": 175.395472,
+            "z": 22.484697
+          }
+        },
+        {
+          "kind": "bridge",
+          "from_node_id": "node01",
+          "to_node_id": "node02",
+          "point": {
+            "x": -108.040112,
+            "y": 171.423904,
+            "z": 20.41813
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node03",
+          "band_index": 0,
+          "distance_m": 38.0,
+          "altitude_m": 23.0,
+          "point": {
+            "x": -92.113273,
+            "y": 121.114311,
+            "z": 23.564739
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node03",
+          "band_index": 1,
+          "distance_m": 22.0,
+          "altitude_m": 19.0,
+          "point": {
+            "x": -86.335348,
+            "y": 137.217876,
+            "z": 18.402078
+          }
+        },
+        {
+          "kind": "bridge",
+          "from_node_id": "node02",
+          "to_node_id": "node03",
+          "point": {
+            "x": -107.809782,
+            "y": 149.118373,
+            "z": 24.540711
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node04",
+          "band_index": 0,
+          "distance_m": 22.0,
+          "altitude_m": 19.0,
+          "point": {
+            "x": -56.024594,
+            "y": 146.698983,
+            "z": 19.374868
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node04",
+          "band_index": 1,
+          "distance_m": 38.0,
+          "altitude_m": 23.0,
+          "point": {
+            "x": -44.089182,
+            "y": 136.271862,
+            "z": 23.373169
+          }
+        },
+        {
+          "kind": "bridge",
+          "from_node_id": "node03",
+          "to_node_id": "node04",
+          "point": {
+            "x": -70.914989,
+            "y": 141.111292,
+            "z": 19.961598
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node05",
+          "band_index": 0,
+          "distance_m": 38.0,
+          "altitude_m": 23.0,
+          "point": {
+            "x": -98.738715,
+            "y": 140.276183,
+            "z": 23.402263
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node05",
+          "band_index": 1,
+          "distance_m": 22.0,
+          "altitude_m": 19.0,
+          "point": {
+            "x": -89.986359,
+            "y": 127.340827,
+            "z": 19.506172
+          }
+        },
+        {
+          "kind": "bridge",
+          "from_node_id": "node04",
+          "to_node_id": "node05",
+          "point": {
+            "x": -71.474897,
+            "y": 137.442222,
+            "z": 24.996255
+          }
+        },
+        {
+          "kind": "return_bridge",
+          "to_node_id": "node03",
+          "point": {
+            "x": -88.056273,
+            "y": 132.240694,
+            "z": 20.691904
+          }
+        }
+      ],
+      "waypoints_carla": [
+        {
+          "x": -109.771884,
+          "y": 157.309535,
+          "z": 22.554154
+        },
+        {
+          "x": -105.029337,
+          "y": 172.128703,
+          "z": 19.106552
+        },
+        {
+          "x": -108.040112,
+          "y": 171.423904,
+          "z": 20.41813
+        },
+        {
+          "x": -111.009919,
+          "y": 172.285155,
+          "z": 18.365879
+        },
+        {
+          "x": -126.252176,
+          "y": 175.395472,
+          "z": 22.484697
+        },
+        {
+          "x": -107.809782,
+          "y": 149.118373,
+          "z": 24.540711
+        },
+        {
+          "x": -92.113273,
+          "y": 121.114311,
+          "z": 23.564739
+        },
+        {
+          "x": -86.335348,
+          "y": 137.217876,
+          "z": 18.402078
+        },
+        {
+          "x": -70.914989,
+          "y": 141.111292,
+          "z": 19.961598
+        },
+        {
+          "x": -56.024594,
+          "y": 146.698983,
+          "z": 19.374868
+        },
+        {
+          "x": -44.089182,
+          "y": 136.271862,
+          "z": 23.373169
+        },
+        {
+          "x": -71.474897,
+          "y": 137.442222,
+          "z": 24.996255
+        },
+        {
+          "x": -98.738715,
+          "y": 140.276183,
+          "z": 23.402263
+        },
+        {
+          "x": -89.986359,
+          "y": 127.340827,
+          "z": 19.506172
+        },
+        {
+          "x": -88.056273,
+          "y": 132.240694,
+          "z": 20.691904
+        }
+      ],
+      "waypoints": [
+        {
+          "x": -109.771884,
+          "y": 157.309535,
+          "z": 22.554154
+        },
+        {
+          "x": -105.029337,
+          "y": 172.128703,
+          "z": 19.106552
+        },
+        {
+          "x": -108.040112,
+          "y": 171.423904,
+          "z": 20.41813
+        },
+        {
+          "x": -111.009919,
+          "y": 172.285155,
+          "z": 18.365879
+        },
+        {
+          "x": -126.252176,
+          "y": 175.395472,
+          "z": 22.484697
+        },
+        {
+          "x": -107.809782,
+          "y": 149.118373,
+          "z": 24.540711
+        },
+        {
+          "x": -92.113273,
+          "y": 121.114311,
+          "z": 23.564739
+        },
+        {
+          "x": -86.335348,
+          "y": 137.217876,
+          "z": 18.402078
+        },
+        {
+          "x": -70.914989,
+          "y": 141.111292,
+          "z": 19.961598
+        },
+        {
+          "x": -56.024594,
+          "y": 146.698983,
+          "z": 19.374868
+        },
+        {
+          "x": -44.089182,
+          "y": 136.271862,
+          "z": 23.373169
+        },
+        {
+          "x": -71.474897,
+          "y": 137.442222,
+          "z": 24.996255
+        },
+        {
+          "x": -98.738715,
+          "y": 140.276183,
+          "z": 23.402263
+        },
+        {
+          "x": -89.986359,
+          "y": 127.340827,
+          "z": 19.506172
+        },
+        {
+          "x": -88.056273,
+          "y": 132.240694,
+          "z": 20.691904
+        }
+      ]
+    },
+    {
+      "trajectory_id": "traj_cov_02_all_nodes_reverse_s_curve",
+      "description": "Reverse coverage-first sweep from node05 back to node01 with stronger S-curve bridges.",
+      "recommended_nodes": [
+        "node05",
+        "node04",
+        "node03",
+        "node02",
+        "node01"
+      ],
+      "target_nodes": [
+        "node05",
+        "node04",
+        "node03",
+        "node02",
+        "node01"
+      ],
+      "expected_visible_nodes": [
+        "node05",
+        "node04",
+        "node03",
+        "node02",
+        "node01"
+      ],
+      "coverage_strategy": "node_optical_axis_bands_all_nodes_reverse_s_curve",
+      "seed": 20261030,
+      "distance_bands_m": [
+        20.0,
+        34.0
+      ],
+      "altitude_bands_m": [
+        18.5,
+        22.5
+      ],
+      "altitude_jitter_m": 0.8,
+      "jitter_radius_m": 2.6,
+      "return_to_node": "node03",
+      "pose_profile": "short_overlap",
+      "duration_seconds": 34.0,
+      "nominal_speed_mps": 5.2,
+      "pose_schedule": {
+        "mode": "relative_to_path",
+        "duration_seconds": 34.0,
+        "control_points": [
+          {
+            "t_frac": 0.0,
+            "pitch_deg": -1.5,
+            "roll_deg": 0.5,
+            "yaw_offset_deg": -6.0
+          },
+          {
+            "t_frac": 0.33,
+            "pitch_deg": -4.8,
+            "roll_deg": 3.5,
+            "yaw_offset_deg": 10.0
+          },
+          {
+            "t_frac": 0.67,
+            "pitch_deg": -2.5,
+            "roll_deg": -4.0,
+            "yaw_offset_deg": -9.0
+          },
+          {
+            "t_frac": 1.0,
+            "pitch_deg": -4.0,
+            "roll_deg": 2.0,
+            "yaw_offset_deg": 0.0
+          }
+        ]
+      },
+      "coverage_samples": [
+        {
+          "kind": "band",
+          "node_id": "node05",
+          "band_index": 0,
+          "distance_m": 34.0,
+          "altitude_m": 22.5,
+          "point": {
+            "x": -96.765476,
+            "y": 136.363834,
+            "z": 22.007223
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node05",
+          "band_index": 1,
+          "distance_m": 20.0,
+          "altitude_m": 18.5,
+          "point": {
+            "x": -90.315157,
+            "y": 125.013716,
+            "z": 17.957605
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node04",
+          "band_index": 0,
+          "distance_m": 20.0,
+          "altitude_m": 18.5,
+          "point": {
+            "x": -55.624538,
+            "y": 149.97981,
+            "z": 19.075374
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node04",
+          "band_index": 1,
+          "distance_m": 34.0,
+          "altitude_m": 22.5,
+          "point": {
+            "x": -46.657135,
+            "y": 139.97261,
+            "z": 23.013482
+          }
+        },
+        {
+          "kind": "bridge",
+          "from_node_id": "node05",
+          "to_node_id": "node04",
+          "point": {
+            "x": -73.663322,
+            "y": 138.460352,
+            "z": 20.291628
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node03",
+          "band_index": 0,
+          "distance_m": 34.0,
+          "altitude_m": 22.5,
+          "point": {
+            "x": -91.058818,
+            "y": 125.763676,
+            "z": 22.899114
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node03",
+          "band_index": 1,
+          "distance_m": 20.0,
+          "altitude_m": 18.5,
+          "point": {
+            "x": -87.861288,
+            "y": 139.103627,
+            "z": 18.502078
+          }
+        },
+        {
+          "kind": "bridge",
+          "from_node_id": "node04",
+          "to_node_id": "node03",
+          "point": {
+            "x": -68.803295,
+            "y": 132.697267,
+            "z": 24.524639
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node02",
+          "band_index": 0,
+          "distance_m": 20.0,
+          "altitude_m": 18.5,
+          "point": {
+            "x": -108.410839,
+            "y": 174.754674,
+            "z": 18.987452
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node02",
+          "band_index": 1,
+          "distance_m": 34.0,
+          "altitude_m": 22.5,
+          "point": {
+            "x": -122.947026,
+            "y": 172.956736,
+            "z": 22.693424
+          }
+        },
+        {
+          "kind": "bridge",
+          "from_node_id": "node03",
+          "to_node_id": "node02",
+          "point": {
+            "x": -98.301859,
+            "y": 156.833585,
+            "z": 20.202184
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node01",
+          "band_index": 0,
+          "distance_m": 34.0,
+          "altitude_m": 22.5,
+          "point": {
+            "x": -109.606268,
+            "y": 161.761664,
+            "z": 21.935995
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node01",
+          "band_index": 1,
+          "distance_m": 20.0,
+          "altitude_m": 18.5,
+          "point": {
+            "x": -102.844763,
+            "y": 173.503873,
+            "z": 18.534564
+          }
+        },
+        {
+          "kind": "bridge",
+          "from_node_id": "node02",
+          "to_node_id": "node01",
+          "point": {
+            "x": -115.592936,
+            "y": 168.173953,
+            "z": 23.578088
+          }
+        },
+        {
+          "kind": "return_bridge",
+          "to_node_id": "node03",
+          "point": {
+            "x": -95.281195,
+            "y": 156.335037,
+            "z": 20.200207
+          }
+        }
+      ],
+      "waypoints_carla": [
+        {
+          "x": -96.765476,
+          "y": 136.363834,
+          "z": 22.007223
+        },
+        {
+          "x": -90.315157,
+          "y": 125.013716,
+          "z": 17.957605
+        },
+        {
+          "x": -73.663322,
+          "y": 138.460352,
+          "z": 20.291628
+        },
+        {
+          "x": -55.624538,
+          "y": 149.97981,
+          "z": 19.075374
+        },
+        {
+          "x": -46.657135,
+          "y": 139.97261,
+          "z": 23.013482
+        },
+        {
+          "x": -68.803295,
+          "y": 132.697267,
+          "z": 24.524639
+        },
+        {
+          "x": -91.058818,
+          "y": 125.763676,
+          "z": 22.899114
+        },
+        {
+          "x": -87.861288,
+          "y": 139.103627,
+          "z": 18.502078
+        },
+        {
+          "x": -98.301859,
+          "y": 156.833585,
+          "z": 20.202184
+        },
+        {
+          "x": -108.410839,
+          "y": 174.754674,
+          "z": 18.987452
+        },
+        {
+          "x": -122.947026,
+          "y": 172.956736,
+          "z": 22.693424
+        },
+        {
+          "x": -115.592936,
+          "y": 168.173953,
+          "z": 23.578088
+        },
+        {
+          "x": -109.606268,
+          "y": 161.761664,
+          "z": 21.935995
+        },
+        {
+          "x": -102.844763,
+          "y": 173.503873,
+          "z": 18.534564
+        },
+        {
+          "x": -95.281195,
+          "y": 156.335037,
+          "z": 20.200207
+        }
+      ],
+      "waypoints": [
+        {
+          "x": -96.765476,
+          "y": 136.363834,
+          "z": 22.007223
+        },
+        {
+          "x": -90.315157,
+          "y": 125.013716,
+          "z": 17.957605
+        },
+        {
+          "x": -73.663322,
+          "y": 138.460352,
+          "z": 20.291628
+        },
+        {
+          "x": -55.624538,
+          "y": 149.97981,
+          "z": 19.075374
+        },
+        {
+          "x": -46.657135,
+          "y": 139.97261,
+          "z": 23.013482
+        },
+        {
+          "x": -68.803295,
+          "y": 132.697267,
+          "z": 24.524639
+        },
+        {
+          "x": -91.058818,
+          "y": 125.763676,
+          "z": 22.899114
+        },
+        {
+          "x": -87.861288,
+          "y": 139.103627,
+          "z": 18.502078
+        },
+        {
+          "x": -98.301859,
+          "y": 156.833585,
+          "z": 20.202184
+        },
+        {
+          "x": -108.410839,
+          "y": 174.754674,
+          "z": 18.987452
+        },
+        {
+          "x": -122.947026,
+          "y": 172.956736,
+          "z": 22.693424
+        },
+        {
+          "x": -115.592936,
+          "y": 168.173953,
+          "z": 23.578088
+        },
+        {
+          "x": -109.606268,
+          "y": 161.761664,
+          "z": 21.935995
+        },
+        {
+          "x": -102.844763,
+          "y": 173.503873,
+          "z": 18.534564
+        },
+        {
+          "x": -95.281195,
+          "y": 156.335037,
+          "z": 20.200207
+        }
+      ]
+    },
+    {
+      "trajectory_id": "traj_poc_01_west_corridor",
+      "description": "Coverage-first west corridor sweep with loopback through node02.",
+      "recommended_nodes": [
+        "node01",
+        "node02",
+        "node05"
+      ],
+      "target_nodes": [
+        "node01",
+        "node02",
+        "node05"
+      ],
+      "expected_visible_nodes": [
+        "node01",
+        "node02",
+        "node05"
+      ],
+      "coverage_strategy": "node_optical_axis_bands_loopback",
+      "seed": 20260525,
+      "distance_bands_m": [
+        24.0,
+        38.0,
+        56.0
+      ],
+      "altitude_bands_m": [
+        19.0,
+        22.0,
+        24.0
+      ],
+      "altitude_jitter_m": 0.8,
+      "jitter_radius_m": 2.2,
+      "return_to_node": "node02",
+      "pose_profile": "west_corridor",
+      "duration_seconds": 24.0,
+      "nominal_speed_mps": 5.0,
+      "pose_schedule": {
+        "mode": "relative_to_path",
+        "duration_seconds": 24.0,
+        "control_points": [
+          {
+            "t_frac": 0.0,
+            "pitch_deg": -2.0,
+            "roll_deg": 0.0,
+            "yaw_offset_deg": -10.0
+          },
+          {
+            "t_frac": 0.34,
+            "pitch_deg": -5.5,
+            "roll_deg": 4.0,
+            "yaw_offset_deg": 12.0
+          },
+          {
+            "t_frac": 0.68,
+            "pitch_deg": -3.0,
+            "roll_deg": -4.5,
+            "yaw_offset_deg": -8.0
+          },
+          {
+            "t_frac": 1.0,
+            "pitch_deg": -4.5,
+            "roll_deg": 2.0,
+            "yaw_offset_deg": 0.0
+          }
+        ]
+      },
+      "coverage_samples": [
+        {
+          "kind": "band",
+          "node_id": "node01",
+          "band_index": 0,
+          "distance_m": 56.0,
+          "altitude_m": 24.0,
+          "point": {
+            "x": -121.169827,
+            "y": 141.214606,
+            "z": 24.525021
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node01",
+          "band_index": 1,
+          "distance_m": 38.0,
+          "altitude_m": 22.0,
+          "point": {
+            "x": -112.523475,
+            "y": 157.892918,
+            "z": 21.881437
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node01",
+          "band_index": 2,
+          "distance_m": 24.0,
+          "altitude_m": 19.0,
+          "point": {
+            "x": -103.33192,
+            "y": 169.595719,
+            "z": 19.679399
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node02",
+          "band_index": 0,
+          "distance_m": 24.0,
+          "altitude_m": 19.0,
+          "point": {
+            "x": -112.696167,
+            "y": 174.148683,
+            "z": 19.276808
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node02",
+          "band_index": 1,
+          "distance_m": 38.0,
+          "altitude_m": 22.0,
+          "point": {
+            "x": -127.869369,
+            "y": 174.80784,
+            "z": 21.595401
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node02",
+          "band_index": 2,
+          "distance_m": 56.0,
+          "altitude_m": 24.0,
+          "point": {
+            "x": -143.641935,
+            "y": 177.191446,
+            "z": 24.329195
+          }
+        },
+        {
+          "kind": "bridge",
+          "from_node_id": "node01",
+          "to_node_id": "node02",
+          "point": {
+            "x": -107.686525,
+            "y": 172.54582,
+            "z": 21.018192
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node05",
+          "band_index": 0,
+          "distance_m": 56.0,
+          "altitude_m": 24.0,
+          "point": {
+            "x": -105.815633,
+            "y": 157.273824,
+            "z": 24.048371
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node05",
+          "band_index": 1,
+          "distance_m": 38.0,
+          "altitude_m": 22.0,
+          "point": {
+            "x": -99.466689,
+            "y": 139.204869,
+            "z": 21.213567
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node05",
+          "band_index": 2,
+          "distance_m": 24.0,
+          "altitude_m": 19.0,
+          "point": {
+            "x": -91.438393,
+            "y": 128.215853,
+            "z": 19.705135
+          }
+        },
+        {
+          "kind": "bridge",
+          "from_node_id": "node02",
+          "to_node_id": "node05",
+          "point": {
+            "x": -125.286713,
+            "y": 166.173051,
+            "z": 25.575723
+          }
+        },
+        {
+          "kind": "return_bridge",
+          "to_node_id": "node02",
+          "point": {
+            "x": -109.782687,
+            "y": 151.411132,
+            "z": 22.088278
+          }
+        }
+      ],
+      "waypoints_carla": [
+        {
+          "x": -121.169827,
+          "y": 141.214606,
+          "z": 24.525021
+        },
+        {
+          "x": -112.523475,
+          "y": 157.892918,
+          "z": 21.881437
+        },
+        {
+          "x": -103.33192,
+          "y": 169.595719,
+          "z": 19.679399
+        },
+        {
+          "x": -107.686525,
+          "y": 172.54582,
+          "z": 21.018192
+        },
+        {
+          "x": -112.696167,
+          "y": 174.148683,
+          "z": 19.276808
+        },
+        {
+          "x": -127.869369,
+          "y": 174.80784,
+          "z": 21.595401
+        },
+        {
+          "x": -143.641935,
+          "y": 177.191446,
+          "z": 24.329195
+        },
+        {
+          "x": -125.286713,
+          "y": 166.173051,
+          "z": 25.575723
+        },
+        {
+          "x": -105.815633,
+          "y": 157.273824,
+          "z": 24.048371
+        },
+        {
+          "x": -99.466689,
+          "y": 139.204869,
+          "z": 21.213567
+        },
+        {
+          "x": -91.438393,
+          "y": 128.215853,
+          "z": 19.705135
+        },
+        {
+          "x": -109.782687,
+          "y": 151.411132,
+          "z": 22.088278
+        }
+      ],
+      "waypoints": [
+        {
+          "x": -121.169827,
+          "y": 141.214606,
+          "z": 24.525021
+        },
+        {
+          "x": -112.523475,
+          "y": 157.892918,
+          "z": 21.881437
+        },
+        {
+          "x": -103.33192,
+          "y": 169.595719,
+          "z": 19.679399
+        },
+        {
+          "x": -107.686525,
+          "y": 172.54582,
+          "z": 21.018192
+        },
+        {
+          "x": -112.696167,
+          "y": 174.148683,
+          "z": 19.276808
+        },
+        {
+          "x": -127.869369,
+          "y": 174.80784,
+          "z": 21.595401
+        },
+        {
+          "x": -143.641935,
+          "y": 177.191446,
+          "z": 24.329195
+        },
+        {
+          "x": -125.286713,
+          "y": 166.173051,
+          "z": 25.575723
+        },
+        {
+          "x": -105.815633,
+          "y": 157.273824,
+          "z": 24.048371
+        },
+        {
+          "x": -99.466689,
+          "y": 139.204869,
+          "z": 21.213567
+        },
+        {
+          "x": -91.438393,
+          "y": 128.215853,
+          "z": 19.705135
+        },
+        {
+          "x": -109.782687,
+          "y": 151.411132,
+          "z": 22.088278
+        }
+      ]
+    },
+    {
+      "trajectory_id": "traj_poc_02_short_overlap",
+      "description": "Coverage-first short overlap sweep spanning node01, node03, and node05.",
+      "recommended_nodes": [
+        "node01",
+        "node03",
+        "node05"
+      ],
+      "target_nodes": [
+        "node01",
+        "node03",
+        "node05"
+      ],
+      "expected_visible_nodes": [
+        "node01",
+        "node03",
+        "node05"
+      ],
+      "coverage_strategy": "node_optical_axis_bands_loopback",
+      "seed": 20260626,
+      "distance_bands_m": [
+        18.0,
+        32.0,
+        48.0
+      ],
+      "altitude_bands_m": [
+        18.0,
+        21.0,
+        23.0
+      ],
+      "altitude_jitter_m": 0.8,
+      "jitter_radius_m": 2.0,
+      "return_to_node": "node03",
+      "pose_profile": "short_overlap",
+      "duration_seconds": 22.0,
+      "nominal_speed_mps": 4.5,
+      "pose_schedule": {
+        "mode": "relative_to_path",
+        "duration_seconds": 22.0,
+        "control_points": [
+          {
+            "t_frac": 0.0,
+            "pitch_deg": -1.5,
+            "roll_deg": 0.5,
+            "yaw_offset_deg": -6.0
+          },
+          {
+            "t_frac": 0.33,
+            "pitch_deg": -4.8,
+            "roll_deg": 3.5,
+            "yaw_offset_deg": 10.0
+          },
+          {
+            "t_frac": 0.67,
+            "pitch_deg": -2.5,
+            "roll_deg": -4.0,
+            "yaw_offset_deg": -9.0
+          },
+          {
+            "t_frac": 1.0,
+            "pitch_deg": -4.0,
+            "roll_deg": 2.0,
+            "yaw_offset_deg": 0.0
+          }
+        ]
+      },
+      "coverage_samples": [
+        {
+          "kind": "band",
+          "node_id": "node01",
+          "band_index": 0,
+          "distance_m": 48.0,
+          "altitude_m": 23.0,
+          "point": {
+            "x": -116.930442,
+            "y": 149.175395,
+            "z": 22.609999
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node01",
+          "band_index": 1,
+          "distance_m": 32.0,
+          "altitude_m": 21.0,
+          "point": {
+            "x": -109.320367,
+            "y": 163.154698,
+            "z": 21.722089
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node01",
+          "band_index": 2,
+          "distance_m": 18.0,
+          "altitude_m": 18.0,
+          "point": {
+            "x": -102.593163,
+            "y": 175.359138,
+            "z": 18.004039
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node03",
+          "band_index": 0,
+          "distance_m": 18.0,
+          "altitude_m": 18.0,
+          "point": {
+            "x": -88.004374,
+            "y": 141.259298,
+            "z": 17.571261
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node03",
+          "band_index": 1,
+          "distance_m": 32.0,
+          "altitude_m": 21.0,
+          "point": {
+            "x": -88.264629,
+            "y": 127.41276,
+            "z": 20.47184
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node03",
+          "band_index": 2,
+          "distance_m": 48.0,
+          "altitude_m": 23.0,
+          "point": {
+            "x": -94.525424,
+            "y": 111.046274,
+            "z": 22.2243
+          }
+        },
+        {
+          "kind": "bridge",
+          "from_node_id": "node01",
+          "to_node_id": "node03",
+          "point": {
+            "x": -95.708854,
+            "y": 158.133773,
+            "z": 19.179229
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node05",
+          "band_index": 0,
+          "distance_m": 48.0,
+          "altitude_m": 23.0,
+          "point": {
+            "x": -101.454436,
+            "y": 149.99683,
+            "z": 22.228261
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node05",
+          "band_index": 1,
+          "distance_m": 32.0,
+          "altitude_m": 21.0,
+          "point": {
+            "x": -94.827603,
+            "y": 135.163736,
+            "z": 21.712553
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node05",
+          "band_index": 2,
+          "distance_m": 18.0,
+          "altitude_m": 18.0,
+          "point": {
+            "x": -90.603829,
+            "y": 122.400012,
+            "z": 17.759677
+          }
+        },
+        {
+          "kind": "bridge",
+          "from_node_id": "node03",
+          "to_node_id": "node05",
+          "point": {
+            "x": -98.063886,
+            "y": 130.508396,
+            "z": 23.813274
+          }
+        },
+        {
+          "kind": "return_bridge",
+          "to_node_id": "node03",
+          "point": {
+            "x": -88.189509,
+            "y": 124.325537,
+            "z": 21.030884
+          }
+        }
+      ],
+      "waypoints_carla": [
+        {
+          "x": -116.930442,
+          "y": 149.175395,
+          "z": 22.609999
+        },
+        {
+          "x": -109.320367,
+          "y": 163.154698,
+          "z": 21.722089
+        },
+        {
+          "x": -102.593163,
+          "y": 175.359138,
+          "z": 18.004039
+        },
+        {
+          "x": -95.708854,
+          "y": 158.133773,
+          "z": 19.179229
+        },
+        {
+          "x": -88.004374,
+          "y": 141.259298,
+          "z": 17.571261
+        },
+        {
+          "x": -88.264629,
+          "y": 127.41276,
+          "z": 20.47184
+        },
+        {
+          "x": -94.525424,
+          "y": 111.046274,
+          "z": 22.2243
+        },
+        {
+          "x": -98.063886,
+          "y": 130.508396,
+          "z": 23.813274
+        },
+        {
+          "x": -101.454436,
+          "y": 149.99683,
+          "z": 22.228261
+        },
+        {
+          "x": -94.827603,
+          "y": 135.163736,
+          "z": 21.712553
+        },
+        {
+          "x": -90.603829,
+          "y": 122.400012,
+          "z": 17.759677
+        },
+        {
+          "x": -88.189509,
+          "y": 124.325537,
+          "z": 21.030884
+        }
+      ],
+      "waypoints": [
+        {
+          "x": -116.930442,
+          "y": 149.175395,
+          "z": 22.609999
+        },
+        {
+          "x": -109.320367,
+          "y": 163.154698,
+          "z": 21.722089
+        },
+        {
+          "x": -102.593163,
+          "y": 175.359138,
+          "z": 18.004039
+        },
+        {
+          "x": -95.708854,
+          "y": 158.133773,
+          "z": 19.179229
+        },
+        {
+          "x": -88.004374,
+          "y": 141.259298,
+          "z": 17.571261
+        },
+        {
+          "x": -88.264629,
+          "y": 127.41276,
+          "z": 20.47184
+        },
+        {
+          "x": -94.525424,
+          "y": 111.046274,
+          "z": 22.2243
+        },
+        {
+          "x": -98.063886,
+          "y": 130.508396,
+          "z": 23.813274
+        },
+        {
+          "x": -101.454436,
+          "y": 149.99683,
+          "z": 22.228261
+        },
+        {
+          "x": -94.827603,
+          "y": 135.163736,
+          "z": 21.712553
+        },
+        {
+          "x": -90.603829,
+          "y": 122.400012,
+          "z": 17.759677
+        },
+        {
+          "x": -88.189509,
+          "y": 124.325537,
+          "z": 21.030884
+        }
+      ]
+    },
+    {
+      "trajectory_id": "traj_poc_03_southeast_pass",
+      "description": "Coverage-first southeast pass with a return arc around node03.",
+      "recommended_nodes": [
+        "node03",
+        "node04"
+      ],
+      "target_nodes": [
+        "node03",
+        "node04"
+      ],
+      "expected_visible_nodes": [
+        "node03",
+        "node04"
+      ],
+      "coverage_strategy": "node_optical_axis_bands_loopback",
+      "seed": 20260727,
+      "distance_bands_m": [
+        20.0,
+        34.0,
+        52.0
+      ],
+      "altitude_bands_m": [
+        18.5,
+        21.5,
+        24.0
+      ],
+      "altitude_jitter_m": 0.8,
+      "jitter_radius_m": 2.0,
+      "return_to_node": "node03",
+      "pose_profile": "southeast_pass",
+      "duration_seconds": 22.0,
+      "nominal_speed_mps": 5.0,
+      "pose_schedule": {
+        "mode": "relative_to_path",
+        "duration_seconds": 22.0,
+        "control_points": [
+          {
+            "t_frac": 0.0,
+            "pitch_deg": -2.5,
+            "roll_deg": 0.0,
+            "yaw_offset_deg": -8.0
+          },
+          {
+            "t_frac": 0.35,
+            "pitch_deg": -6.0,
+            "roll_deg": 5.5,
+            "yaw_offset_deg": 9.0
+          },
+          {
+            "t_frac": 0.7,
+            "pitch_deg": -3.5,
+            "roll_deg": -3.5,
+            "yaw_offset_deg": -6.0
+          },
+          {
+            "t_frac": 1.0,
+            "pitch_deg": -5.0,
+            "roll_deg": 1.5,
+            "yaw_offset_deg": 0.0
+          }
+        ]
+      },
+      "coverage_samples": [
+        {
+          "kind": "band",
+          "node_id": "node03",
+          "band_index": 0,
+          "distance_m": 52.0,
+          "altitude_m": 24.0,
+          "point": {
+            "x": -94.520618,
+            "y": 107.871844,
+            "z": 23.85416
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node03",
+          "band_index": 1,
+          "distance_m": 34.0,
+          "altitude_m": 21.5,
+          "point": {
+            "x": -91.100326,
+            "y": 125.036847,
+            "z": 22.237605
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node03",
+          "band_index": 2,
+          "distance_m": 20.0,
+          "altitude_m": 18.5,
+          "point": {
+            "x": -87.702934,
+            "y": 139.135749,
+            "z": 17.789737
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node04",
+          "band_index": 0,
+          "distance_m": 20.0,
+          "altitude_m": 18.5,
+          "point": {
+            "x": -57.533653,
+            "y": 147.968802,
+            "z": 18.919619
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node04",
+          "band_index": 1,
+          "distance_m": 34.0,
+          "altitude_m": 21.5,
+          "point": {
+            "x": -47.808279,
+            "y": 137.374729,
+            "z": 21.001934
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node04",
+          "band_index": 2,
+          "distance_m": 52.0,
+          "altitude_m": 24.0,
+          "point": {
+            "x": -37.059804,
+            "y": 124.982947,
+            "z": 23.397548
+          }
+        },
+        {
+          "kind": "bridge",
+          "from_node_id": "node03",
+          "to_node_id": "node04",
+          "point": {
+            "x": -72.359615,
+            "y": 142.668759,
+            "z": 20.148605
+          }
+        },
+        {
+          "kind": "return_bridge",
+          "to_node_id": "node03",
+          "point": {
+            "x": -64.077719,
+            "y": 127.362298,
+            "z": 24.867301
+          }
+        }
+      ],
+      "waypoints_carla": [
+        {
+          "x": -94.520618,
+          "y": 107.871844,
+          "z": 23.85416
+        },
+        {
+          "x": -91.100326,
+          "y": 125.036847,
+          "z": 22.237605
+        },
+        {
+          "x": -87.702934,
+          "y": 139.135749,
+          "z": 17.789737
+        },
+        {
+          "x": -72.359615,
+          "y": 142.668759,
+          "z": 20.148605
+        },
+        {
+          "x": -57.533653,
+          "y": 147.968802,
+          "z": 18.919619
+        },
+        {
+          "x": -47.808279,
+          "y": 137.374729,
+          "z": 21.001934
+        },
+        {
+          "x": -37.059804,
+          "y": 124.982947,
+          "z": 23.397548
+        },
+        {
+          "x": -64.077719,
+          "y": 127.362298,
+          "z": 24.867301
+        }
+      ],
+      "waypoints": [
+        {
+          "x": -94.520618,
+          "y": 107.871844,
+          "z": 23.85416
+        },
+        {
+          "x": -91.100326,
+          "y": 125.036847,
+          "z": 22.237605
+        },
+        {
+          "x": -87.702934,
+          "y": 139.135749,
+          "z": 17.789737
+        },
+        {
+          "x": -72.359615,
+          "y": 142.668759,
+          "z": 20.148605
+        },
+        {
+          "x": -57.533653,
+          "y": 147.968802,
+          "z": 18.919619
+        },
+        {
+          "x": -47.808279,
+          "y": 137.374729,
+          "z": 21.001934
+        },
+        {
+          "x": -37.059804,
+          "y": 124.982947,
+          "z": 23.397548
+        },
+        {
+          "x": -64.077719,
+          "y": 127.362298,
+          "z": 24.867301
+        }
+      ]
+    },
+    {
+      "trajectory_id": "traj_poc_04_north_bridge",
+      "description": "Coverage-first north bridge pass with loopback around node02 and node05.",
+      "recommended_nodes": [
+        "node02",
+        "node05"
+      ],
+      "target_nodes": [
+        "node02",
+        "node05"
+      ],
+      "expected_visible_nodes": [
+        "node02",
+        "node05"
+      ],
+      "coverage_strategy": "node_optical_axis_bands_loopback",
+      "seed": 20260828,
+      "distance_bands_m": [
+        20.0,
+        32.0,
+        46.0
+      ],
+      "altitude_bands_m": [
+        18.5,
+        21.5,
+        23.5
+      ],
+      "altitude_jitter_m": 0.8,
+      "jitter_radius_m": 2.1,
+      "return_to_node": "node02",
+      "pose_profile": "north_bridge",
+      "duration_seconds": 20.0,
+      "nominal_speed_mps": 4.5,
+      "pose_schedule": {
+        "mode": "relative_to_path",
+        "duration_seconds": 20.0,
+        "control_points": [
+          {
+            "t_frac": 0.0,
+            "pitch_deg": -3.0,
+            "roll_deg": 0.0,
+            "yaw_offset_deg": -9.0
+          },
+          {
+            "t_frac": 0.32,
+            "pitch_deg": -5.8,
+            "roll_deg": 4.5,
+            "yaw_offset_deg": 8.0
+          },
+          {
+            "t_frac": 0.68,
+            "pitch_deg": -3.3,
+            "roll_deg": -4.0,
+            "yaw_offset_deg": -7.0
+          },
+          {
+            "t_frac": 1.0,
+            "pitch_deg": -4.5,
+            "roll_deg": 1.5,
+            "yaw_offset_deg": 0.0
+          }
+        ]
+      },
+      "coverage_samples": [
+        {
+          "kind": "band",
+          "node_id": "node02",
+          "band_index": 0,
+          "distance_m": 46.0,
+          "altitude_m": 23.5,
+          "point": {
+            "x": -133.959789,
+            "y": 178.112607,
+            "z": 22.790542
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node02",
+          "band_index": 1,
+          "distance_m": 32.0,
+          "altitude_m": 21.5,
+          "point": {
+            "x": -120.282475,
+            "y": 174.160755,
+            "z": 20.988999
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node02",
+          "band_index": 2,
+          "distance_m": 20.0,
+          "altitude_m": 18.5,
+          "point": {
+            "x": -109.282626,
+            "y": 174.534656,
+            "z": 18.093081
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node05",
+          "band_index": 0,
+          "distance_m": 20.0,
+          "altitude_m": 18.5,
+          "point": {
+            "x": -91.111247,
+            "y": 124.251768,
+            "z": 17.984589
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node05",
+          "band_index": 1,
+          "distance_m": 32.0,
+          "altitude_m": 21.5,
+          "point": {
+            "x": -97.366492,
+            "y": 134.124938,
+            "z": 21.747166
+          }
+        },
+        {
+          "kind": "band",
+          "node_id": "node05",
+          "band_index": 2,
+          "distance_m": 46.0,
+          "altitude_m": 23.5,
+          "point": {
+            "x": -103.198262,
+            "y": 146.482534,
+            "z": 23.057117
+          }
+        },
+        {
+          "kind": "bridge",
+          "from_node_id": "node02",
+          "to_node_id": "node05",
+          "point": {
+            "x": -100.38189,
+            "y": 149.326373,
+            "z": 19.130997
+          }
+        },
+        {
+          "kind": "return_bridge",
+          "to_node_id": "node02",
+          "point": {
+            "x": -113.708884,
+            "y": 159.10659,
+            "z": 23.953036
+          }
+        }
+      ],
+      "waypoints_carla": [
+        {
+          "x": -133.959789,
+          "y": 178.112607,
+          "z": 22.790542
+        },
+        {
+          "x": -120.282475,
+          "y": 174.160755,
+          "z": 20.988999
+        },
+        {
+          "x": -109.282626,
+          "y": 174.534656,
+          "z": 18.093081
+        },
+        {
+          "x": -100.38189,
+          "y": 149.326373,
+          "z": 19.130997
+        },
+        {
+          "x": -91.111247,
+          "y": 124.251768,
+          "z": 17.984589
+        },
+        {
+          "x": -97.366492,
+          "y": 134.124938,
+          "z": 21.747166
+        },
+        {
+          "x": -103.198262,
+          "y": 146.482534,
+          "z": 23.057117
+        },
+        {
+          "x": -113.708884,
+          "y": 159.10659,
+          "z": 23.953036
+        }
+      ],
+      "waypoints": [
+        {
+          "x": -133.959789,
+          "y": 178.112607,
+          "z": 22.790542
+        },
+        {
+          "x": -120.282475,
+          "y": 174.160755,
+          "z": 20.988999
+        },
+        {
+          "x": -109.282626,
+          "y": 174.534656,
+          "z": 18.093081
+        },
+        {
+          "x": -100.38189,
+          "y": 149.326373,
+          "z": 19.130997
+        },
+        {
+          "x": -91.111247,
+          "y": 124.251768,
+          "z": 17.984589
+        },
+        {
+          "x": -97.366492,
+          "y": 134.124938,
+          "z": 21.747166
+        },
+        {
+          "x": -103.198262,
+          "y": 146.482534,
+          "z": 23.057117
+        },
+        {
+          "x": -113.708884,
+          "y": 159.10659,
+          "z": 23.953036
+        }
+      ]
+    }
+  ]
+}
