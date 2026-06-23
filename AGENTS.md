@@ -19,6 +19,18 @@ This repository is documentation-first, with runnable scripts under `mvp-demo/`.
 python mvp-demo\scripts\mj_capture_3cam_node.py --help
 ```
 
+## CARLA-Air / AirSim Runtime Self-Start Authorization
+
+Codex may self-start the existing CARLA-Air / AirSim runtime only when live evidence is required.
+
+- First check whether CARLA is already online at `127.0.0.1:2000` and AirSim is already online at `127.0.0.1:41451`.
+- If both ports are already reachable, do not start another runtime.
+- Use only the documented runbook launcher; do not guess paths or flags.
+- Write runtime logs under `local/carla_air/runtime_logs/` and PID records under `local/carla_air/runtime_pids/`.
+- Wait for both ports to be ready before any live probe.
+- Only stop PIDs started by Codex in the current run.
+- On failure, write the blocker to `research/reports/` and do not fabricate evidence.
+
 ## Coding Style & Naming Conventions
 
 - Filenames: prefer `snake_case` and descriptive English names.
@@ -39,48 +51,60 @@ Git history may not be available in this folder; use a simple convention going f
 
 ## Subagent Delegation (Repository-Specific, Token-Aware)
 
-**仓库级策略覆盖**：本策略在全局默认基础上，补充 `research/`、`mvp-demo/`、benchmark 结果的特定触发条件。全局默认偏积极，但本仓库仍强调文件边界和输出约束。
+**仓库级策略覆盖**：本策略在全局默认基础上，补充 `research/`、`mvp-demo/`、benchmark 结果的特定触发条件。默认采用 **token-first / aggressive delegation**：优先把可拆分、低上下文、边界清晰的工作下放给 subagent，以减少主 agent（尤其 `gpt-5.5`）的 token 消耗；主 agent 保留任务拆解、关键判断、diff review、验证和最终答复。
 
-**核心原则**：主 agent 负责拆解、拍板、审核和最终答复；subagent 用于可拆分、低上下文、能减少主 agent 重复工作的任务。只要任务可清晰拆分、可并行推进、不会阻塞主路径，就可以优先考虑委派。
+**核心原则**：主 agent 不默认亲自执行可委派的具体操作。只要任务能清晰切分、写入范围可独占、验收命令明确，就优先派 subagent。`explorer` 交付候选事实和证据；`worker` 交付候选补丁、文档更新或隔离验证结果；主 agent 负责最终方案拍板、跨模块取舍、冲突裁决、diff review、验证和用户最终答复。
 
 **默认策略**：
-- 文档阅读、跨文件检索、路径定位、来源归因、差异汇总、旁路验证、隔离测试、边界清晰的小实现，都可以主动委派。
-- 若主 agent 通过 1-2 次精确搜索/读取即可完成，或委派不会明显节省 token / 时间，则可直接由主 agent 完成。
-- 主 agent 不把最终方案拍板、跨模块取舍、冲突裁决、用户最终答复交给 subagent。
+- 文档阅读、跨文件检索、路径定位、来源归因、差异汇总、旁路验证、隔离测试、边界清晰的小实现，默认主动委派。
+- 跨 2 个及以上文件的查证、状态汇总、路径定位、输出证据核对，默认派 `explorer`，除非主 agent 已经在同一上下文中完成该读取。
+- 文档编辑、报告同步、runbook 更新、单文件局部脚本 guard、plan-only 输出补字段、局部验证命令修复，默认派 `worker`，并声明独占文件范围和验收命令。
+- 即使主 agent 可以自行完成，只要预计会消耗明显上下文、输出 token、重复检索或机械编辑，也优先委派给 subagent。
+- 主 agent 不重复实现 worker 的同一任务；等待返回后只做 diff review、必要修正、整合和最终验证。
+- 派发 worker 时必须说明：它并非独占整个代码库，不得 revert 他人改动，必须适配已有工作区变更。
 
 **多代理并行条件**：
-- 允许 2 个及以上 subagent，必须满足：
+- 允许并鼓励 2 个及以上 subagent，尤其是可拆分成多个互不依赖的信息流、写入流或验证流时。必须满足：
   - 独立流：任务可分割为两个或多个互不依赖的检索、核对、实现或验证流（例如 `research/` vs `mvp-demo/`、`research/` vs benchmark、`mvp-demo/` vs benchmark）
   - 低上下文：每个 subagent 只接收最小必要文件列表
-  - 明确节省主 agent 工作量：避免重复搜索、核对和验证
+  - 写入隔离：多个 worker 的写入范围必须 disjoint，避免同一文件或同一章节并发修改
+  - 主 token 节省：优先减少主 agent 重复搜索、长文阅读、机械编辑和验证输出
 
 **禁止场景**：
-- 单点概念问答、一步检查、小重命名
-- 主 agent 明显可以在极少量读取内完成的任务
-- 需要主 agent 立即拿到结果才能继续的关键路径任务
+- 单点概念问答、单条命令查询、小重命名
+- 写入范围无法独占，或会与已知并发修改直接冲突
+- 需要主 agent 立即作出架构、安全、数据真实性或跨模块取舍的关键判断
+- 用户明确要求主 agent 亲自执行，或明确禁止委派
 
 **本仓库判例**：
 - `research/` 内多计划文档检索或比对 → 1 个轻量 explorer
 - `mvp-demo/` 内多脚本/多输出文件的参数追踪或来源归因 → 1 个轻量 explorer
-- `research/` vs `mvp-demo/` 双侧核对 → 1-2 个轻量 explorer，由主 agent 汇总
-- 单脚本修改、单文档章节更新（边界清晰）→ 1 个中等 worker（独占文件范围）
-- 跨理论方案与脚本实现的复杂不一致排障 → 高模例外（必要时才用）
+- `research/` vs `mvp-demo/` 双侧核对 → 2 个轻量 explorer，由主 agent 汇总
+- 单文档章节更新、报告同步、runbook 补充（边界清晰）→ 1 个轻量 worker，独占文件或章节
+- 单脚本局部修改、guard 增强、plan-only 输出补字段（边界清晰）→ 1 个中等 worker，独占脚本文件
+- 跨文件但边界清晰的实现 → 按 disjoint write set 拆给 1-3 个 worker，主 agent 只整合和验收
+- 独立验证、smoke、`py_compile`、输出 artifact 核对 → 可派 explorer 或 worker 旁路验证
+- 跨理论方案与脚本实现的复杂不一致排障 → `gpt-5.4` 高模 subagent 优先独立复核，必要时主 agent 深入
 
 ## Model Selection (Repository-Specific)
 
-**主 agent**：保持高模，负责任务拆解、跨模块判断、最终审核和最终答复。
+**主 agent**：保持高模，主要负责任务拆解、跨模块判断、冲突裁决、最终审核和最终答复；避免把 `gpt-5.5` 用在可拆分的长文阅读、机械编辑、局部实现和隔离验证上。
 
 **角色与模型口径**：
-- `explorer`：优先用于只读检索、文档阅读、路径定位、参数追踪、来源归因、差异汇总 → `gpt-5.4-mini`
-- `worker`：优先用于局部实现、局部验证、独立文档更新、隔离验证 → `gpt-5.3-codex` 或 `gpt-5.2`
-- 高风险例外：复杂排障、独立复核、跨模块验证 → `gpt-5.4`（必要时才用）
+- `explorer`：只读检索、文档阅读、路径定位、参数追踪、来源归因、差异汇总 → 默认显式指定 `gpt-5.4-mini`
+- 文档/Markdown worker：报告同步、runbook 更新、单文件章节更新、结构化摘要 → 默认显式指定 `gpt-5.4-mini`
+- 代码 worker：局部实现、脚本 guard、plan-only 输出补字段、隔离测试修复 → 默认显式指定 `gpt-5.4-mini`
+- 跨文件但边界清晰的代码修改 → 优先 `gpt-5.4`；若任务足够小且可独立收敛，仍可用 `gpt-5.4-mini`
+- 高风险例外：复杂排障、独立复核、跨模块验证、research 理论 vs demo 实现不一致 → `gpt-5.4`，必要时才由主 agent 深入
 
 ## Reasoning Effort (Repository-Optimized)
 
 **基于任务类型的默认设置**：
-- 轻量检索、文档阅读、路径定位：`low`
-- 普通局部实现、局部验证：`medium`
-- 跨模块复杂问题（research 理论 vs demo 实现不一致）：`high` 或 `xhigh`
+- explorer 轻量检索、文档阅读、路径定位：`low`
+- 文档/Markdown worker、普通局部实现、局部验证：`medium`
+- 机械验证、smoke 输出核对、`py_compile`/`git diff --check` 旁路验证：`low` 或 `medium`
+- 跨模块复杂问题（research 理论 vs demo 实现不一致）：`high`
+- `xhigh` 仅用于确有必要的高风险复核，避免默认消耗过多 token
 
 ## Delegation Boundaries (Repository-Specific)
 
@@ -98,8 +122,13 @@ Git history may not be available in this folder; use a simple convention going f
 
 **输出格式规范**：
 - 只读核查：返回简洁结论，包含关键文件路径和 1-3 个关键发现
-- 实现任务：返回修改摘要，包含变更文件和影响范围
+- 实现任务：返回修改摘要，包含变更文件、影响范围、验证命令和 1-3 个需要主 agent 复核的风险点
 - 分析任务：返回对比表格或列表，避免冗长叙述
+
+**主 agent 复核契约**：
+- subagent 写入结果必须由主 agent review diff 后才能视为接受。
+- 主 agent 必须运行与改动相称的验证，例如 Markdown 结构检查、`py_compile`、plan-only 命令或 `git diff --check`。
+- subagent 不得把 proxy annotation / proxy points 判定为最终 synthetic annotation / real geometry；此类结论只能由主 agent 在验证后给出。
 
 ## Hugging Face Downloads
 

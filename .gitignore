@@ -42,6 +42,8 @@ checkpoints/
 # =========================
 mvp-demo/data/scenes/
 mvp-demo/data/nodes/
+mvp-demo/data/carla_air/
+data/carla_air/
 mvp-demo/output/
 mvp-demo/runs/
 mvp-demo/tmp/
@@ -59,6 +61,7 @@ third_party/Track4World/
 
 # Backup of nested git repository
 mvp-demo/.git_bak/
+third_party_backups_*/
 
 # Large local assets
 assets/models/aircraft_raw/**
