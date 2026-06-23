@@ -277,6 +277,155 @@ failure cases
 - 若 learned geometry 有提升，必须同时报告 RGB-only、FPFH baseline 和相同 query/gallery 划分。
 - 若端到端 prototype 有提升，必须说明数据规模、训练/测试划分和过拟合风险。
 
+### 5.1 DGGT + MapAnything sidecar 优化提案
+
+这是一条 `旁路 POC -> 统一几何契约 -> 航迹恢复对比 -> 3D/4D-ReID smoke` 路线，不直接替换现有三角化主链，也不提前把推测性几何增益写成结论。
+
+角色分工：
+
+- `DGGT`：动态 4D 主干，负责 3DGS、dynamic motion、depth-like geometry、动态一致性。
+- `MapAnything`：度量几何基线/补强，利用 CARLA-Air 已知内外参输出 metric depth / point maps。
+- `Adapter`：把两条分支统一成下游可消费的 `points_by_timestamp`、`depth_by_frame` 和 `geometry_manifest`。
+
+分支结构：
+
+```text
+DGGT branch:
+  RGB sync frames -> DGGT -> 3DGS / dynamic map / motion / depth / points
+
+MapAnything branch:
+  RGB sync frames + CARLA K/extrinsics -> MapAnything -> metric depth / point maps
+
+Adapter:
+  DGGT / MapAnything outputs -> CARLA world-frame geometry contract
+```
+
+`method` 名称固定为：
+
+```text
+dggt
+mapanything
+dggt_mapanything_aligned
+```
+
+统一输出目录固定为：
+
+```text
+local/carla_air/geometry_4d/<capture_id>/<method>/
+  manifest.json
+  points_by_timestamp/
+    index.csv
+    *.npy
+  depth_by_frame/
+  camera_alignment.json
+  quality_summary.json
+```
+
+几何契约：
+
+- `points_by_timestamp/*.npy` 默认保存 world-frame `xyz`，优先扩展 `rgb`、`confidence`、`source_model`、`node_id`、`camera_id`、`ts_us`。
+- `depth_by_frame/` 保存 per node / camera / timestamp 深度图。
+- `camera_alignment.json` 记录 DGGT inferred pose 与 CARLA pose 的对齐误差。
+- `quality_summary.json` 记录点数、有效深度比例、动态置信度、目标 ROI 点数、异常帧。
+- 所有 sidecar 产物必须标记 `diagnostic_only=true`、`non_promotion=true`、`not_formal_geometry=true`。
+
+航迹恢复新增几何辅助模式：
+
+```text
+tracklet_bbox_depth
+tracklet_geometry_fusion
+tracklet_mask_depth
+```
+
+v1 优先实现 `tracklet_bbox_depth`：
+
+```text
+tracklet bbox + depth/point map
+-> ROI 内反投影/筛点
+-> 多相机融合或 RANSAC
+-> 每帧飞机 3D center
+-> recovered_trajectory.csv + error summary
+```
+
+保留现有基线对照：
+
+```text
+oracle_projection
+tracklet_bbox_yolo
+tracklet_bbox_diff
+tracklet_bbox_depth_dggt
+tracklet_bbox_depth_mapanything
+```
+
+4D-ReID smoke 不使用整场景点云做 ReID，只从 bbox / mask 对应的目标局部区域提取：
+
+```text
+RGB crop embedding
+local depth statistics
+local point cloud descriptor
+temporal motion descriptor
+```
+
+报告口径仍只能是 `single-identity 4D-ReID sanity`，不能声明多身份 benchmark。
+
+里程碑：
+
+- `M0 Readiness`：补齐 `third_party/dggt`、DGGT checkpoint、DGGT Python 环境；准备 MapAnything repo/weights，优先使用 Apache 权重；如使用非商用权重，manifest 必须明确标注；按仓库 Hugging Face mirror 规则下载权重。
+- `M1 Sidecar POC`：cov01 / cov02 各抽 10-20 个同步 timestamp；跑 DGGT 和 MapAnything 两条旁路分支；输出 `geometry_4d/<capture_id>/<method>/`，不改主链产物。
+- `M2 Adapter`：新增 adapter，把 DGGT / MapAnything 输出转成统一 `points_by_timestamp` 和 `depth_by_frame`；所有产物标记 non-promotion 边界。
+- `M3 Trajectory Recovery`：实现 `tracklet_bbox_depth`；在 cov01 / cov02 上分别跑 DGGT、MapAnything geometry-assisted recovery；与 oracle、YOLO bbox、diff bbox 同表对比 RMSE / MAE / P95 / coverage / jitter。
+- `M4 4D-ReID Smoke`：从目标局部几何提取 geometry embedding；复用现有 cov01<->cov02 retrieval sanity；输出双向 retrieval JSON，但报告中明确只有单身份 sanity。
+
+静态检查：
+
+```text
+python -m py_compile <新增或修改脚本>
+git diff --check
+```
+
+几何 POC 验收：
+
+- `manifest.json` 非空，记录模型、checkpoint、license、输入 capture、hash、non-promotion 边界。
+- `points_by_timestamp/index.csv` 非空。
+- `depth_by_frame/` 至少覆盖抽样 timestamp 的有效相机。
+- `quality_summary.json` 包含有效点数、有效深度比例、ROI 点数、失败帧。
+
+航迹恢复验收输出沿用现有恢复产物：
+
+```text
+recovered_trajectory.csv
+trajectory_observations.csv
+trajectory_error_summary.json
+trajectory_compare.html/svg/png
+manifest.json
+```
+
+`trajectory_error_summary.json` 至少包含：
+
+```text
+rmse_3d_m
+mae_3d_m
+p95_3d_m
+coverage_ratio
+geometry_frame_count
+jitter_m
+```
+
+ReID smoke 验收：
+
+- cov01->cov02、cov02->cov01 都有输出。
+- `num_queries > 0`。
+- `num_gallery > 0`。
+- `metric_queries > 0`。
+- 报告标注 `single_identity_sanity_only=true`。
+
+前置假设：
+
+- 本阶段不启动 CARLA-Air / AirSim runtime，只使用已有 cov01 / cov02 capture。
+- DGGT / MapAnything 输出先作为旁路 diagnostic artifact，不升级为 formal annotation、`mask_gt` 或 final 4D geometry。
+- 目标 gating v1 使用现有 bbox / diff / YOLO tracklet；可靠 mask 出现后再启用 `tracklet_mask_depth`。
+- 当前三角化链路和 `oracle_projection` 必须保留，作为判断 4D 几何是否真正提升的基线。
+
 ## 6. 与历史分支关系
 
 - `recon_spin`：保留为历史重建与诊断线。

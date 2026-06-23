@@ -2,6 +2,8 @@
 
 Last updated: 2026-06-12
 
+2026-06-23 note: DGGT + MapAnything is now planned as a diagnostic sidecar path for CARLA-Air 4D reconstruction optimization. The intended sequence is sidecar POC -> unified geometry contract -> trajectory recovery comparison -> 3D/4D-ReID smoke, with outputs under `local/carla_air/geometry_4d/<capture_id>/<method>/` for `dggt`, `mapanything`, and `dggt_mapanything_aligned`. This does not replace the current triangulation/oracle baselines and does not change `real_4d_geometry_ready=false`, `formal_neoverse_ready=false`, `formal_annotation_ready=false`, or any benchmark-promotion gate.
+
 ## Read this first
 
 This file is the default entry point for future CARLA-Air / 4D-ReID work. It is a soft archive index: older reports keep their original paths for provenance, but future agents should not read the full historical report set by default.
