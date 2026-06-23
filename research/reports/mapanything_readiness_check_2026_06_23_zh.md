@@ -31,6 +31,7 @@ pip install -e ".[all]"
 ## 3. Apache 模型与本地权重路径
 
 - 在线加载时，README / demo 代码都支持 `facebook/map-anything-apache`。
+- 建议把 Apache 本地权重统一放到 `local/models/mapanything-apache/`，避免直接把第三方模型文件混在 `third_party/map-anything/` 工作树里。
 - 代码里的离线权重入口在 `scripts/demo_local_weight.py`，其 `LOCAL_CONFIG` 体现了本地配置约定：
 
 ```python
@@ -48,6 +49,19 @@ pip install -e ".[all]"
     "strict": False,
 }
 ```
+
+建议映射到本仓库本地路径后，最小目录可以整理成：
+
+```text
+local/models/mapanything-apache/
+  config.json
+  model.safetensors
+```
+
+如果沿用 `demo_local_weight.py` 的本地加载逻辑，则可把：
+
+- `config_json_path` 对应到 `local/models/mapanything-apache/config.json`
+- `checkpoint_path` 对应到 `local/models/mapanything-apache/model.safetensors`
 
 - `mapanything.utils.hf_utils.initialize_mapanything_local()` 会先读 Hydra 配置，再按 `config_json_path` / `checkpoint_path` 加载本地资源。
 - 训练/benchmark 侧的 checkpoint 转换脚本是 `scripts/convert_hf_to_benchmark_checkpoint.py`，导出的格式要求顶层包含 `model` 键，适合写成 `*.pth` 后再走 benchmark 配置。

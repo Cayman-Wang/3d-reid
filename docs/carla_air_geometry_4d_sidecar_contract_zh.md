@@ -25,6 +25,12 @@ local/carla_air/geometry_4d/<capture_id>/<method>/
   quality_summary.json
 ```
 
+sidecar readiness 总览输出固定为：
+
+```text
+local/carla_air/geometry_4d/readiness/readiness_summary.json
+```
+
 ## 强约束
 
 所有 sidecar 产物都必须显式标记：
@@ -51,6 +57,9 @@ not_formal_geometry=true
 `input_manifest.json`
 : 记录本次 sidecar 使用的原始输入来源、时间戳范围、相机、同步关系和预处理参数。
 
+`local/carla_air/geometry_4d/readiness/readiness_summary.json`
+: 记录当前 sidecar 的本地 readiness 检查结果，只覆盖 repo、权重、软链接和 Python import 可用性。它不运行 DGGT 或 MapAnything 推理，不启动 CARLA-Air / AirSim runtime，不代表 geometry 已生成。
+
 `depth_by_frame/`
 : 保存按 frame / camera / timestamp 切分的深度结果，供后续 ROI 反投影、深度采样和异常帧排查。
 
@@ -62,6 +71,14 @@ not_formal_geometry=true
 
 `quality_summary.json`
 : 记录点数、有效深度比例、ROI 命中数、异常帧、缺失帧、对齐质量等汇总指标。
+
+placeholder exporter 只允许闭合 metadata 契约：
+
+- 可以写 `manifest.json`、`camera_alignment.json`、`quality_summary.json`。
+- 可以创建空的 `depth_by_frame/`、`points_by_timestamp/` 目录。
+- 不允许伪造 depth、points、alignment metrics 或质量统计。
+- 在 placeholder 阶段，`geometry_ready=false`、`depth_ready=false`、`points_ready=false`、`inference_executed=false` 必须保持为 `false`。
+- `formal_annotation_ready=false`、`final_4d_geometry_ready=false`、`benchmark_ready=false` 必须显式保留。
 
 ## `tracklet_bbox_depth` 的消费方式
 
@@ -112,6 +129,8 @@ not_formal_geometry=true
 - 至少包含 `capture_id`、`identity_id`、`trajectory_id`、`selected_ts_us` 和 `views`。
 - `views` 至少记录 `node_id`、`camera_id`、`frame_path`、`K`、`camera_pose_c2w`、`camera_extrinsic_w2c`、`drone_gt_pose`。
 - dry-run 不复制图片、不写大体积点云、不写正式 `depth_by_frame/` 或 `points_by_timestamp/` 结果。
+- `local/carla_air/geometry_4d/readiness/readiness_summary.json` 可作为额外准备信号，但它只说明本地环境/文件 readiness，不说明 sidecar geometry 已可用。
+- placeholder exporter 生成的 metadata 也不属于 dry-run 输入验收的必需项；它只是把目录契约补齐到 metadata 层。
 
 ## Full Sidecar Geometry Output 验收
 
@@ -122,3 +141,9 @@ not_formal_geometry=true
 - `depth_by_frame/` 与 `points_by_timestamp/` 至少其一非空，且与 capture 时间范围一致。
 - `camera_alignment.json` 与 `quality_summary.json` 存在。
 - 输出未被 downstream 当作 oracle、baseline replacement 或 formal geometry 使用。
+
+额外边界：
+
+- placeholder exporter 只闭合 metadata 契约，仍然不满足 Full Sidecar Geometry Output 验收。
+- 仅当后续真实模型推理完成，并且实际写入有效 `depth_by_frame/` / `points_by_timestamp/` 后，才允许把 `depth_ready` / `points_ready` 改为 `true`。
+- 仅当真实对齐计算已执行后，才允许把 `alignment_ready` 改为 `true`。

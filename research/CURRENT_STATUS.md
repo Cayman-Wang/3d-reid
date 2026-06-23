@@ -1,8 +1,10 @@
 # CARLA-Air / 4D-ReID Current Status
 
-Last updated: 2026-06-12
+Last updated: 2026-06-23
 
 2026-06-23 note: DGGT + MapAnything is now planned as a diagnostic sidecar path for CARLA-Air 4D reconstruction optimization. The intended sequence is sidecar POC -> unified geometry contract -> trajectory recovery comparison -> 3D/4D-ReID smoke, with outputs under `local/carla_air/geometry_4d/<capture_id>/<method>/` for `dggt`, `mapanything`, and `dggt_mapanything_aligned`. This does not replace the current triangulation/oracle baselines and does not change `real_4d_geometry_ready=false`, `formal_neoverse_ready=false`, `formal_annotation_ready=false`, or any benchmark-promotion gate.
+
+2026-06-23 note: sidecar formal engineering preparation now includes a local readiness checker and a placeholder metadata exporter for `local/carla_air/geometry_4d/`. These tools only verify repo/weights/import readiness and close the metadata contract around existing `input_manifest.json`; they do not run DGGT or MapAnything inference, do not start CARLA-Air / AirSim runtime, and do not change `real_4d_geometry_ready=false`, `formal_annotation_ready=false`, `formal_neoverse_ready=false`, or `benchmark_ready=false`. Placeholder metadata is not final geometry and must not be promoted as depth / points / final 4D geometry evidence.
 
 ## Read this first
 
