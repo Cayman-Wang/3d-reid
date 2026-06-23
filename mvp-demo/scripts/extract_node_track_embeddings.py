@@ -1,10 +1,21 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
 import numpy as np
+
+from carla_air_weak_variant_guard import WEAK_VARIANT_NAME, resolve_embedding_weak_variant_guard
+
+
+def _sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 def l2norm(x: np.ndarray, eps: float = 1e-12) -> np.ndarray:
@@ -70,6 +81,45 @@ def _pick_indices(n: int, max_items: int) -> list[int]:
         return list(range(n))
     idx = np.linspace(0, n - 1, num=max_items, dtype=int).tolist()
     return sorted(set(int(i) for i in idx))
+
+
+def _list_item_or_none(values: object, idx: int):
+    if not isinstance(values, list):
+        return None
+    if idx < 0 or idx >= len(values):
+        return None
+    return values[idx]
+
+
+def _resolve_scene_path(scene_dir: Path, raw_path: object) -> Path:
+    path = Path(str(raw_path))
+    return path if path.is_absolute() else scene_dir / path
+
+
+def _resolve_node_camera_ids(cam_key: object, cam_entry: object) -> tuple[str, str]:
+    node_id = ""
+    camera_id = ""
+    if isinstance(cam_key, str) and cam_key:
+        parts = cam_key.split("/", 1)
+        if len(parts) == 2:
+            node_id, camera_id = parts[0], parts[1]
+        else:
+            camera_id = cam_key
+    if isinstance(cam_entry, dict):
+        entry_node = cam_entry.get("node_id")
+        entry_camera = cam_entry.get("camera_id")
+        if entry_node not in (None, ""):
+            node_id = str(entry_node)
+        if entry_camera not in (None, ""):
+            camera_id = str(entry_camera)
+    return str(node_id), str(camera_id)
+
+
+def _path_like_exists(path: Path) -> bool:
+    try:
+        return path.exists()
+    except Exception:
+        return False
 
 
 def _sample_points(points_xyz: np.ndarray, n: int, rng: np.random.Generator) -> np.ndarray:
@@ -187,6 +237,22 @@ def main() -> None:
     ap.add_argument("--clip_pretrained", default="laion2b_s34b_b79k", type=str)
     ap.add_argument("--rgb_weight", default=1.0, type=float)
     ap.add_argument("--geo_weight", default=1.0, type=float)
+    ap.add_argument(
+        "--weak-variant",
+        default="",
+        choices=["", WEAK_VARIANT_NAME],
+        help="Explicit opt-in for local diagnostic weak variants; never enabled by default.",
+    )
+    ap.add_argument(
+        "--weak-variant-readiness",
+        default="",
+        help="JSON from tools/carla_air/verify_weak_variant_official_readiness.py for weak diagnostic use.",
+    )
+    ap.add_argument(
+        "--weak-contract-verification",
+        default="",
+        help="Post-write verifier JSON for weak diagnostic contract update evidence.",
+    )
     args = ap.parse_args()
 
     scene_dir = Path(args.scene_dir).resolve()
@@ -202,6 +268,8 @@ def main() -> None:
     tracklets = json.loads(tracklets_path.read_text(encoding="utf-8"))
     if not isinstance(tracklets, list):
         raise SystemExit(f"Expected a JSON list in: {tracklets_path}")
+    weak_variant_guard = resolve_embedding_weak_variant_guard(args, scene_dir, tracklets)
+    tracklets_sha256 = _sha256_file(tracklets_path)
 
     rng = np.random.default_rng(int(args.seed))
 
@@ -265,25 +333,28 @@ def main() -> None:
         indices = _pick_indices(len(timestamp_stems), int(args.max_timestamps_per_track))
         per_timestamp_embs: list[np.ndarray] = []
         used_timestamp_stems: list[str] = []
+        input_lineage: list[dict] = []
 
         for idx in indices:
             stem = str(timestamp_stems[idx])
             rgb_embs: list[np.ndarray] = []
+            timestamp_lineage: dict = {
+                "timestamp_stem": stem,
+                "rgb_observations": [],
+            }
 
-            for cam_id, cam_entry in per_camera.items():
+            for cam_key, cam_entry in per_camera.items():
                 if not isinstance(cam_entry, dict):
                     continue
 
-                try:
-                    frame_rel = str(cam_entry["frame_paths"][idx])
-                    mask_rel = str(cam_entry["mask_paths"][idx])
-                    bbox = cam_entry["bboxes_xyxy"][idx]
-                except Exception:
+                frame_raw = _list_item_or_none(cam_entry.get("frame_paths"), idx)
+                bbox = _list_item_or_none(cam_entry.get("bboxes_xyxy"), idx)
+                if frame_raw is None or bbox is None:
                     continue
 
-                img_path = scene_dir / frame_rel
-                mask_path = scene_dir / mask_rel
-                if not img_path.exists() or not mask_path.exists():
+                node_id, camera_id = _resolve_node_camera_ids(cam_key, cam_entry)
+                img_path = _resolve_scene_path(scene_dir, frame_raw)
+                if not _path_like_exists(img_path):
                     continue
 
                 img = _read_image(img_path, cv2.IMREAD_COLOR)
@@ -299,17 +370,39 @@ def main() -> None:
                 if crop.size == 0:
                     continue
 
+                mask_rel = _list_item_or_none(cam_entry.get("mask_paths"), idx)
+                mask_path = _resolve_scene_path(scene_dir, mask_rel) if mask_rel is not None else None
+                mask_applied = False
                 if args.apply_mask_to_rgb:
+                    if mask_path is None or not _path_like_exists(mask_path):
+                        continue
                     mask = _load_mask(mask_path)
-                    if mask.shape == (h, w):
-                        crop_mask = mask[y1:y2, x1:x2]
-                        crop[~crop_mask] = 0
+                    if mask.shape != (h, w):
+                        continue
+                    crop_mask = mask[y1:y2, x1:x2]
+                    crop[~crop_mask] = 0
+                    mask_applied = True
 
                 if rgb_backend == "clip":
                     rgb_emb = _clip_embed(clip_model, clip_preprocess, clip_torch, clip_Image, device, crop)
                 else:
                     rgb_emb = _rgb_hist_desc(crop)
                 rgb_embs.append(l2norm(rgb_emb))
+
+                rgb_obs = {
+                    "node_id": node_id,
+                    "camera_id": camera_id,
+                    "cam_id": camera_id,
+                    "frame_path": str(img_path),
+                    "frame_sha256": _sha256_file(img_path),
+                    "bbox_xyxy": [int(v) for v in bbox_i],
+                    "bbox_only": not mask_applied,
+                    "mask_applied": bool(mask_applied),
+                }
+                if mask_path is not None and _path_like_exists(mask_path):
+                    rgb_obs["mask_path"] = str(mask_path)
+                    rgb_obs["mask_sha256"] = _sha256_file(mask_path)
+                timestamp_lineage["rgb_observations"].append(rgb_obs)
 
             if not rgb_embs:
                 continue
@@ -324,10 +417,15 @@ def main() -> None:
                     points_rel = fused_points_paths[idx]
                     if points_rel:
                         points_path = scene_dir / str(points_rel)
+                        timestamp_lineage["fused_points_rel"] = str(points_rel)
+                        timestamp_lineage["fused_points_path"] = str(points_path)
+                        timestamp_lineage["fused_points_exists"] = bool(points_path.exists())
                         if points_path.exists():
+                            timestamp_lineage["fused_points_sha256"] = _sha256_file(points_path)
                             pts = np.load(str(points_path))
                             pts = np.asarray(pts, dtype=np.float32)
                             if pts.ndim == 2 and pts.shape[1] == 3:
+                                timestamp_lineage["fused_points_shape"] = [int(v) for v in pts.shape]
                                 pts = _sample_points(pts, int(args.max_points_per_timestamp), rng)
                                 pts = _normalize_unit_sphere(pts)
                                 if geo_backend == "open3d_fpfh":
@@ -341,6 +439,7 @@ def main() -> None:
             fused = np.concatenate([rgb_part, geo_part], axis=0) if geo_part.size else rgb_part
             per_timestamp_embs.append(l2norm(fused.astype(np.float32)))
             used_timestamp_stems.append(stem)
+            input_lineage.append(timestamp_lineage)
 
         if not per_timestamp_embs:
             continue
@@ -349,13 +448,17 @@ def main() -> None:
         track_embs.append(emb)
         track_meta.append(
             {
+                "schema_version": "node_track_embedding_meta_v2",
                 "track_id": str(track.get("track_id", "")),
                 "identity_id": track.get("identity_id"),
                 "node_id": track.get("node_id"),
                 "scene_dir": str(scene_dir),
+                "tracklets_path": str(tracklets_path),
+                "tracklets_sha256": tracklets_sha256,
                 "n_timestamps_total": int(len(timestamp_stems)),
                 "n_timestamps_used": int(len(per_timestamp_embs)),
                 "used_timestamp_stems": used_timestamp_stems,
+                "input_lineage": input_lineage,
                 "rgb_backend": rgb_backend,
                 "geo_backend": geo_backend,
                 "rgb_weight": float(args.rgb_weight),
@@ -365,6 +468,8 @@ def main() -> None:
                 "dim": int(emb.shape[0]),
             }
         )
+        if weak_variant_guard is not None:
+            track_meta[-1]["weak_variant"] = weak_variant_guard
 
     out_dir = scene_dir / args.out_dir
     out_dir.mkdir(parents=True, exist_ok=True)

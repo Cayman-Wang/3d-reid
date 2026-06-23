@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -24,6 +25,14 @@ def _load_mask(path: Path) -> np.ndarray:
 
         m = Image.open(path).convert("L")
         return (np.array(m) > 0)
+
+
+def _sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 def _mask_bbox_xyxy(mask: np.ndarray) -> list[int] | None:
@@ -51,6 +60,9 @@ def main() -> None:
     ap.add_argument("--masks_dir", default="masks", type=str)
     ap.add_argument("--out", default="tracklets.json", type=str)
     ap.add_argument("--min_frames", default=2, type=int, help="Drop tracks shorter than this")
+    ap.add_argument("--source", default="mask_directory_tracklets", type=str)
+    ap.add_argument("--identity_id", default="", type=str)
+    ap.add_argument("--diagnostic_only", action="store_true")
     args = ap.parse_args()
 
     scene_dir = Path(args.scene_dir).resolve()
@@ -73,6 +85,7 @@ def main() -> None:
         frame_names: list[str] = []
         rel_masks: list[str] = []
         bboxes_xyxy: list[list[int]] = []
+        input_lineage: list[dict] = []
 
         for mp in mask_paths:
             stem = mp.stem
@@ -88,20 +101,51 @@ def main() -> None:
                 continue
 
             frame_names.append(img.name)
-            rel_masks.append(str(mp.relative_to(scene_dir)))
+            frame_rel = str(img.relative_to(scene_dir))
+            mask_rel = str(mp.relative_to(scene_dir))
+            rel_masks.append(mask_rel)
             bboxes_xyxy.append(bbox)
+            input_lineage.append(
+                {
+                    "schema_version": "mask_tracklet_input_lineage_v1",
+                    "frame_name": img.name,
+                    "frame_path": frame_rel,
+                    "frame_sha256": _sha256_file(img),
+                    "mask_path": mask_rel,
+                    "mask_sha256": _sha256_file(mp),
+                    "bbox_xyxy": bbox,
+                }
+            )
 
         if len(frame_names) < int(args.min_frames):
             continue
 
+        source = str(args.source)
+        diagnostic_only = bool(args.diagnostic_only)
+        identity_id = str(args.identity_id).strip() or obj_dir.name
         tracklets.append(
             {
+                "schema_version": "mask_tracklet_v2",
                 "track_id": f"{scene_dir.name}_{obj_dir.name}",
                 "scene_dir": str(scene_dir),
                 "object_id": obj_dir.name,
+                "identity_id": identity_id,
                 "frame_names": frame_names,
                 "mask_paths": rel_masks,
                 "bboxes_xyxy": bboxes_xyxy,
+                "source": source,
+                "diagnostic_only": diagnostic_only,
+                "formal_scene_outputs_modified": False,
+                "updates_pipeline_contract": False,
+                "identity_proof": False,
+                "pixel_accurate": False,
+                "formal_synthetic_annotation_ready": False,
+                "input_lineage": input_lineage,
+                "non_promotion_policy": {
+                    "mask_directory_tracklet_is_not_identity_proof": True,
+                    "requires_external_target_selection_before_formal_use": True,
+                    "does_not_update_pipeline_contract": True,
+                },
             }
         )
 
@@ -111,4 +155,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

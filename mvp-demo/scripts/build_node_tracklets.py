@@ -120,6 +120,13 @@ def _read_frame_index(frame_times_csv: Path, cams: list[str]) -> list[tuple[int,
     return ordered
 
 
+def _scene_stem_from_frames(frames_by_cam: dict[str, str], cams: list[str], ts_us: int) -> str:
+    stems = {Path(str(frames_by_cam[cam_id])).stem for cam_id in cams}
+    if len(stems) == 1:
+        return next(iter(stems))
+    return f"{ts_us:012d}"
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Build a single node-level tracklet from a MuJoCo node scene.")
     ap.add_argument("--scene_dir", required=True, type=str)
@@ -196,7 +203,7 @@ def main() -> None:
         if any(cam_id not in frames_by_cam for cam_id in cams):
             continue
 
-        stem = f"{ts_us:012d}"
+        stem = _scene_stem_from_frames(frames_by_cam, cams, ts_us)
         per_cam_bboxes: dict[str, list[int]] = {}
         per_cam_paths: dict[str, tuple[str, str, str]] = {}
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -10,6 +11,14 @@ import numpy as np
 def l2norm(x: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     n = float(np.linalg.norm(x))
     return (x / (n + eps)).astype(np.float32)
+
+
+def _sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 
 def _load_mask(path: Path) -> np.ndarray:
@@ -199,6 +208,117 @@ def _get_intrinsics_for_stem(intr: dict, stem: str) -> dict:
     raise KeyError(f"Missing intrinsics for stem={stem}")
 
 
+def _lineage_lookup_keys(frame_name: str) -> list[str]:
+    p = Path(str(frame_name))
+    keys = [str(frame_name), p.name, p.stem]
+    out: list[str] = []
+    seen: set[str] = set()
+    for key in keys:
+        if key and key not in seen:
+            out.append(key)
+            seen.add(key)
+    return out
+
+
+def _index_tracklet_lineage(rows: object, track_id: str, require: bool) -> dict[str, dict | None]:
+    if rows is None:
+        if require:
+            raise SystemExit(f"tracklet input_lineage missing in track_id={track_id}")
+        return {}
+    if not isinstance(rows, list):
+        raise SystemExit(f"tracklet input_lineage must be a list in track_id={track_id}")
+
+    index: dict[str, dict | None] = {}
+    for row_i, row in enumerate(rows):
+        if not isinstance(row, dict):
+            raise SystemExit(f"tracklet input_lineage[{row_i}] must be an object in track_id={track_id}")
+
+        row_keys: list[str] = []
+        frame_name = row.get("frame_name", "")
+        frame_path = row.get("frame_path", "")
+        if frame_name:
+            row_keys.extend(_lineage_lookup_keys(str(frame_name)))
+        if frame_path:
+            row_keys.extend(_lineage_lookup_keys(Path(str(frame_path)).name))
+            row_keys.extend(_lineage_lookup_keys(str(frame_path)))
+
+        if not row_keys:
+            raise SystemExit(f"tracklet input_lineage[{row_i}] missing frame_name/frame_path in track_id={track_id}")
+
+        for key in row_keys:
+            if key in index:
+                existing = index[key]
+                if existing is not row:
+                    index[key] = None
+                continue
+            index[key] = row
+
+    if require and not index:
+        raise SystemExit(f"tracklet input_lineage empty in track_id={track_id}")
+    return index
+
+
+def _find_tracklet_lineage(index: dict[str, dict | None], frame_name: str, track_id: str) -> dict | None:
+    for key in _lineage_lookup_keys(frame_name):
+        if key not in index:
+            continue
+        row = index[key]
+        if row is None:
+            raise SystemExit(f"Ambiguous tracklet input_lineage key={key!r} in track_id={track_id}")
+        return row
+    return None
+
+
+def _normalize_bbox_for_compare(bbox: object) -> list[int] | None:
+    if not isinstance(bbox, list) or len(bbox) != 4:
+        return None
+    try:
+        return [int(round(float(v))) for v in bbox]
+    except Exception:
+        return None
+
+
+def _validate_tracklet_lineage_hashes(
+    *,
+    track_id: str,
+    frame_name: str,
+    lineage: dict,
+    frame_sha256: str,
+    mask_sha256: str | None,
+    bbox_xyxy: list[int] | None,
+) -> None:
+    expected_frame_sha256 = lineage.get("frame_sha256")
+    if not expected_frame_sha256:
+        raise SystemExit(f"tracklet lineage missing frame_sha256 in track_id={track_id} frame_name={frame_name}")
+    if str(expected_frame_sha256) != frame_sha256:
+        raise SystemExit(
+            f"tracklet lineage frame_sha256 mismatch in track_id={track_id} frame_name={frame_name}: "
+            f"expected={expected_frame_sha256} actual={frame_sha256}"
+        )
+
+    expected_mask_sha256 = lineage.get("mask_sha256")
+    if mask_sha256 is not None and not expected_mask_sha256:
+        raise SystemExit(f"tracklet lineage missing mask_sha256 in track_id={track_id} frame_name={frame_name}")
+    if expected_mask_sha256:
+        if mask_sha256 is None:
+            raise SystemExit(
+                f"tracklet lineage has mask_sha256 but no mask was used in track_id={track_id} "
+                f"frame_name={frame_name}"
+            )
+        if str(expected_mask_sha256) != mask_sha256:
+            raise SystemExit(
+                f"tracklet lineage mask_sha256 mismatch in track_id={track_id} frame_name={frame_name}: "
+                f"expected={expected_mask_sha256} actual={mask_sha256}"
+            )
+
+    expected_bbox = _normalize_bbox_for_compare(lineage.get("bbox_xyxy"))
+    if expected_bbox is not None and bbox_xyxy is not None and expected_bbox != bbox_xyxy:
+        raise SystemExit(
+            f"tracklet lineage bbox mismatch in track_id={track_id} frame_name={frame_name}: "
+            f"expected={expected_bbox} actual={bbox_xyxy}"
+        )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Extract track embeddings from images+depth (+ optional masks).")
     ap.add_argument("--scene_dir", required=True, type=str)
@@ -218,6 +338,11 @@ def main() -> None:
     ap.add_argument("--device", default="auto", type=str, help="For CLIP: auto|cpu|cuda")
     ap.add_argument("--clip_model", default="ViT-B-32", type=str)
     ap.add_argument("--clip_pretrained", default="laion2b_s34b_b79k", type=str)
+    ap.add_argument(
+        "--require-tracklet-lineage",
+        action="store_true",
+        help="Require tracklet input_lineage and fail if current frame/mask hashes no longer match it.",
+    )
     args = ap.parse_args()
 
     scene_dir = Path(args.scene_dir).resolve()
@@ -237,6 +362,7 @@ def main() -> None:
     tracklets = json.loads(tracklets_path.read_text(encoding="utf-8"))
     if not isinstance(tracklets, list):
         raise SystemExit(f"Expected a JSON list in: {tracklets_path}")
+    tracklets_sha256 = _sha256_file(tracklets_path)
 
     intr: dict = {}
     if args.geo_backend != "none":
@@ -319,10 +445,19 @@ def main() -> None:
         if bboxes_xyxy is not None and len(bboxes_xyxy) != len(frame_names):
             raise SystemExit(f"bboxes_xyxy length mismatch in track_id={track_id}")
 
+        tracklet_lineage_rows = t.get("input_lineage", None)
+        tracklet_lineage_index = _index_tracklet_lineage(
+            tracklet_lineage_rows,
+            track_id=track_id,
+            require=bool(args.require_tracklet_lineage),
+        )
+        tracklet_lineage_count = len(tracklet_lineage_rows) if isinstance(tracklet_lineage_rows, list) else 0
+
         frame_indices = _pick_frame_indices(len(frame_names), int(args.max_frames_per_track))
 
         per_frame: list[np.ndarray] = []
         used_frames: list[str] = []
+        input_lineage: list[dict] = []
 
         for i in frame_indices:
             frame_name = str(frame_names[i])
@@ -339,6 +474,8 @@ def main() -> None:
             depth_path = depth_dir / f"{stem}.npy"
             if not depth_path.exists():
                 continue
+            frame_sha256 = _sha256_file(img_path)
+            depth_sha256 = _sha256_file(depth_path)
 
             img = cv2.imread(str(img_path), cv2.IMREAD_COLOR)
             if img is None:
@@ -353,8 +490,15 @@ def main() -> None:
                 continue
 
             mask = None
+            mask_rel = None
+            mask_sha256 = None
             if mask_paths is not None:
-                mask = _load_mask(scene_dir / str(mask_paths[i]))
+                mask_rel = str(mask_paths[i])
+                mask_path = scene_dir / mask_rel
+                if not mask_path.exists():
+                    continue
+                mask_sha256 = _sha256_file(mask_path)
+                mask = _load_mask(mask_path)
                 if mask.shape != (h, w):
                     mask = None
 
@@ -365,6 +509,19 @@ def main() -> None:
                 bbox = _clip_bbox_xyxy(bboxes_xyxy[i], w=w, h=h)
             if bbox is None:
                 continue
+
+            tracklet_lineage_row = _find_tracklet_lineage(tracklet_lineage_index, frame_name, track_id=track_id)
+            if args.require_tracklet_lineage:
+                if tracklet_lineage_row is None:
+                    raise SystemExit(f"tracklet lineage missing for track_id={track_id} frame_name={frame_name}")
+                _validate_tracklet_lineage_hashes(
+                    track_id=track_id,
+                    frame_name=frame_name,
+                    lineage=tracklet_lineage_row,
+                    frame_sha256=frame_sha256,
+                    mask_sha256=mask_sha256,
+                    bbox_xyxy=bbox,
+                )
 
             x1, y1, x2, y2 = bbox
             crop = img[y1:y2, x1:x2]
@@ -398,6 +555,21 @@ def main() -> None:
             fused = np.concatenate([rgb_emb, geo_emb], axis=0) if geo_emb.size else rgb_emb
             per_frame.append(fused.astype(np.float32))
             used_frames.append(frame_name)
+            input_lineage.append(
+                {
+                    "schema_version": "track_embedding_input_lineage_v1",
+                    "frame_name": frame_name,
+                    "frame_path": str(img_path.relative_to(scene_dir)) if img_path.is_relative_to(scene_dir) else str(img_path),
+                    "frame_sha256": frame_sha256,
+                    "depth_path": str(depth_path.relative_to(scene_dir)) if depth_path.is_relative_to(scene_dir) else str(depth_path),
+                    "depth_sha256": depth_sha256,
+                    "mask_path": mask_rel,
+                    "mask_sha256": mask_sha256,
+                    "bbox_xyxy": bbox,
+                    "tracklet_lineage_present": tracklet_lineage_row is not None,
+                    "tracklet_lineage_verified": bool(args.require_tracklet_lineage),
+                }
+            )
 
         if not per_frame:
             continue
@@ -409,10 +581,26 @@ def main() -> None:
         track_meta.append(
             {
                 "track_id": track_id,
+                "schema_version": "track_embedding_meta_v2",
                 "object_id": t.get("object_id", None),
+                "identity_id": t.get("identity_id", None),
+                "scene_dir": str(scene_dir),
+                "tracklets_path": str(tracklets_path),
+                "tracklets_sha256": tracklets_sha256,
+                "tracklet_schema_version": t.get("schema_version", ""),
+                "tracklet_source": t.get("source", ""),
+                "tracklet_diagnostic_only": bool(t.get("diagnostic_only", False)),
+                "tracklet_identity_proof": bool(t.get("identity_proof", False)),
+                "tracklet_pixel_accurate": bool(t.get("pixel_accurate", False)),
+                "tracklet_formal_synthetic_annotation_ready": bool(
+                    t.get("formal_synthetic_annotation_ready", False)
+                ),
+                "tracklet_lineage_required": bool(args.require_tracklet_lineage),
+                "tracklet_input_lineage_count": int(tracklet_lineage_count),
                 "n_frames_total": int(len(frame_names)),
                 "n_frames_used": int(len(per_frame)),
                 "used_frames": used_frames,
+                "input_lineage": input_lineage,
                 "rgb_backend": rgb_backend,
                 "geo_backend": geo_backend,
                 "dim": int(emb.shape[0]),
