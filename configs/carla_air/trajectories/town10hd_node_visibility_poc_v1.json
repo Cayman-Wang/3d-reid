@@ -1,0 +1,64 @@
+{
+  "schema_version": "carla_air_drone_trajectory_config_v1",
+  "map": "Town10HD",
+  "identity_id": "default_airsim_drone",
+  "coordinate_convention": {
+    "carla_world": "CARLA/UE world coordinates: x forward, y right, z up; pitch/yaw/roll in degrees.",
+    "airsim_ned": "The trajectory runner calibrates AirSim NED from the live CARLA drone actor, then converts z with ned_z = -carla_z + offset_z."
+  },
+  "notes": [
+    "These trajectories are smoke-test drafts for node01-node05 visibility, not final dataset trajectories.",
+    "Run the presence gate on captured RGB before sending any capture into the 4D-ReID pipeline.",
+    "Keep using the default AirSim drone until custom aircraft replacement is validated."
+  ],
+  "trajectories": [
+    {
+      "trajectory_id": "traj_poc_01_west_corridor",
+      "description": "Conservative west-corridor cross-node smoke for node01, node02, and node05.",
+      "recommended_nodes": ["node01", "node02", "node05"],
+      "duration_seconds": 14.0,
+      "nominal_speed_mps": 5.0,
+      "waypoints": [
+        {"x": -110.0, "y": 178.0, "z": 20.0},
+        {"x": -128.0, "y": 160.0, "z": 22.0},
+        {"x": -145.0, "y": 140.0, "z": 20.0}
+      ]
+    },
+    {
+      "trajectory_id": "traj_poc_02_short_overlap",
+      "description": "Short overlap pass for node01, node03, and node05.",
+      "recommended_nodes": ["node01", "node03", "node05"],
+      "duration_seconds": 12.0,
+      "nominal_speed_mps": 4.0,
+      "waypoints": [
+        {"x": -86.0, "y": 142.0, "z": 18.0},
+        {"x": -105.0, "y": 134.0, "z": 20.0},
+        {"x": -122.0, "y": 126.0, "z": 18.0}
+      ]
+    },
+    {
+      "trajectory_id": "traj_poc_03_southeast_pass",
+      "description": "Southeast pass for the node03 and node04 corridor.",
+      "recommended_nodes": ["node03", "node04"],
+      "duration_seconds": 16.0,
+      "nominal_speed_mps": 5.0,
+      "waypoints": [
+        {"x": -70.0, "y": 130.0, "z": 18.0},
+        {"x": -55.0, "y": 105.0, "z": 20.0},
+        {"x": -40.0, "y": 80.0, "z": 18.0}
+      ]
+    },
+    {
+      "trajectory_id": "traj_poc_04_north_bridge",
+      "description": "North-side bridge pass for node02 and node05.",
+      "recommended_nodes": ["node02", "node05"],
+      "duration_seconds": 12.0,
+      "nominal_speed_mps": 4.0,
+      "waypoints": [
+        {"x": -110.0, "y": 176.0, "z": 20.0},
+        {"x": -128.0, "y": 182.0, "z": 24.0},
+        {"x": -146.0, "y": 190.0, "z": 22.0}
+      ]
+    }
+  ]
+}
